@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 470" fill="none">
+  <!-- Outer Shield Base Fill -->
+  <path d="M190 6 C280 6 368 46 368 150 C368 310 240 420 190 458 C140 420 12 310 12 150 C12 46 100 6 190 6 Z" fill="#00ADEF" />
+  
+  <!-- Outer Black Shield Border -->
+  <path d="M190 6 C280 6 368 46 368 150 C368 310 240 420 190 458 C140 420 12 310 12 150 C12 46 100 6 190 6 Z" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
+
+  <!-- Inner Black Border Stripe -->
+  <path d="M190 32 C265 32 342 66 342 152 C342 290 230 388 190 422 C150 388 38 290 38 152 C38 66 115 32 190 32 Z" fill="none" stroke="#000000" stroke-width="18" stroke-linejoin="round" />
+
+  <!-- Top Star -->
+  <polygon points="190,52 201,84 235,84 207,104 218,136 190,116 162,136 173,104 145,84 179,84" fill="#000000" />
+
+  <!-- FORCE Wordmark -->
+  <text x="190" y="222" text-anchor="middle" font-family="'Impact', 'Barlow Condensed', 'Arial Black', sans-serif" font-weight="900" font-size="94" fill="#000000" letter-spacing="-1">FORCE</text>
+
+  <!-- SOCCER CLUB Subtext -->
+  <text x="190" y="272" text-anchor="middle" font-family="'Barlow Condensed', 'Arial Black', 'Impact', sans-serif" font-weight="900" font-size="28" fill="#000000" letter-spacing="4">SOCCER CLUB</text>
+
+  <!-- Bottom 3 Vertical Stripes / Pillars -->
+  <!-- Left Bar -->
+  <rect x="151" y="306" width="16" height="114" rx="2" fill="#000000" />
+  <!-- Center Bar (Taller) -->
+  <rect x="182" y="306" width="16" height="132" rx="2" fill="#000000" />
+  <!-- Right Bar -->
+  <rect x="213" y="306" width="16" height="114" rx="2" fill="#000000" />
+</svg>

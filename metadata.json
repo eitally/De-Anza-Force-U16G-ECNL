@@ -1,0 +1,6 @@
+{
+  "name": "De Anza Force Soccer Team",
+  "description": "Elite girls soccer team website for De Anza Force featuring full player roster, college recruitment profiles, match schedule with livestream links, league standings, printable scouting sheets, and dedicated roster management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

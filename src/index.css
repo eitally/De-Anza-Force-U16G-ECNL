@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-condensed: 'Barlow Condensed', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Rajdhani', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #080c14;
+    color: #f1f5f9;
+  }
+
+  h1, h2, h3, .font-condensed {
+    font-family: var(--font-condensed);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+  border: 1px solid #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Atmospheric and Stadium Lighting Effects */
+.stadium-glow-blue {
+  background: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.18) 0%, rgba(13, 22, 40, 0) 70%);
+}
+
+.stadium-glow-red {
+  background: radial-gradient(circle at 100% 0%, rgba(220, 38, 38, 0.12) 0%, rgba(13, 22, 40, 0) 60%);
+}
+
+.grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.subtle-mesh {
+  background: radial-gradient(ellipse at top, #131d33 0%, #080c14 70%);
+}
+
+/* Print Stylesheet for College Scouting Roster */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Hide the main app layout when printing */
+  #root > div > header,
+  #root > div > main,
+  #root > div > footer {
+    display: none !important;
+  }
+
+  .print-scouting-pack {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+}
