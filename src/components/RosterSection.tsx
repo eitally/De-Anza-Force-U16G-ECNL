@@ -81,16 +81,16 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
   }, [players]);
 
   return (
-    <section id="roster" className="relative py-8 sm:py-12 bg-[#080c14] border-b border-slate-800/80">
+    <section id="roster" className="relative py-8 sm:py-12 bg-white dark:bg-[#080c14] border-b border-slate-200 dark:border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-white leading-none">
+            <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-slate-900 dark:text-white leading-none">
               2026-2027 <span className="text-blue-500">OFFICIAL ROSTER</span>
             </h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
               Showcasing all {players.length} student-athletes on the De Anza Force U16 ECNL squad. 
               Click any athlete card to view academic records, NCAA eligibility, match film, and scouting notes.
             </p>
@@ -101,7 +101,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               <>
                 <button
                   onClick={() => setShowTeamPhoto(!showTeamPhoto)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <Camera className="w-3.5 h-3.5 text-blue-400" />
                   <span>{showTeamPhoto ? 'Hide Squad Portrait' : 'View Squad Portrait'}</span>
@@ -122,7 +122,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               onOpenTeamPhotoEditor && (
                 <button
                   onClick={onOpenTeamPhotoEditor}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   <Camera className="w-3.5 h-3.5" />
                   <span>+ Upload Squad Portrait</span>
@@ -134,8 +134,8 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
         {/* Official Squad Photo Banner */}
         {teamPhotoUrl && showTeamPhoto && (
-          <div className="mt-5 rounded-2xl overflow-hidden bg-slate-900/90 border border-slate-800 shadow-xl group relative">
-            <div className="relative aspect-[21/9] sm:aspect-[24/9] md:aspect-[3/1] max-h-[380px] w-full overflow-hidden bg-slate-950">
+          <div className="mt-5 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl group relative">
+            <div className="relative aspect-[21/9] sm:aspect-[24/9] md:aspect-[3/1] max-h-[380px] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
               <img
                 src={teamPhotoUrl}
                 alt={teamPhotoCaption}
@@ -147,18 +147,18 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               {/* Overlay Badges & Controls */}
               <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-5 sm:right-5 flex items-end justify-between gap-3">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-600 text-white font-condensed font-black text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-[10px] sm:text-xs uppercase tracking-wider mb-1">
                     <Users className="w-3 h-3" />
                     <span>Official Squad Portrait</span>
                   </div>
-                  <h3 className="font-condensed font-black text-base sm:text-xl md:text-2xl text-white drop-shadow-md">
+                  <h3 className="font-condensed font-black text-base sm:text-xl md:text-2xl text-slate-900 dark:text-white drop-shadow-md">
                     {teamPhotoCaption}
                   </h3>
                 </div>
 
                 <button
                   onClick={() => setIsPhotoLightboxOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-950/80 hover:bg-slate-900 text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-700 shadow-md backdrop-blur-sm cursor-pointer transition-colors shrink-0"
+                  className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950/80 hover:bg-white dark:hover:bg-slate-900 text-slate-900 dark:text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 shadow-md backdrop-blur-sm cursor-pointer transition-colors shrink-0"
                 >
                   <Maximize2 className="w-3.5 h-3.5 text-blue-400" />
                   <span className="hidden sm:inline">High-Res</span>
@@ -180,16 +180,16 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setSelectedPosition(pos)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                     selectedPosition === pos
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40 border border-blue-400/50'
-                      : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow-lg shadow-blue-900/40 border border-blue-400/50'
+                      : 'bg-white dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
                   }`}
                 >
                   <span>{pos === 'All' ? 'Full Squad' : pos}</span>
                   <span
                     className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
                       selectedPosition === pos
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-white/20 text-slate-900 dark:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                     }`}
                   >
                     {counts[pos]}
@@ -201,13 +201,13 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
             {/* View Mode & Commitment Quick Filters */}
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* Commitment Filter */}
-              <div className="flex items-center bg-slate-900/90 rounded-xl p-1 border border-slate-800 text-xs">
+              <div className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800 text-xs">
                 <button
                   onClick={() => setCommitmentFilter('All')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'All'
                       ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   All Status
@@ -217,7 +217,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'Uncommitted'
                       ? 'bg-red-600/30 text-red-300 border border-red-500/40'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   Uncommitted
@@ -227,7 +227,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'Committed'
                       ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   Committed
@@ -235,13 +235,13 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               </div>
 
               {/* View Mode Toggle: Grid vs Table */}
-              <div className="flex items-center bg-slate-900/90 rounded-xl p-1 border border-slate-800">
+              <div className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                     viewMode === 'grid'
-                      ? 'bg-blue-600 text-white shadow'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                   title="Card Grid View"
                 >
@@ -251,8 +251,8 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setViewMode('table')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                     viewMode === 'table'
-                      ? 'bg-blue-600 text-white shadow'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                   title="Table View"
                 >
@@ -265,18 +265,18 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
           {/* Search Input Bar */}
           <div className="relative w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search players by name, jersey #, high school, position, or commitment..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
               >
                 Clear
               </button>
@@ -285,9 +285,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         </div>
 
         {/* Results Counter */}
-        <div className="mt-4 flex flex-wrap items-center justify-between text-xs text-slate-400 px-1 gap-2">
+        <div className="mt-4 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 gap-2">
           <div className="flex items-center gap-2">
-            <span>Showing <strong className="text-white">{filteredPlayers.length}</strong> of {players.length} athletes</span>
+            <span>Showing <strong className="text-slate-900 dark:text-white">{filteredPlayers.length}</strong> of {players.length} athletes</span>
             {selectedPosition !== 'All' && (
               <span className="text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-800/40">
                 Position: {selectedPosition}
@@ -311,9 +311,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
         {/* Player Roster Table View */}
         {viewMode === 'table' && (
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/90 shadow-2xl">
-            <table className="w-full text-left text-xs text-slate-300 select-none">
-              <thead className="bg-[#0e1628] font-condensed font-black text-xs uppercase tracking-wider text-slate-200 border-b border-slate-800">
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/90 shadow-2xl">
+            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300 select-none">
+              <thead className="bg-slate-100 dark:bg-[#0e1628] font-condensed font-black text-xs uppercase tracking-wider text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="py-3.5 px-4">#</th>
                   <th className="py-3.5 px-4 min-w-[200px]">Player</th>
@@ -335,7 +335,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                     className="hover:bg-blue-950/40 transition-colors cursor-pointer group"
                   >
                     <td className="py-3 px-4">
-                      <span className="font-condensed font-black text-sm text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 group-hover:border-blue-500 group-hover:text-blue-400 transition-colors">
+                      <span className="font-condensed font-black text-sm text-slate-900 dark:text-white px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 group-hover:border-blue-500 group-hover:text-blue-400 transition-colors">
                         #{player.jerseyNumber}
                       </span>
                     </td>
@@ -344,37 +344,37 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                         <img
                           src={getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO)}
                           alt={player.name}
-                          className="w-10 h-10 rounded-full object-cover border border-slate-700 bg-slate-900 shrink-0 group-hover:border-blue-400 transition-colors"
+                          className="w-10 h-10 rounded-full object-cover border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0 group-hover:border-blue-400 transition-colors"
                           onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
                         />
                         <div>
-                          <div className="font-bold text-white text-sm group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                             {player.name}
                             {player.isCaptain && (
                               <span className="text-[9px] font-black bg-amber-500 text-black px-1.5 py-0.2 rounded font-condensed">CAPTAIN</span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-400">{player.hometown || 'Bay Area, CA'}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{player.hometown || 'Bay Area, CA'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-200">
+                    <td className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-200">
                       {player.specificPosition}
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-200">Class of {player.gradYear}</div>
+                      <div className="font-bold text-slate-700 dark:text-slate-200">Class of {player.gradYear}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-medium text-slate-200">{player.height}</div>
-                      <div className="text-[10px] text-slate-400">{player.dominantFoot} Foot</div>
+                      <div className="font-medium text-slate-700 dark:text-slate-200">{player.height}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{player.dominantFoot} Foot</div>
                     </td>
-                    <td className="py-3 px-4 text-slate-300 font-medium">
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">
                       {player.highSchool}
                     </td>
                     <td className="py-3 px-4 font-bold text-blue-400">
                       {player.gpa}
                     </td>
-                    <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">
+                    <td className="py-3 px-4 font-mono text-slate-500 dark:text-slate-400 text-[11px]">
                       {player.ncaaId || '—'}
                     </td>
                     <td className="py-3 px-4">
@@ -383,7 +383,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                           {player.commitment}
                         </span>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">Uncommitted</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-[11px]">Uncommitted</span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -393,7 +393,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                             e.stopPropagation();
                             onSelectPlayer(player);
                           }}
-                          className="px-3 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white font-bold text-xs border border-blue-500/40 transition-colors cursor-pointer"
+                          className="px-3 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white font-bold text-xs border border-blue-500/40 transition-colors cursor-pointer"
                         >
                           Profile
                         </button>
@@ -408,12 +408,12 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
         {/* Empty State */}
         {filteredPlayers.length === 0 && (
-          <div className="mt-12 text-center py-16 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800">
+          <div className="mt-12 text-center py-16 rounded-2xl bg-white dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800">
             <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <h3 className="font-condensed font-black text-2xl uppercase text-white">
+            <h3 className="font-condensed font-black text-2xl uppercase text-slate-900 dark:text-white">
               No matching players found
             </h3>
-            <p className="text-sm text-slate-400 max-w-md mx-auto mt-1 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1 mb-4">
               Try adjusting your search criteria or position filters to explore the full squad.
             </p>
             <button
@@ -422,7 +422,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                 setCommitmentFilter('All');
                 setSearchQuery('');
               }}
-              className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-blue-600 text-slate-900 dark:text-white font-bold text-xs cursor-pointer"
             >
               Reset All Filters
             </button>
@@ -432,19 +432,19 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         {/* Squad Photo Lightbox Modal */}
         {isPhotoLightboxOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="relative max-w-5xl w-full bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-              <div className="flex items-center justify-between p-3.5 border-b border-slate-800">
+            <div className="relative max-w-5xl w-full bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-condensed font-black text-xs uppercase">
+                  <span className="px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-xs uppercase">
                     Squad Portrait
                   </span>
-                  <span className="text-sm font-bold text-white truncate">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white truncate">
                     {teamPhotoCaption}
                   </span>
                 </div>
                 <button
                   onClick={() => setIsPhotoLightboxOpen(false)}
-                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -458,11 +458,11 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                 />
               </div>
 
-              <div className="p-3 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>De Anza Force U16 ECNL • 2026-2027 Season</span>
                 <button
                   onClick={() => setIsPhotoLightboxOpen(false)}
-                  className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold cursor-pointer"
+                  className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold cursor-pointer"
                 >
                   Close
                 </button>

@@ -34,7 +34,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Control Bar (Hidden on print) */}
-        <div className="no-print p-4 bg-slate-900 text-white flex items-center justify-between gap-4 shrink-0 border-b border-slate-800">
+        <div className="no-print p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex items-center justify-between gap-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-blue-400" />
             <span className="font-condensed font-black text-lg uppercase tracking-wider">
@@ -45,14 +45,14 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Print / Save as PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -116,7 +116,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
           {/* Roster Table with Compact Row Padding, Larger High-Legibility Fonts & Spanning QR Codes */}
           <div className="border border-slate-300 rounded-lg overflow-hidden">
             <table className="w-full text-left text-xs sm:text-[12.5px] text-slate-900 border-collapse">
-              <thead className="bg-slate-900 text-white font-condensed font-black uppercase tracking-wider text-xs sm:text-[12px]">
+              <thead className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-condensed font-black uppercase tracking-wider text-xs sm:text-[12px]">
                 <tr>
                   <th className="py-2 px-2 text-center w-8">#</th>
                   <th className="py-2 px-2.5 min-w-[145px]">Player Name</th>
@@ -177,7 +177,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                               {player.contactEmail}
                             </a>
                           ) : (
-                            <span className="text-slate-400 italic">Via Coaching Staff</span>
+                            <span className="text-slate-500 dark:text-slate-400 italic">Via Coaching Staff</span>
                           )}
                         </td>
                         <td className="py-1.5 px-2 font-black text-emerald-800 text-center text-xs">
@@ -219,7 +219,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                       <tr className="bg-slate-50/60 border-b-2 border-slate-300 print-break-inside-avoid">
                         <td colSpan={9} className="py-1 px-2.5 text-[10.5px] text-slate-600 border-t border-dashed border-slate-200">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold uppercase tracking-wider text-slate-400 shrink-0 text-[9.5px]">
+                            <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0 text-[9.5px]">
                               Scout Notes:
                             </span>
                             <div className="flex-1 border-b border-dotted border-slate-300 h-2"></div>

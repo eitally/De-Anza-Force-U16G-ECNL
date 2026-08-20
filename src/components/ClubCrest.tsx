@@ -97,7 +97,7 @@ export const ClubCrest: React.FC<ClubCrestProps> = ({
 
       {showText && (
         <div className="flex flex-col leading-tight">
-          <span className="font-condensed font-black tracking-wider text-xl uppercase text-white flex items-center gap-1.5">
+          <span className="font-condensed font-black tracking-wider text-xl uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
             DE ANZA FORCE
             <span className="inline-block w-2 h-2 rounded-full bg-[#00ADEF] animate-pulse" />
           </span>

@@ -11,16 +11,16 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
   coaches,
 }) => {
   return (
-    <section id="staff" className="py-8 sm:py-12 bg-[#060911] border-b border-slate-800/80">
+    <section id="staff" className="py-8 sm:py-12 bg-slate-50 dark:bg-[#060911] border-b border-slate-200 dark:border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-white leading-none">
-              COACHING <span className="text-white">& STAFF</span>
+            <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-slate-900 dark:text-white leading-none">
+              COACHING <span className="text-slate-900 dark:text-white">& STAFF</span>
             </h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
               Led by nationally licensed professionals dedicated to elite player development, tactical intelligence, and academic success.
             </p>
           </div>
@@ -31,11 +31,11 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
           {coaches.map((coach) => (
             <div
               key={coach.id}
-              className="rounded-2xl bg-[#090e1c] border border-slate-800/90 hover:border-blue-500/50 shadow-xl overflow-hidden flex flex-col justify-between transition-all group"
+              className="rounded-2xl bg-white dark:bg-[#090e1c] border border-slate-200 dark:border-slate-800/90 hover:border-blue-500/50 shadow-xl overflow-hidden flex flex-col justify-between transition-all group"
             >
               <div>
                 {/* Photo */}
-                <div className="relative h-60 w-full overflow-hidden bg-slate-950">
+                <div className="relative h-60 w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
                   <img
                     src={getSafeImageSrc(coach.photoUrl, DEFAULT_COACH_PHOTO)}
                     alt={coach.name}
@@ -53,7 +53,7 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
 
                 {/* Details */}
                 <div className="p-4">
-                  <h3 className="font-condensed font-black text-xl uppercase text-white leading-tight">
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white leading-tight">
                     {coach.name}
                   </h3>
 
@@ -62,28 +62,30 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
                     <span className="line-clamp-1">{coach.license}</span>
                   </div>
 
-                  <p className="text-xs text-slate-300 mt-3 leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-3 leading-relaxed line-clamp-3">
                     {coach.bio}
                   </p>
                 </div>
               </div>
 
               {/* Contact Footer */}
-              <div className="p-4 pt-3 border-t border-slate-800/80 space-y-1.5 text-xs text-slate-400">
+              <div className="p-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                 <a
                   href={`mailto:${coach.email}`}
-                  className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors"
+                  className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-blue-400 transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                   <span className="truncate">{coach.email}</span>
                 </a>
-                <a
-                  href={`tel:${coach.phone}`}
-                  className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
-                >
-                  <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                  <span>{coach.phone}</span>
-                </a>
+                {coach.phone && (
+                  <a
+                    href={`tel:${coach.phone}`}
+                    className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span>{coach.phone}</span>
+                  </a>
+                )}
               </div>
             </div>
           ))}

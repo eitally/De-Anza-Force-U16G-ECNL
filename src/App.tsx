@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { Player, Match, StandingTeam, Coach, TeamInfo, ActionPhoto, GooglePhotosAlbum, MasterAlbumInfo } from './types';
 import { 
   INITIAL_PLAYERS, 
@@ -114,7 +115,7 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_KEYS.ACTION_PHOTOS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error(e);
@@ -127,7 +128,7 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_KEYS.GOOGLE_PHOTOS_ALBUMS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error(e);
@@ -307,7 +308,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-blue-600 selection:text-slate-900 dark:text-white">
       
       {/* Top Main Navigation */}
       <Navbar
@@ -368,14 +369,14 @@ export default function App() {
       </main>
 
       {/* Professional Athletic Footer */}
-      <footer className="bg-[#05080e] border-t border-slate-800/80 pt-8 pb-6 text-xs text-slate-400">
+      <footer className="bg-slate-50 dark:bg-[#05080e] border-t border-slate-200 dark:border-slate-800/80 pt-8 pb-6 text-xs text-slate-500 dark:text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
             
             {/* Column 1: Brand & Crest */}
             <div className="md:col-span-5 flex flex-col items-start">
               <ClubCrest size="md" showText />
-              <p className="text-slate-400 text-xs mt-3 leading-relaxed max-w-sm">
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-3 leading-relaxed max-w-sm">
                 De Anza Force Soccer Club is one of Northern California's premier youth soccer development academies. 
                 Dedicated to empowering elite student-athletes through world-class technical coaching, collegiate recruitment preparation, and national championship pathways.
               </p>
@@ -384,7 +385,7 @@ export default function App() {
                   href="https://www.deanzaforce.org"
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3.5 py-1.5 rounded-lg bg-slate-900 text-slate-300 hover:text-white text-xs font-bold transition-colors border border-slate-800 hover:border-slate-700"
+                  className="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-bold transition-colors border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700"
                 >
                   Official Club Portal
                 </a>
@@ -393,7 +394,7 @@ export default function App() {
 
             {/* Column 2: Quick Links */}
             <div className="md:col-span-3 space-y-2">
-              <h4 className="font-condensed font-black text-sm uppercase tracking-wider text-white mb-3">
+              <h4 className="font-condensed font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white mb-3">
                 Quick Navigation
               </h4>
               <ul className="space-y-1.5">
@@ -427,18 +428,18 @@ export default function App() {
 
             {/* Column 3: Facility & Contacts */}
             <div className="md:col-span-4 space-y-2">
-              <h4 className="font-condensed font-black text-sm uppercase tracking-wider text-white mb-3">
+              <h4 className="font-condensed font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white mb-3">
                 Facility & Contacts
               </h4>
-              <p className="text-slate-300 font-semibold">{teamInfo.homeFacility}</p>
-              <p className="text-slate-400">{teamInfo.facilityAddress}</p>
-              <div className="pt-2 text-slate-300 space-y-1">
+              <p className="text-slate-600 dark:text-slate-300 font-semibold">{teamInfo.homeFacility}</p>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(teamInfo.homeFacility + " " + teamInfo.facilityAddress)}`} target="_blank" rel="noopener noreferrer" className="block text-slate-500 dark:text-slate-400 hover:text-blue-400 hover:underline">{teamInfo.facilityAddress}</a>
+              <div className="pt-2 text-slate-600 dark:text-slate-300 space-y-1">
                 <div className="flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-blue-400" />
                   <span>info@deanzaforce.org</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <span>(408) 555-0192</span>
                 </div>
               </div>
@@ -449,7 +450,7 @@ export default function App() {
                   <button
                     id="footer-team-editor-btn"
                     onClick={() => handleOpenTeamEditor('players')}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-[#00ADEF] text-xs font-bold transition-all shadow-sm group cursor-pointer"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 hover:border-[#00ADEF] text-xs font-bold transition-all shadow-sm group cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5 text-[#00ADEF] group-hover:scale-110 transition-transform" />
                     <span>Team Editor</span>
@@ -470,7 +471,7 @@ export default function App() {
               <span>Member of ECNL Girls & US Club Soccer</span>
               <button
                 onClick={scrollToTop}
-                className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-white hover:bg-blue-600 transition-colors"
+                className="p-2 rounded-lg bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-blue-600 transition-colors"
                 aria-label="Scroll to top"
               >
                 <ArrowUp className="w-4 h-4" />
@@ -482,12 +483,16 @@ export default function App() {
       </footer>
 
       {/* Deep-Dive Player Profile Modal */}
-      <PlayerModal
-        player={selectedPlayer}
-        teamInfo={teamInfo}
-        coaches={coaches}
-        onClose={() => setSelectedPlayer(null)}
-      />
+      <AnimatePresence>
+        {selectedPlayer && (
+          <PlayerModal
+            player={selectedPlayer}
+            teamInfo={teamInfo}
+            coaches={coaches}
+            onClose={() => setSelectedPlayer(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Staff Authentication Login Modal */}
       <AdminLoginModal
@@ -500,13 +505,15 @@ export default function App() {
       />
 
       {/* Comprehensive Team & Roster Editor Portal */}
-      <TeamEditorModal
-        isOpen={isEditorOpen}
-        onClose={() => {
-          setIsEditorOpen(false);
-          setInitialEditingPlayer(null);
-          setInitialEditingCoach(null);
-        }}
+      <AnimatePresence>
+        {isEditorOpen && (
+          <TeamEditorModal
+            isOpen={true}
+            onClose={() => {
+              setIsEditorOpen(false);
+              setInitialEditingPlayer(null);
+              setInitialEditingCoach(null);
+            }}
         teamInfo={teamInfo}
         players={players}
         matches={matches}
@@ -528,6 +535,8 @@ export default function App() {
         initialEditingCoach={initialEditingCoach}
         initialTab={editorInitialTab}
       />
+        )}
+      </AnimatePresence>
 
       {/* Printable College Scouting Roster Sheet */}
       <PrintScoutingPack

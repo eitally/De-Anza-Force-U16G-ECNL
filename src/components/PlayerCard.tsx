@@ -33,7 +33,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       case 'Midfielder':
         return 'bg-blue-950/70 text-blue-300 border-blue-600/50';
       case 'Defender':
-        return 'bg-slate-900/90 text-slate-200 border-slate-600/50';
+        return 'bg-white dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border-slate-600/50';
       case 'Goalkeeper':
         return 'bg-amber-950/70 text-amber-300 border-amber-600/50';
       default:
@@ -46,10 +46,10 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   return (
     <div
       onClick={() => onSelectPlayer(player)}
-      className="group relative flex flex-col rounded-2xl bg-gradient-to-b from-[#101726] to-[#0a0e1a] border border-slate-800/90 hover:border-blue-500/60 shadow-lg hover:shadow-2xl hover:shadow-blue-950/50 transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-1"
+      className="group relative flex flex-col rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#101726] dark:to-[#0a0e1a] border border-slate-200 dark:border-slate-800/90 hover:border-blue-500/60 shadow-lg hover:shadow-2xl hover:shadow-blue-950/50 transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-1"
     >
       {/* Top Card Image & Jersey Number Area */}
-      <div className="relative w-full h-56 sm:h-60 bg-[#0c1220] overflow-hidden">
+      <div className="relative w-full h-56 sm:h-60 bg-slate-50 dark:bg-[#0c1220] overflow-hidden">
         {/* Atmospheric Glow */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#101726] via-transparent to-transparent z-10" />
 
@@ -65,8 +65,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
         {/* Jersey Number Shield Badge (Top Left) - Ultra Legible Athletic Font */}
         <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5">
-          <div className="px-2.5 py-1 rounded-lg bg-slate-950/95 backdrop-blur-md border-2 border-red-500 shadow-2xl flex items-center justify-center min-w-[40px]">
-            <span className="font-display font-bold text-xl sm:text-2xl text-white leading-none tracking-normal drop-shadow-md">
+          <div className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-950/95 backdrop-blur-md border-2 border-red-500 shadow-2xl flex items-center justify-center min-w-[40px]">
+            <span className="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white leading-none tracking-normal drop-shadow-md">
               #{player.jerseyNumber}
             </span>
           </div>
@@ -86,7 +86,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               ★ {player.commitment}
             </span>
           ) : (
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-900/85 border border-slate-700 text-slate-300 text-[10px] font-bold tracking-wider backdrop-blur-md">
+            <span className="px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900/85 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold tracking-wider backdrop-blur-md">
               Class of {player.gradYear}
             </span>
           )}
@@ -102,7 +102,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             {player.specificPosition}
           </span>
 
-          <span className="text-[11px] font-bold text-slate-300 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-slate-700">
+          <span className="text-[11px] font-bold text-slate-300 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
             {player.height} • {player.dominantFoot === 'Both' ? 'Both Feet' : `${player.dominantFoot}-Foot`}
           </span>
         </div>
@@ -113,7 +113,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div>
           {/* Player Name */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-condensed font-black text-xl sm:text-2xl uppercase text-white group-hover:text-blue-400 transition-colors leading-tight">
+            <h3 className="font-condensed font-black text-xl sm:text-2xl uppercase text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
               {player.name}
             </h3>
             <div className="flex items-center gap-1.5 shrink-0">
@@ -123,16 +123,16 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-blue-300 hover:text-white px-2 py-0.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 border border-blue-700/60 transition-all flex items-center gap-1 text-[11px] font-bold shadow"
+                  className="text-blue-700 dark:text-blue-300 hover:text-white px-2 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-950/80 hover:bg-blue-600 border border-blue-200 dark:border-blue-700/60 transition-all flex items-center gap-1 text-[11px] font-bold shadow"
                   title="Download Player Profile PDF"
                 >
-                  <FileDown className="w-3.5 h-3.5 text-blue-300" />
+                  <FileDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-300" />
                   <span>PDF</span>
                 </a>
               )}
               {player.highlightsUrl && (
                 <span 
-                  className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-slate-800" 
+                  className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800" 
                   title="Highlight Video Available"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -144,7 +144,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               )}
               {player.instagram && (
                 <span 
-                  className="text-pink-400 hover:text-pink-300 p-1 rounded hover:bg-slate-800" 
+                  className="text-pink-500 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800" 
                   title="Instagram Profile"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -158,19 +158,19 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
 
           {/* High School & Academic Stats */}
-          <div className="mt-1.5 flex flex-col gap-1 text-xs text-slate-400">
+          <div className="mt-1.5 flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1.5 line-clamp-1">
-              <span className="text-slate-300 font-medium">{player.highSchool}</span>
+              <span className="text-slate-600 dark:text-slate-300 font-medium">{player.highSchool}</span>
             </div>
             
             <div className="flex items-center justify-between text-[11px] pt-1">
-              <span className="inline-flex items-center gap-1 text-blue-300 font-semibold bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/40">
-                <GraduationCap className="w-3 h-3 text-blue-400" />
+              <span className="inline-flex items-center gap-1 text-blue-700 dark:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900/40">
+                <GraduationCap className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                 GPA: {player.gpa}
               </span>
 
               {player.ncaaId && (
-                <span className="text-slate-400 font-mono text-[10px]">
+                <span className="text-slate-500 dark:text-slate-400 font-mono text-[10px]">
                   NCAA ID: {player.ncaaId}
                 </span>
               )}
@@ -178,39 +178,39 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
 
           {/* Bio Preview */}
-          <p className="mt-3 text-xs text-slate-300 line-clamp-2 leading-relaxed">
+          <p className="mt-3 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
             {player.bio}
           </p>
         </div>
 
         {/* Bottom Card Footer with Stats & Action */}
-        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
           {/* Quick Stat */}
-          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
             <div>
-              <span className="font-bold text-white">{player.stats.appearances}</span> App
+              <span className="font-bold text-slate-900 dark:text-white">{player.stats.appearances}</span> App
             </div>
             {player.primaryPosition === 'Goalkeeper' ? (
               <div>
-                <span className="font-bold text-emerald-400">{player.stats.cleanSheets || 0}</span> CS
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{player.stats.cleanSheets || 0}</span> CS
               </div>
             ) : (
               <>
                 <div>
-                  <span className="font-bold text-cyan-300">{player.stats.starts ?? player.stats.appearances}</span> Starts
+                  <span className="font-bold text-cyan-600 dark:text-cyan-300">{player.stats.starts ?? player.stats.appearances}</span> Starts
                 </div>
                 <div>
-                  <span className="font-bold text-blue-400">{player.stats.goals}</span> G
+                  <span className="font-bold text-blue-600 dark:text-blue-400">{player.stats.goals}</span> G
                 </div>
                 <div>
-                  <span className="font-bold text-red-400">{player.stats.assists}</span> A
+                  <span className="font-bold text-red-600 dark:text-red-400">{player.stats.assists}</span> A
                 </div>
               </>
             )}
           </div>
 
           {/* Inspect Button */}
-          <span className="text-xs font-bold text-blue-400 group-hover:text-blue-300 inline-flex items-center gap-1 group-hover:underline">
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 inline-flex items-center gap-1 group-hover:underline">
             <span>Profile</span>
             <ExternalLink className="w-3 h-3" />
           </span>

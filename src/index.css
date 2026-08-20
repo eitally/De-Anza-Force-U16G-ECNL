@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
 
 @layer base {
   :root {
@@ -9,6 +11,10 @@
 
   body {
     font-family: var(--font-body);
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+  .dark body, body.dark {
     background-color: #080c14;
     color: #f1f5f9;
   }
@@ -44,21 +50,35 @@
 
 /* Atmospheric and Stadium Lighting Effects */
 .stadium-glow-blue {
+  background: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.1) 0%, rgba(248, 250, 252, 0) 70%);
+}
+.dark .stadium-glow-blue {
   background: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.18) 0%, rgba(13, 22, 40, 0) 70%);
 }
 
 .stadium-glow-red {
+  background: radial-gradient(circle at 100% 0%, rgba(220, 38, 38, 0.08) 0%, rgba(248, 250, 252, 0) 60%);
+}
+.dark .stadium-glow-red {
   background: radial-gradient(circle at 100% 0%, rgba(220, 38, 38, 0.12) 0%, rgba(13, 22, 40, 0) 60%);
 }
 
 .grid-pattern {
   background-size: 40px 40px;
   background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+.dark .grid-pattern {
+  background-image: 
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 .subtle-mesh {
+  background: radial-gradient(ellipse at top, #f1f5f9 0%, #f8fafc 70%);
+}
+.dark .subtle-mesh {
   background: radial-gradient(ellipse at top, #131d33 0%, #080c14 70%);
 }
 

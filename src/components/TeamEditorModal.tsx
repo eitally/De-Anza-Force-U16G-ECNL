@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'motion/react';
 import type { 
   Player, 
   Match, 
@@ -133,12 +134,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
   // Photos & Albums state for Media Tab
   const [localPhotos, setLocalPhotos] = useState<ActionPhoto[]>(() => {
-    if (actionPhotos && actionPhotos.length > 0) return actionPhotos;
+    if (actionPhotos) return actionPhotos;
     const saved = localStorage.getItem('daf_action_photos');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -147,12 +148,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   });
 
   const [localAlbums, setLocalAlbums] = useState<GooglePhotosAlbum[]>(() => {
-    if (googlePhotosAlbums && googlePhotosAlbums.length > 0) return googlePhotosAlbums;
+    if (googlePhotosAlbums) return googlePhotosAlbums;
     const saved = localStorage.getItem('daf_google_photos_albums');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -285,14 +286,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       setLocalTeamInfo(teamInfo);
 
       // Sync photos
-      if (actionPhotos && actionPhotos.length > 0) {
+      if (actionPhotos) {
         setLocalPhotos(actionPhotos);
       } else {
         const savedPhotos = localStorage.getItem('daf_action_photos');
         if (savedPhotos) {
           try {
             const parsed = JSON.parse(savedPhotos);
-            if (Array.isArray(parsed) && parsed.length > 0) setLocalPhotos(parsed);
+            if (Array.isArray(parsed)) setLocalPhotos(parsed);
           } catch (e) {
             console.error(e);
           }
@@ -300,14 +301,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       }
 
       // Sync albums
-      if (googlePhotosAlbums && googlePhotosAlbums.length > 0) {
+      if (googlePhotosAlbums) {
         setLocalAlbums(googlePhotosAlbums);
       } else {
         const savedAlbums = localStorage.getItem('daf_google_photos_albums');
         if (savedAlbums) {
           try {
             const parsed = JSON.parse(savedAlbums);
-            if (Array.isArray(parsed) && parsed.length > 0) setLocalAlbums(parsed);
+            if (Array.isArray(parsed)) setLocalAlbums(parsed);
           } catch (e) {
             console.error(e);
           }
@@ -691,22 +692,35 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-      <div 
-        className="relative w-full max-w-5xl rounded-3xl bg-[#0b111e] border border-blue-800/60 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col"
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => {
+        handleSaveAll();
+        onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/90 backdrop-blur-md"
+    >
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+        className="relative w-full max-w-5xl rounded-3xl bg-white dark:bg-[#0b111e] border border-blue-800/60 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-950 via-[#0a1224] to-red-950/80 border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-950 via-[#0a1224] to-red-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-slate-900 dark:text-white shadow-md">
               <Settings className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-condensed font-black text-xl sm:text-2xl uppercase tracking-wider text-white flex items-center gap-2">
+              <h2 className="font-condensed font-black text-xl sm:text-2xl uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                 TEAM MANAGEMENT & ROSTER EDITOR
               </h2>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Easily update your {localPlayers.length}-player roster, match schedules, league table, and team details.
               </p>
             </div>
@@ -715,7 +729,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleSaveAll}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-lg transition-colors cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Save Changes</span>
@@ -723,7 +737,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-900 text-slate-300 hover:text-white hover:bg-red-600 transition-colors border border-slate-700"
+              className="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-red-600 transition-colors border border-slate-300 dark:border-slate-700"
               aria-label="Close editor"
             >
               <X className="w-5 h-5" />
@@ -740,7 +754,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 overflow-x-auto p-2 bg-[#080d18] border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-1 overflow-x-auto p-2 bg-white dark:bg-[#080d18] border-b border-slate-200 dark:border-slate-800 shrink-0">
           {[
             { id: 'players', label: `Players Roster (${localPlayers.length})`, icon: Users },
             { id: 'coaches', label: `Coaching Staff (${localCoaches.length})`, icon: ShieldCheck },
@@ -761,8 +775,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 }}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -773,7 +787,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         </div>
 
         {/* Scrollable Tab Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#080d17]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 dark:bg-[#080d17]">
           
           {/* TAB 1: PLAYERS ROSTER */}
           {activeTab === 'players' && (
@@ -781,15 +795,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               
               {/* If editing a specific player in form */}
               {editingPlayer ? (
-                <form onSubmit={handleSavePlayerForm} className="space-y-4 bg-slate-900/90 p-5 rounded-2xl border border-blue-900/50">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                    <h3 className="font-condensed font-black text-xl uppercase text-white">
+                <form onSubmit={handleSavePlayerForm} className="space-y-4 bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-blue-900/50">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                    <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">
                       {isCreatingPlayer ? 'Add New Player to Roster' : `Edit Profile: ${editingPlayer.name} (#${editingPlayer.jerseyNumber})`}
                     </h3>
                     <button
                       type="button"
                       onClick={() => setEditingPlayer(null)}
-                      className="text-xs font-bold text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded"
+                      className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded"
                     >
                       Cancel
                     </button>
@@ -797,20 +811,20 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
                     {/* Captain Toggle Checkbox */}
-                    <div className="sm:col-span-2 md:col-span-3 p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/40 flex items-center justify-between shadow-sm">
-                      <label className="flex items-center gap-3 cursor-pointer text-slate-200 font-bold text-xs select-none">
+                    <div className="sm:col-span-2 md:col-span-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/90 border border-amber-500/40 flex items-center justify-between shadow-sm">
+                      <label className="flex items-center gap-3 cursor-pointer text-slate-700 dark:text-slate-200 font-bold text-xs select-none">
                         <input
                           type="checkbox"
                           checked={!!editingPlayer.isCaptain}
                           onChange={(e) => setEditingPlayer({ ...editingPlayer, isCaptain: e.target.checked })}
-                          className="w-4 h-4 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
+                          className="w-4 h-4 rounded text-amber-500 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-amber-500 focus:ring-offset-0 cursor-pointer"
                         />
                         <div className="flex items-center gap-2">
                           <Star className={`w-4 h-4 ${editingPlayer.isCaptain ? 'fill-amber-400 text-amber-400' : 'text-slate-500'}`} />
                           <span className="text-amber-400 font-condensed font-black text-sm uppercase tracking-wider">
                             Team Captain
                           </span>
-                          <span className="text-[11px] text-slate-400 font-normal hidden sm:inline">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal hidden sm:inline">
                             — Displays official "CAPTAIN" badge on cards, roster tables & scout packs
                           </span>
                         </div>
@@ -823,33 +837,33 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Full Player Name</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Full Player Name</label>
                       <input
                         type="text"
                         required
                         value={editingPlayer.name}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, name: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Jersey Number</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Jersey Number</label>
                       <input
                         type="number"
                         required
                         value={editingPlayer.jerseyNumber}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, jerseyNumber: parseInt(e.target.value, 10) || 0 })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Primary Position Category</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Primary Position Category</label>
                       <select
                         value={editingPlayer.primaryPosition}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, primaryPosition: e.target.value as PositionCategory })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       >
                         <option value="Forward">Forward</option>
                         <option value="Midfielder">Midfielder</option>
@@ -859,59 +873,28 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Specific Position Title (e.g. Center Back (#4))</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Specific Position Title (e.g. Center Back (#4))</label>
                       <input
                         type="text"
                         value={editingPlayer.specificPosition}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, specificPosition: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Graduation Year</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Graduation Year</label>
                       <input
                         type="number"
                         value={editingPlayer.gradYear}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, gradYear: parseInt(e.target.value, 10) || 2028 })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
-                    </div>
-
-                    {/* Age Group (U16 default for this team, U15, U14, U17) */}
-                    <div>
-                      <label className="block text-slate-300 font-bold mb-1">
-                        Age Group <span className="text-[#00ADEF] font-semibold">(U16 Team Default)</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <select
-                          value={editingPlayer.ageGroup || (editingPlayer.birthYear === 2011 ? 'U15' : editingPlayer.birthYear === 2012 ? 'U14' : 'U16')}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            let computedBirthYear = editingPlayer.birthYear;
-                            if (val === 'U16') computedBirthYear = 2010;
-                            else if (val === 'U15') computedBirthYear = 2011;
-                            else if (val === 'U14') computedBirthYear = 2012;
-                            else if (val === 'U17') computedBirthYear = 2009;
-                            setEditingPlayer({
-                              ...editingPlayer,
-                              ageGroup: val,
-                              birthYear: computedBirthYear,
-                            });
-                          }}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 font-bold"
-                        >
-                          <option value="U16">U16 (2010)</option>
-                          <option value="U15">U15 (2011)</option>
-                          <option value="U14">U14 (2012)</option>
-                          <option value="U17">U17 (2009)</option>
-                        </select>
-                      </div>
                     </div>
 
                     {/* Exact Birthday Date of Birth */}
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">
                         Date of Birth <span className="text-slate-500 font-normal">(Optional)</span>
                       </label>
                       <input
@@ -920,38 +903,32 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         onChange={(e) => {
                           const bday = e.target.value;
                           const bYear = bday ? new Date(bday).getFullYear() : editingPlayer.birthYear;
-                          let calculatedAgeGroup = editingPlayer.ageGroup || 'U16';
-                          if (bYear === 2011) calculatedAgeGroup = 'U15';
-                          else if (bYear === 2012) calculatedAgeGroup = 'U14';
-                          else if (bYear === 2010) calculatedAgeGroup = 'U16';
-                          else if (bYear === 2009) calculatedAgeGroup = 'U17';
                           setEditingPlayer({
                             ...editingPlayer,
                             birthday: bday,
                             birthYear: bYear && !isNaN(bYear) ? bYear : editingPlayer.birthYear,
-                            ageGroup: calculatedAgeGroup,
                           });
                         }}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Height (e.g. 5'8")</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Height (e.g. 5'8")</label>
                       <input
                         type="text"
                         value={editingPlayer.height}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, height: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Dominant Foot</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Dominant Foot</label>
                       <select
                         value={editingPlayer.dominantFoot}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, dominantFoot: e.target.value as 'Right' | 'Left' | 'Both' })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       >
                         <option value="Right">Right</option>
                         <option value="Left">Left</option>
@@ -960,27 +937,27 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">High School</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">High School</label>
                       <input
                         type="text"
                         value={editingPlayer.highSchool}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, highSchool: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">GPA (e.g. 4.25)</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">GPA (e.g. 4.25)</label>
                       <input
                         type="text"
                         value={editingPlayer.gpa}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, gpa: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">College Commitment</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">College Commitment</label>
                       <div className="flex gap-2">
                         <select
                           value={editingPlayer.commitment === 'Uncommitted' || !editingPlayer.commitment ? 'Uncommitted' : 'Committed'}
@@ -991,7 +968,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               setEditingPlayer({ ...editingPlayer, commitment: '' });
                             }
                           }}
-                          className={`${editingPlayer.commitment === 'Uncommitted' || !editingPlayer.commitment ? 'w-full' : 'w-1/3'} p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500`}
+                          className={`${editingPlayer.commitment === 'Uncommitted' || !editingPlayer.commitment ? 'w-full' : 'w-1/3'} p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500`}
                         >
                           <option value="Uncommitted">Uncommitted</option>
                           <option value="Committed">Committed</option>
@@ -1002,47 +979,47 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="College Name"
                             value={editingPlayer.commitment}
                             onChange={(e) => setEditingPlayer({ ...editingPlayer, commitment: e.target.value })}
-                            className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                            className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                           />
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">NCAA Eligibility ID</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">NCAA Eligibility ID</label>
                       <input
                         type="text"
                         placeholder="e.g. 250189921"
                         value={editingPlayer.ncaaId || ''}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, ncaaId: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Highlight Video URL (YouTube/Hudl)</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Highlight Video URL (YouTube/Hudl)</label>
                       <input
                         type="url"
                         placeholder="https://..."
                         value={editingPlayer.highlightsUrl || ''}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, highlightsUrl: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Instagram Profile URL</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Instagram Profile URL</label>
                       <input
                         type="url"
                         placeholder="https://instagram.com/..."
                         value={editingPlayer.instagram || ''}
                         onChange={(e) => setEditingPlayer({ ...editingPlayer, instagram: e.target.value })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Player Profile PDF Link (Downloadable Flyer)</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Player Profile PDF Link (Downloadable Flyer)</label>
                       <input
                         type="url"
                         placeholder="https://... or PDF document URL"
@@ -1052,22 +1029,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           profilePdfUrl: e.target.value,
                           profileDocUrl: e.target.value 
                         })}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
                   </div>
 
                   {/* Headshot Photo URL & Device Upload Box with Live Image Preview */}
-                  <div className="p-4 rounded-2xl bg-slate-950/90 border border-blue-900/40 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/90 border border-blue-900/40 space-y-3">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                       <div>
-                        <label className="block text-slate-200 font-bold text-xs">Player Headshot Photo</label>
-                        <p className="text-[11px] text-slate-400">
+                        <label className="block text-slate-700 dark:text-slate-200 font-bold text-xs">Player Headshot Photo</label>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
                           Upload directly from your phone/computer or paste any image URL (Google Drive, Dropbox, or web link).
                         </p>
                       </div>
 
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
                         <Upload className="w-3.5 h-3.5" />
                         <span>Upload Photo from Device</span>
                         <input
@@ -1092,7 +1069,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     <div className="flex items-center gap-3">
                       {/* Live Image Preview */}
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-900 border-2 border-blue-500/60 shrink-0 shadow relative">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border-2 border-blue-500/60 shrink-0 shadow relative">
                         <img
                           key={editingPlayer.photoUrl}
                           src={getSafeImageSrc(editingPlayer.photoUrl, DEFAULT_PLAYER_PHOTO)}
@@ -1108,9 +1085,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="Paste image URL (e.g. https://... or Google Drive link)"
                           value={editingPlayer.photoUrl}
                           onChange={(e) => setEditingPlayer({ ...editingPlayer, photoUrl: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-blue-500 font-mono"
+                          className="w-full p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                         />
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500 dark:text-slate-400">
                           <span>✓ Google Drive, Dropbox, and cloud storage links automatically convert to direct image streams.</span>
                         </div>
                       </div>
@@ -1118,22 +1095,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 font-bold mb-1 text-xs">Player Bio & Tactical Profile</label>
+                    <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1 text-xs">Player Bio & Tactical Profile</label>
                     <textarea
                       rows={3}
                       value={editingPlayer.bio}
                       onChange={(e) => setEditingPlayer({ ...editingPlayer, bio: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                     />
                   </div>
 
                   {/* Season Stats Row */}
-                  <div className="pt-2 border-t border-slate-800">
-                    <label className="block text-slate-300 font-bold mb-2 text-xs">2025/2026 Season Stats</label>
+                  <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <label className="block text-slate-600 dark:text-slate-300 font-bold mb-2 text-xs">2025/2026 Season Stats</label>
                     {editingPlayer.primaryPosition === 'Goalkeeper' ? (
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-400">Appearances</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Appearances</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.appearances}
@@ -1141,11 +1118,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, appearances: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400">Clean Sheets</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Clean Sheets</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.cleanSheets || 0}
@@ -1153,11 +1130,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, cleanSheets: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400">Saves</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Saves</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.saves || 0}
@@ -1165,14 +1142,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, saves: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-400">Appearances</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Appearances</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.appearances}
@@ -1180,11 +1157,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, appearances: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400">Match Starts</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Match Starts</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.starts ?? editingPlayer.stats.appearances}
@@ -1192,11 +1169,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, starts: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400">Goals</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Goals</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.goals}
@@ -1204,11 +1181,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, goals: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400">Assists</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">Assists</span>
                           <input
                             type="number"
                             value={editingPlayer.stats.assists}
@@ -1216,14 +1193,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               ...editingPlayer,
                               stats: { ...editingPlayer.stats, assists: parseInt(e.target.value, 10) || 0 }
                             })}
-                            className="w-full p-2 rounded-lg bg-slate-950 border border-slate-800 text-white"
+                            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                           />
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                     {!isCreatingPlayer && editingPlayer ? (
                       <button
                         type="button"
@@ -1239,13 +1216,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setEditingPlayer(null)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold shadow-md"
                       >
                         Save Player
                       </button>
@@ -1257,13 +1234,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   {/* Top Action Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="font-condensed font-black text-xl uppercase text-white flex items-center gap-2">
+                      <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <span>Full Squad Roster</span>
                         <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 text-xs font-mono font-bold border border-blue-800">
                           {localPlayers.length} Athletes
                         </span>
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Sort columns, search players, or click "Edit" on any athlete to modify their profile and stats.
                       </p>
                     </div>
@@ -1293,7 +1270,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             hometown: 'Bay Area, CA',
                           });
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs shadow transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add New Player</span>
@@ -1302,21 +1279,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   </div>
 
                   {/* Roster Editor Sort & Filter Controls Toolbar */}
-                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                  <div className="p-3 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                     {/* Search Field */}
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <input
                         type="text"
                         placeholder="Search roster by name, jersey #, position, high school..."
                         value={rosterFilterSearch}
                         onChange={(e) => setRosterFilterSearch(e.target.value)}
-                        className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                        className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
                       />
                       {rosterFilterSearch && (
                         <button
                           onClick={() => setRosterFilterSearch('')}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-white bg-slate-800 px-1.5 py-0.5 rounded"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded"
                         >
                           Clear
                         </button>
@@ -1325,9 +1302,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     {/* Sorting Dropdown & Quick Toggles */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <div className="flex items-center bg-slate-950 rounded-xl px-2.5 py-1.5 border border-slate-800 text-xs">
+                      <div className="flex items-center bg-slate-50 dark:bg-slate-950 rounded-xl px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 text-xs">
                         <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400 mr-1.5" />
-                        <span className="text-slate-400 mr-1.5 text-[11px]">Sort By:</span>
+                        <span className="text-slate-500 dark:text-slate-400 mr-1.5 text-[11px]">Sort By:</span>
                         <select
                           value={`${rosterSortField}-${rosterSortDir}`}
                           onChange={(e) => {
@@ -1335,19 +1312,19 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             setRosterSortField(field);
                             setRosterSortDir(dir);
                           }}
-                          className="bg-transparent text-white font-bold outline-none cursor-pointer text-xs pr-1"
+                          className="bg-transparent text-slate-900 dark:text-white font-bold outline-none cursor-pointer text-xs pr-1"
                         >
-                          <option value="jerseyNumber-asc" className="bg-slate-900">Jersey # (Ascending)</option>
-                          <option value="jerseyNumber-desc" className="bg-slate-900">Jersey # (Descending)</option>
-                          <option value="name-asc" className="bg-slate-900">Player Name (A-Z)</option>
-                          <option value="name-desc" className="bg-slate-900">Player Name (Z-A)</option>
-                          <option value="position-asc" className="bg-slate-900">Position Category</option>
-                          <option value="gpa-desc" className="bg-slate-900">GPA (Highest First)</option>
-                          <option value="gpa-asc" className="bg-slate-900">GPA (Lowest First)</option>
-                          <option value="gradYear-asc" className="bg-slate-900">Grad Year (Earliest)</option>
-                          <option value="gradYear-desc" className="bg-slate-900">Grad Year (Latest)</option>
-                          <option value="ageGroup-asc" className="bg-slate-900">Age Group (U14/U15/U16)</option>
-                          <option value="commitment-asc" className="bg-slate-900">Commitment Status</option>
+                          <option value="jerseyNumber-asc" className="bg-white dark:bg-slate-900">Jersey # (Ascending)</option>
+                          <option value="jerseyNumber-desc" className="bg-white dark:bg-slate-900">Jersey # (Descending)</option>
+                          <option value="name-asc" className="bg-white dark:bg-slate-900">Player Name (A-Z)</option>
+                          <option value="name-desc" className="bg-white dark:bg-slate-900">Player Name (Z-A)</option>
+                          <option value="position-asc" className="bg-white dark:bg-slate-900">Position Category</option>
+                          <option value="gpa-desc" className="bg-white dark:bg-slate-900">GPA (Highest First)</option>
+                          <option value="gpa-asc" className="bg-white dark:bg-slate-900">GPA (Lowest First)</option>
+                          <option value="gradYear-asc" className="bg-white dark:bg-slate-900">Grad Year (Earliest)</option>
+                          <option value="gradYear-desc" className="bg-white dark:bg-slate-900">Grad Year (Latest)</option>
+                          <option value="ageGroup-asc" className="bg-white dark:bg-slate-900">Age Group (U14/U15/U16)</option>
+                          <option value="commitment-asc" className="bg-white dark:bg-slate-900">Commitment Status</option>
                         </select>
                       </div>
 
@@ -1358,7 +1335,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1 ${
                           rosterSortField === 'jerseyNumber'
                             ? 'bg-blue-600/30 text-blue-300 border-blue-500/50'
-                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                            : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-700 dark:text-slate-200'
                         }`}
                       >
                         <span>#</span>
@@ -1373,7 +1350,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1 ${
                           rosterSortField === 'name'
                             ? 'bg-blue-600/30 text-blue-300 border-blue-500/50'
-                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                            : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-700 dark:text-slate-200'
                         }`}
                       >
                         <span>A-Z</span>
@@ -1388,7 +1365,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1 ${
                           rosterSortField === 'gpa'
                             ? 'bg-blue-600/30 text-blue-300 border-blue-500/50'
-                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                            : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-700 dark:text-slate-200'
                         }`}
                       >
                         <span>GPA</span>
@@ -1400,13 +1377,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   </div>
 
                   {/* Player List Table with Interactive Sortable Headers */}
-                  <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/70">
-                    <table className="w-full min-w-[800px] text-left text-xs text-slate-300">
-                      <thead className="bg-[#0e1628] font-condensed font-black text-xs uppercase text-slate-300 border-b border-slate-800 select-none">
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70">
+                    <table className="w-full min-w-[800px] text-left text-xs text-slate-600 dark:text-slate-300">
+                      <thead className="bg-slate-100 dark:bg-[#0e1628] font-condensed font-black text-xs uppercase text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 select-none">
                         <tr>
                           <th 
                             onClick={() => handleRosterSortToggle('jerseyNumber')}
-                            className="py-2.5 px-3 w-14 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 w-14 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by Jersey Number"
                           >
                             <div className="flex items-center gap-1">
@@ -1420,7 +1397,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('name')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by Player Name"
                           >
                             <div className="flex items-center gap-1">
@@ -1434,7 +1411,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('position')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by Position"
                           >
                             <div className="flex items-center gap-1">
@@ -1448,7 +1425,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('ageGroup')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by Age Group"
                           >
                             <div className="flex items-center gap-1">
@@ -1462,7 +1439,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('gradYear')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by Graduation Year"
                           >
                             <div className="flex items-center gap-1">
@@ -1476,7 +1453,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('gpa')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by GPA"
                           >
                             <div className="flex items-center gap-1">
@@ -1490,7 +1467,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </th>
                           <th 
                             onClick={() => handleRosterSortToggle('commitment')}
-                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-white transition-colors group"
+                            className="py-2.5 px-3 cursor-pointer hover:bg-blue-900/30 hover:text-slate-900 dark:hover:text-white transition-colors group"
                             title="Click to sort by College Commitment"
                           >
                             <div className="flex items-center gap-1">
@@ -1507,8 +1484,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </thead>
                       <tbody className="divide-y divide-slate-800/60">
                         {sortedAndFilteredLocalPlayers.map((player) => (
-                          <tr key={player.id} className="hover:bg-slate-900/50 transition-colors">
-                            <td className="py-2 px-3 font-condensed font-black text-sm text-white">
+                          <tr key={player.id} className="hover:bg-white dark:hover:bg-slate-900/50 transition-colors">
+                            <td className="py-2 px-3 font-condensed font-black text-sm text-slate-900 dark:text-white">
                               #{player.jerseyNumber}
                             </td>
                             <td className="py-2 px-3">
@@ -1517,11 +1494,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                   key={`${player.id}_${player.photoUrl}`}
                                   src={getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO)}
                                   alt={player.name}
-                                  className="w-7 h-7 rounded-full object-cover border border-slate-700 shrink-0"
+                                  className="w-7 h-7 rounded-full object-cover border border-slate-300 dark:border-slate-700 shrink-0"
                                   onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
                                 />
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="font-bold text-white">{player.name}</span>
+                                  <span className="font-bold text-slate-900 dark:text-white">{player.name}</span>
                                   {player.isCaptain && (
                                     <span className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider flex items-center gap-0.5">
                                       <Star className="w-2.5 h-2.5 fill-black text-black" />
@@ -1531,15 +1508,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 </div>
                               </div>
                             </td>
-                            <td className="py-2 px-3 text-slate-300">{player.specificPosition}</td>
+                            <td className="py-2 px-3 text-slate-600 dark:text-slate-300">{player.specificPosition}</td>
                             <td className="py-2 px-3">
                               <span className="px-2 py-0.5 rounded bg-blue-950/80 border border-blue-800/60 font-mono text-[11px] text-[#00ADEF] font-bold">
                                 {player.ageGroup || (player.birthYear === 2011 ? 'U15' : player.birthYear === 2012 ? 'U14' : player.birthYear === 2009 ? 'U17' : 'U16')}
                               </span>
                             </td>
-                            <td className="py-2 px-3 text-slate-400">Class of '{String(player.gradYear).slice(-2)}</td>
+                            <td className="py-2 px-3 text-slate-500 dark:text-slate-400">Class of '{String(player.gradYear).slice(-2)}</td>
                             <td className="py-2 px-3 font-bold text-blue-400">{player.gpa}</td>
-                            <td className="py-2 px-3 text-slate-300">{player.commitment}</td>
+                            <td className="py-2 px-3 text-slate-600 dark:text-slate-300">{player.commitment}</td>
                             <td className="py-2 px-3 text-right">
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
@@ -1547,14 +1524,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     setIsCreatingPlayer(false);
                                     setEditingPlayer(player);
                                   }}
-                                  className="p-1.5 rounded-lg bg-blue-950 text-blue-300 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-blue-950 text-blue-300 hover:bg-blue-600 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                                   title="Edit player details"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeletePlayerClick(player)}
-                                  className="p-1.5 rounded-lg bg-red-950 text-red-300 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-red-950 text-red-300 hover:bg-red-600 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                                   title="Delete player"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1568,7 +1545,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   </div>
 
                   {sortedAndFilteredLocalPlayers.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 text-xs bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
+                    <div className="text-center py-8 text-slate-500 text-xs bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
                       No players match "{rosterFilterSearch}". Try clearing the search.
                     </div>
                   )}
@@ -1582,13 +1559,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           {activeTab === 'coaches' && (
             <div className="space-y-6">
               {editingCoach ? (
-                <form onSubmit={handleSaveCoachForm} className="space-y-4 bg-slate-900/90 p-5 rounded-2xl border border-blue-900/50">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <form onSubmit={handleSaveCoachForm} className="space-y-4 bg-white dark:bg-slate-900/90 p-5 rounded-2xl border border-blue-900/50">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                     <div>
-                      <h3 className="font-condensed font-black text-xl uppercase text-white">
+                      <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">
                         {isCreatingCoach ? 'Add New Coach / Staff Member' : `Edit Coach: ${editingCoach.name}`}
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Update coach profile, credentials, contact information, and biography.
                       </p>
                     </div>
@@ -1598,7 +1575,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         setEditingCoach(null);
                         setIsCreatingCoach(false);
                       }}
-                      className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -1606,26 +1583,26 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Full Name</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Full Name</label>
                       <input
                         type="text"
                         required
                         value={editingCoach.name}
                         onChange={(e) => setEditingCoach({ ...editingCoach, name: e.target.value })}
                         placeholder="e.g. Lloyd Grist"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Role / Staff Title</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Role / Staff Title</label>
                       <input
                         type="text"
                         required
                         value={editingCoach.role}
                         onChange={(e) => setEditingCoach({ ...editingCoach, role: e.target.value })}
                         placeholder="e.g. Head Coach"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                       <div className="mt-1 flex flex-wrap gap-1">
                         {['Head Coach', 'Associate Head Coach', 'Technical Director', 'Recruiting Coordinator', 'Goalkeeper Coach', 'Team Manager'].map((roleOpt) => (
@@ -1633,7 +1610,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             key={roleOpt}
                             type="button"
                             onClick={() => setEditingCoach({ ...editingCoach, role: roleOpt })}
-                            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
                           >
                             {roleOpt}
                           </button>
@@ -1642,83 +1619,83 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">License & Coaching Badges</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">License & Coaching Badges</label>
                       <input
                         type="text"
                         value={editingCoach.license}
                         onChange={(e) => setEditingCoach({ ...editingCoach, license: e.target.value })}
                         placeholder="e.g. USSF A-Senior National License"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Experience & Background</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Experience & Background</label>
                       <input
                         type="text"
                         value={editingCoach.experience}
                         onChange={(e) => setEditingCoach({ ...editingCoach, experience: e.target.value })}
                         placeholder="e.g. 12+ Years Elite Youth Development & ECNL"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Email Address</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Email Address</label>
                       <input
                         type="email"
                         value={editingCoach.email}
                         onChange={(e) => setEditingCoach({ ...editingCoach, email: e.target.value })}
                         placeholder="coach@deanzaforce.org"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-bold mb-1">Phone Number</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Phone Number</label>
                       <input
                         type="tel"
                         value={editingCoach.phone}
                         onChange={(e) => setEditingCoach({ ...editingCoach, phone: e.target.value })}
                         placeholder="(408) 555-0142"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-slate-300 font-bold mb-1">Alma Mater / Club Position</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Alma Mater / Club Position</label>
                       <input
                         type="text"
                         value={editingCoach.almaMater || ''}
                         onChange={(e) => setEditingCoach({ ...editingCoach, almaMater: e.target.value })}
                         placeholder="e.g. De Anza Force Academy Director / Stanford University"
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
 
                     <div className="sm:col-span-2 md:col-span-3">
-                      <label className="block text-slate-300 font-bold mb-1">Photo URL</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Photo URL</label>
                       <div className="flex items-center gap-3">
                         <input
                           type="url"
                           value={editingCoach.photoUrl}
                           onChange={(e) => setEditingCoach({ ...editingCoach, photoUrl: e.target.value })}
                           placeholder="https://images.unsplash.com/..."
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                         />
                         <img
                           src={getSafeImageSrc(editingCoach.photoUrl, DEFAULT_COACH_PHOTO)}
                           alt={editingCoach.name || 'Preview'}
-                          className="w-10 h-10 rounded-xl object-cover border border-slate-700 bg-slate-950 shrink-0"
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 shrink-0"
                           onError={(e) => handleImageError(e, DEFAULT_COACH_PHOTO)}
                         />
                       </div>
-                      <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap">
+                      <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 flex-wrap">
                         <span>Sample Photos:</span>
                         <button
                           type="button"
                           onClick={() => setEditingCoach({ ...editingCoach, photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80' })}
-                          className="underline hover:text-white"
+                          className="underline hover:text-slate-900 dark:hover:text-white"
                         >
                           Coach A
                         </button>
@@ -1726,7 +1703,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setEditingCoach({ ...editingCoach, photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80' })}
-                          className="underline hover:text-white"
+                          className="underline hover:text-slate-900 dark:hover:text-white"
                         >
                           Coach B
                         </button>
@@ -1734,7 +1711,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setEditingCoach({ ...editingCoach, photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80' })}
-                          className="underline hover:text-white"
+                          className="underline hover:text-slate-900 dark:hover:text-white"
                         >
                           Coach C
                         </button>
@@ -1742,7 +1719,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setEditingCoach({ ...editingCoach, photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80' })}
-                          className="underline hover:text-white"
+                          className="underline hover:text-slate-900 dark:hover:text-white"
                         >
                           Coach D
                         </button>
@@ -1750,18 +1727,18 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
 
                     <div className="sm:col-span-2 md:col-span-3">
-                      <label className="block text-slate-300 font-bold mb-1">Biography & Coaching Philosophy</label>
+                      <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Biography & Coaching Philosophy</label>
                       <textarea
                         rows={3}
                         value={editingCoach.bio}
                         onChange={(e) => setEditingCoach({ ...editingCoach, bio: e.target.value })}
                         placeholder="Describe coaching background, achievements, collegiate experience, and development focus..."
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                     {!isCreatingCoach && editingCoach ? (
                       <button
                         type="button"
@@ -1780,13 +1757,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           setEditingCoach(null);
                           setIsCreatingCoach(false);
                         }}
-                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md shadow-blue-900/30 cursor-pointer"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md shadow-blue-900/30 cursor-pointer"
                       >
                         {isCreatingCoach ? 'Add Staff Member' : 'Save Coach Profile'}
                       </button>
@@ -1796,22 +1773,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               ) : (
                 <>
                   {/* Header & Add Button */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
                     <div>
-                      <h3 className="font-condensed font-black text-xl uppercase text-white flex items-center gap-2">
+                      <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <span>Coaching & Technical Staff Roster</span>
                         <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-950 text-blue-300 border border-blue-800">
                           {localCoaches.length} Staff
                         </span>
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Manage head coaches, recruiting directors, goalkeeper specialists, and staff contacts.
                       </p>
                     </div>
 
                     <button
                       onClick={handleCreateNewCoach}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-md transition-colors cursor-pointer self-start sm:self-auto"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-md transition-colors cursor-pointer self-start sm:self-auto"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add New Coach / Staff</span>
@@ -1823,18 +1800,18 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     {localCoaches.map((coach) => (
                       <div
                         key={coach.id}
-                        className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 flex flex-col justify-between gap-3 transition-colors"
+                        className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700 flex flex-col justify-between gap-3 transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           <img
                             src={getSafeImageSrc(coach.photoUrl, DEFAULT_COACH_PHOTO)}
                             alt={coach.name}
-                            className="w-14 h-14 rounded-xl object-cover border border-slate-700 bg-slate-950 shrink-0"
+                            className="w-14 h-14 rounded-xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 shrink-0"
                             onError={(e) => handleImageError(e, DEFAULT_COACH_PHOTO)}
                           />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-condensed font-black text-lg text-white uppercase leading-tight">
+                              <h4 className="font-condensed font-black text-lg text-slate-900 dark:text-white uppercase leading-tight">
                                 {coach.name}
                               </h4>
                               <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-800">
@@ -1847,7 +1824,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               <span className="truncate">{coach.license}</span>
                             </p>
 
-                            <div className="mt-2 space-y-1 text-xs text-slate-400">
+                            <div className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                               <div className="flex items-center gap-1.5 truncate">
                                 <Mail className="w-3 h-3 text-slate-500 shrink-0" />
                                 <span className="truncate">{coach.email}</span>
@@ -1860,8 +1837,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </div>
                         </div>
 
-                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                          <span className="text-[11px] text-slate-400 truncate">
+                        <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                             {coach.experience}
                           </span>
 
@@ -1871,14 +1848,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 setIsCreatingCoach(false);
                                 setEditingCoach(coach);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800 text-xs font-bold transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800 text-xs font-bold transition-colors cursor-pointer"
                             >
                               <Edit2 className="w-3 h-3" />
                               <span>Edit</span>
                             </button>
                             <button
                               onClick={() => handleDeleteCoachClick(coach)}
-                              className="p-1 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-white border border-red-800 transition-colors cursor-pointer"
+                              className="p-1 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white border border-red-800 transition-colors cursor-pointer"
                               title="Delete coach"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1896,12 +1873,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           {/* TAB 3: SCHEDULE & MATCHES */}
           {activeTab === 'schedule' && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h3 className="font-condensed font-black text-xl uppercase text-white">
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">
                     Match Fixtures & Schedule Details ({localMatches.length} Matches)
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Edit complete kickoff times, venues, field numbers, map addresses, home/away status, live streams, and match results.
                   </p>
                 </div>
@@ -1938,7 +1915,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       setLocalMatches([newMatch, ...localMatches]);
                       showNotification('Added new match fixture.');
                     }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shrink-0 shadow-lg shadow-blue-900/30"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs cursor-pointer shrink-0 shadow-lg shadow-blue-900/30"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add New Match</span>
@@ -1954,35 +1931,35 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       <Zap className="w-3 h-3" />
                       Live Computed Record & Form
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       Auto-calculated from completed match fixtures
                     </span>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 text-xs">
-                    <div className="flex items-center gap-1.5 font-condensed font-black text-sm text-white">
+                    <div className="flex items-center gap-1.5 font-condensed font-black text-sm text-slate-900 dark:text-white">
                       <span>Season Record:</span>
                       <span className="text-emerald-400">{computedMatchRecord.wins}W</span>
                       <span className="text-slate-500">-</span>
                       <span className="text-red-400">{computedMatchRecord.losses}L</span>
                       <span className="text-slate-500">-</span>
                       <span className="text-amber-400">{computedMatchRecord.draws}D</span>
-                      <span className="text-slate-400 font-normal">({computedMatchRecord.points} pts, {computedMatchRecord.played} GP)</span>
+                      <span className="text-slate-500 dark:text-slate-400 font-normal">({computedMatchRecord.points} pts, {computedMatchRecord.played} GP)</span>
                     </div>
 
                     <div className="h-4 w-px bg-slate-700 hidden sm:block" />
 
                     <div className="flex items-center gap-1.5">
-                      <span className="text-slate-400 font-bold">Past 5 Form:</span>
+                      <span className="text-slate-500 dark:text-slate-400 font-bold">Past 5 Form:</span>
                       <div className="flex items-center gap-1">
                         {computedMatchRecord.form.map((f, i) => (
                           <span 
                             key={i} 
                             className={`w-5 h-5 rounded flex items-center justify-center font-black text-[10px] ${
-                              f === 'W' ? 'bg-emerald-600 text-white' :
-                              f === 'L' ? 'bg-red-600 text-white' :
-                              f === 'D' ? 'bg-amber-600 text-white' :
-                              'bg-slate-800 text-slate-500 border border-slate-700'
+                              f === 'W' ? 'bg-emerald-600 text-slate-900 dark:text-white' :
+                              f === 'L' ? 'bg-red-600 text-slate-900 dark:text-white' :
+                              f === 'D' ? 'bg-amber-600 text-slate-900 dark:text-white' :
+                              'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700'
                             }`}
                           >
                             {f}
@@ -1993,7 +1970,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     <div className="h-4 w-px bg-slate-700 hidden sm:block" />
 
-                    <div className="text-slate-300 font-medium">
+                    <div className="text-slate-600 dark:text-slate-300 font-medium">
                       GD: <span className={computedMatchRecord.goalDifference >= 0 ? 'text-emerald-400' : 'text-red-400'}>{computedMatchRecord.goalDifference >= 0 ? `+${computedMatchRecord.goalDifference}` : computedMatchRecord.goalDifference}</span> (GF: {computedMatchRecord.goalsFor}, GA: {computedMatchRecord.goalsAgainst})
                     </div>
                   </div>
@@ -2014,17 +1991,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 {localMatches.map((m, index) => (
                   <div 
                     key={m.id} 
-                    className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all text-xs space-y-4 shadow-xl"
+                    className="p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:border-slate-700 transition-all text-xs space-y-4 shadow-xl"
                   >
                     {/* Header bar of Match Card */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-slate-800/80">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-condensed font-black text-sm text-white px-2.5 py-0.5 rounded-lg bg-slate-800 border border-slate-700">
+                        <span className="font-condensed font-black text-sm text-slate-900 dark:text-white px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
                           Match #{index + 1}
                         </span>
-                        <span className="font-condensed font-black text-sm text-white">
+                        <span className="font-condensed font-black text-sm text-slate-900 dark:text-white">
                           De Anza Force{' '}
-                          <span className={m.isHome ? 'text-slate-400 font-bold' : 'text-amber-400 font-black'}>
+                          <span className={m.isHome ? 'text-slate-500 dark:text-slate-400 font-bold' : 'text-amber-400 font-black'}>
                             {m.isHome ? 'vs' : 'at'}
                           </span>{' '}
                           {m.opponent || 'Opponent'}
@@ -2043,7 +2020,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         }`}>
                           {m.isHome ? 'HOME (vs)' : 'AWAY (at)'}
                         </span>
-                        <span className="text-slate-400 font-medium">{m.competition}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">{m.competition}</span>
                       </div>
 
                       <button
@@ -2051,7 +2028,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           setLocalMatches(localMatches.filter((_, i) => i !== index));
                           showNotification('Removed match fixture.');
                         }}
-                        className="px-2.5 py-1 rounded-lg bg-red-950/80 text-red-300 hover:bg-red-600 hover:text-white border border-red-800/50 transition-colors flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg bg-red-950/80 text-red-300 hover:bg-red-600 hover:text-slate-900 dark:hover:text-white border border-red-800/50 transition-colors flex items-center gap-1 cursor-pointer"
                         title="Delete Match"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -2063,7 +2040,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5">
                       {/* Date */}
                       <div className="sm:col-span-1 lg:col-span-3">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-blue-400" />
                           Match Date
                         </label>
@@ -2075,13 +2052,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].date = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Time */}
                       <div className="sm:col-span-1 lg:col-span-3">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <Clock className="w-3 h-3 text-blue-400" />
                           Kickoff Time (with Timezone)
                         </label>
@@ -2094,13 +2071,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].time = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Opponent Name */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <Users className="w-3 h-3 text-emerald-400" />
                           Opponent Team Name
                         </label>
@@ -2113,13 +2090,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].opponent = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Home / Away Toggle */}
                       <div className="sm:col-span-1 lg:col-span-2">
-                        <label className="text-[11px] font-bold text-slate-300 block">Home / Away</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block">Home / Away</label>
                         <div className="grid grid-cols-2 gap-1 mt-1">
                           <button
                             type="button"
@@ -2130,8 +2107,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             }}
                             className={`py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                               m.isHome 
-                                ? 'bg-blue-600 text-white shadow' 
-                                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                                ? 'bg-blue-600 text-slate-900 dark:text-white shadow' 
+                                : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
                             }`}
                           >
                             Home
@@ -2145,8 +2122,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             }}
                             className={`py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                               !m.isHome 
-                                ? 'bg-amber-600 text-white shadow' 
-                                : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                                ? 'bg-amber-600 text-slate-900 dark:text-white shadow' 
+                                : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
                             }`}
                           >
                             Away
@@ -2156,7 +2133,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       {/* Competition */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <Trophy className="w-3 h-3 text-yellow-400" />
                           Competition / League
                         </label>
@@ -2167,7 +2144,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].competition = e.target.value as any;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none cursor-pointer"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none cursor-pointer"
                         >
                           <option value="ECNL Northern California">ECNL Northern California</option>
                           <option value="Surf Cup">Surf Cup (Super White Division)</option>
@@ -2180,7 +2157,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       {/* Opponent City / Region */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-300">Opponent Location / City</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Opponent Location / City</label>
                         <input
                           type="text"
                           value={m.opponentLocation || ''}
@@ -2190,13 +2167,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].opponentLocation = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Status & Scores */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-300">Match Status & Result</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Match Status & Result</label>
                         <div className="flex items-center gap-2 mt-1">
                           <select
                             value={m.status}
@@ -2205,7 +2182,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               updated[index].status = e.target.value as any;
                               setLocalMatches(updated);
                             }}
-                            className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none cursor-pointer shrink-0"
+                            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none cursor-pointer shrink-0"
                           >
                             <option value="upcoming">Upcoming</option>
                             <option value="live">LIVE</option>
@@ -2213,7 +2190,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </select>
 
                           {(m.status === 'completed' || m.status === 'live') && (
-                            <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                               <div className="text-center">
                                 <span className="text-[9px] text-blue-400 block font-bold">Force</span>
                                 <input
@@ -2225,12 +2202,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     updated[index].teamScore = parseInt(e.target.value, 10) || 0;
                                     setLocalMatches(updated);
                                   }}
-                                  className="w-10 p-1 text-center font-black text-white bg-slate-900 rounded border border-slate-700"
+                                  className="w-10 p-1 text-center font-black text-slate-900 dark:text-white bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700"
                                 />
                               </div>
                               <span className="text-slate-500 font-bold">-</span>
                               <div className="text-center">
-                                <span className="text-[9px] text-slate-400 block font-bold">Opp</span>
+                                <span className="text-[9px] text-slate-500 dark:text-slate-400 block font-bold">Opp</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -2240,7 +2217,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     updated[index].opponentScore = parseInt(e.target.value, 10) || 0;
                                     setLocalMatches(updated);
                                   }}
-                                  className="w-10 p-1 text-center font-black text-white bg-slate-900 rounded border border-slate-700"
+                                  className="w-10 p-1 text-center font-black text-slate-900 dark:text-white bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700"
                                 />
                               </div>
                             </div>
@@ -2250,7 +2227,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       {/* Venue Name */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-red-400" />
                           Venue / Stadium Name
                         </label>
@@ -2263,13 +2240,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].venue = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Field # */}
                       <div className="sm:col-span-1 lg:col-span-2">
-                        <label className="text-[11px] font-bold text-slate-300">Field / Pitch #</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Field / Pitch #</label>
                         <input
                           type="text"
                           value={m.fieldNumber || ''}
@@ -2279,13 +2256,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].fieldNumber = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Full Street Address */}
                       <div className="sm:col-span-1 lg:col-span-6">
-                        <label className="text-[11px] font-bold text-slate-300">Full Venue Address (for GPS & Nav)</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Full Venue Address (for GPS & Nav)</label>
                         <input
                           type="text"
                           value={m.address}
@@ -2295,13 +2272,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].address = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Google Maps URL */}
                       <div className="sm:col-span-1 lg:col-span-6">
-                        <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
                           <Link2 className="w-3 h-3 text-blue-400" />
                           Google Maps URL Link
                         </label>
@@ -2314,7 +2291,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].mapUrl = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
@@ -2333,13 +2310,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].videoLiveStreamUrl = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-red-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-red-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Uniform Kit Colors */}
                       <div className="sm:col-span-1 lg:col-span-3">
-                        <label className="text-[11px] font-bold text-slate-300">Home Kit Assignment</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Home Kit Assignment</label>
                         <input
                           type="text"
                           value={m.homeKitColor}
@@ -2349,12 +2326,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].homeKitColor = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       <div className="sm:col-span-1 lg:col-span-3">
-                        <label className="text-[11px] font-bold text-slate-300">Away Kit Assignment</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Away Kit Assignment</label>
                         <input
                           type="text"
                           value={m.awayKitColor}
@@ -2364,13 +2341,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].awayKitColor = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
 
                       {/* Game Notes / Scorers */}
                       <div className="sm:col-span-2 lg:col-span-12">
-                        <label className="text-[11px] font-bold text-slate-300">Match Notes, Goal Scorers & Scouting Highlights</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Match Notes, Goal Scorers & Scouting Highlights</label>
                         <input
                           type="text"
                           value={m.gameNotes || ''}
@@ -2380,7 +2357,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             updated[index].gameNotes = e.target.value;
                             setLocalMatches(updated);
                           }}
-                          className="w-full mt-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:border-blue-500 focus:outline-none"
+                          className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -2393,12 +2370,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           {/* TAB 3: STANDINGS & RECORD */}
           {activeTab === 'standings' && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h3 className="font-condensed font-black text-xl uppercase text-white mb-1">
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white mb-1">
                     Team Season Record & Rankings
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Update overall wins, losses, draws, goal difference, and clean sheets displayed in the Hero banner.
                   </p>
                 </div>
@@ -2415,9 +2392,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 </a>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Wins (W)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Wins (W)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.wins}
@@ -2425,12 +2402,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, wins: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Losses (L)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Losses (L)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.losses}
@@ -2438,12 +2415,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, losses: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Draws (D)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Draws (D)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.draws}
@@ -2451,12 +2428,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, draws: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Clean Sheets</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Clean Sheets</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.cleanSheets}
@@ -2464,12 +2441,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, cleanSheets: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Goals For (GF)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Goals For (GF)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.goalsFor}
@@ -2477,12 +2454,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, goalsFor: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Goals Against (GA)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Goals Against (GA)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.goalsAgainst}
@@ -2490,12 +2467,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, goalsAgainst: parseInt(e.target.value, 10) || 0 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">NorCal ECNL Rank (#)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">NorCal ECNL Rank (#)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.norcalRank}
@@ -2503,12 +2480,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, norcalRank: parseInt(e.target.value, 10) || 1 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-yellow-400 font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-yellow-400 font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">National Rank (#)</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">National Rank (#)</label>
                   <input
                     type="number"
                     value={localTeamInfo.seasonRecord.nationalRank}
@@ -2516,20 +2493,20 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       ...localTeamInfo,
                       seasonRecord: { ...localTeamInfo.seasonRecord, nationalRank: parseInt(e.target.value, 10) || 6 }
                     })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-blue-400 font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-blue-400 font-bold"
                   />
                 </div>
               </div>
 
               {/* SECTION: ECNL STANDINGS TABLE EDITOR */}
-              <div className="pt-4 border-t border-slate-800 space-y-4">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="font-condensed font-black text-xl uppercase text-white mb-0.5 flex items-center gap-2">
+                    <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white mb-0.5 flex items-center gap-2">
                       <ListOrdered className="w-5 h-5 text-[#00ADEF]" />
                       <span>NorCal U16 Conference Table ({localStandings.length} Teams)</span>
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Manage positions, club names, GP, W-L-D, GF, GA, and qualification statuses.
                     </p>
                   </div>
@@ -2538,7 +2515,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     <button
                       type="button"
                       onClick={handleAutoSyncRecordAndForm}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-all cursor-pointer"
                       title="Auto-sync Force record and past 5 match form directly from completed match results"
                     >
                       <Zap className="w-3.5 h-3.5" />
@@ -2617,7 +2594,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         onSaveStandings(updated);
                         showNotification('✓ Added new team to standings table.');
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-colors cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Club</span>
@@ -2632,7 +2609,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           showNotification('✓ Reset standings table to default ECNL league data.');
                         }
                       }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-semibold border border-slate-800 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
                       title="Reset to default league table"
                     >
                       <RotateCcw className="w-3 h-3" />
@@ -2642,9 +2619,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 </div>
 
                 {/* Interactive Table of Standings */}
-                <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/60">
-                  <table className="w-full min-w-[800px] text-left text-xs text-slate-300">
-                    <thead className="bg-slate-900/90 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-800">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60">
+                  <table className="w-full min-w-[800px] text-left text-xs text-slate-600 dark:text-slate-300">
+                    <thead className="bg-white dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className="p-2.5 text-center w-12">Rank</th>
                         <th className="p-2.5 min-w-[180px]">Club Name</th>
@@ -2667,7 +2644,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       {localStandings.map((team, index) => (
                         <tr 
                           key={index} 
-                          className={`hover:bg-slate-900/50 transition-colors ${team.isForce ? 'bg-blue-950/30' : ''}`}
+                          className={`hover:bg-white dark:hover:bg-slate-900/50 transition-colors ${team.isForce ? 'bg-blue-950/30' : ''}`}
                         >
                           <td className="p-2 text-center">
                             <input
@@ -2678,7 +2655,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 const updated = localStandings.map((t, i) => i === index ? { ...t, rank: val } : t);
                                 setLocalStandings(updated);
                               }}
-                              className="w-10 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-white font-bold"
+                              className="w-10 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold"
                             />
                           </td>
                           <td className="p-2">
@@ -2690,7 +2667,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 const updated = localStandings.map((t, i) => i === index ? { ...t, teamName: val } : t);
                                 setLocalStandings(updated);
                               }}
-                              className={`w-full p-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-bold ${team.isForce ? 'text-[#00ADEF]' : 'text-white'}`}
+                              className={`w-full p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold ${team.isForce ? 'text-[#00ADEF]' : 'text-slate-900 dark:text-white'}`}
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2720,7 +2697,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 } : t);
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2747,7 +2724,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 });
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-emerald-400 font-bold"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-emerald-400 font-bold"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2772,7 +2749,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 });
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-rose-400 font-bold"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-rose-400 font-bold"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2799,7 +2776,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 });
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2815,7 +2792,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 } : t);
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2831,10 +2808,10 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 } : t);
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200"
                             />
                           </td>
-                          <td className="p-2 text-center font-bold text-slate-300">
+                          <td className="p-2 text-center font-bold text-slate-600 dark:text-slate-300">
                             {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
                           </td>
                           <td className="p-2 text-center">
@@ -2854,10 +2831,10 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 });
                                 setLocalStandings(updated);
                               }}
-                              className="w-12 text-center p-1 rounded-lg bg-slate-900 border border-slate-700 text-yellow-400 font-black"
+                              className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-yellow-400 font-black"
                             />
                           </td>
-                          <td className="p-2 text-center font-mono text-slate-400 text-[11px]">
+                          <td className="p-2 text-center font-mono text-slate-500 dark:text-slate-400 text-[11px]">
                             {team.pointsPerGame?.toFixed(2) || '0.00'}
                           </td>
                           {/* Past 5 Matches Form Editor */}
@@ -2885,12 +2862,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     title={`Match #${5 - slotIdx}: ${val === 'W' ? 'Win' : val === 'D' ? 'Draw' : val === 'L' ? 'Loss' : 'Not Played'} (Click to cycle W → D → L → -)`}
                                     className={`w-6 h-6 rounded-md font-condensed font-black text-xs flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 ${
                                       val === 'W'
-                                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40'
+                                        ? 'bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white shadow-emerald-950/40'
                                         : val === 'D'
-                                        ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-950/40'
+                                        ? 'bg-amber-600 hover:bg-amber-500 text-slate-900 dark:text-white shadow-amber-950/40'
                                         : val === 'L'
-                                        ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/40'
-                                        : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'
+                                        ? 'bg-rose-600 hover:bg-rose-500 text-slate-900 dark:text-white shadow-rose-950/40'
+                                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
                                     }`}
                                   >
                                     {val}
@@ -2898,7 +2875,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 );
                               })}
                             </div>
-                            <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">
+                            <span className="text-[8px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium">
                               Click pill to cycle (W/D/L/-)
                             </span>
                           </td>
@@ -2912,7 +2889,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 const updated = localStandings.map((t, i) => i === index ? { ...t, qualification: val } : t);
                                 setLocalStandings(updated);
                               }}
-                              className="w-full p-1.5 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-emerald-400"
+                              className="w-full p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-[11px] text-emerald-400"
                             />
                           </td>
                           <td className="p-2 text-center">
@@ -2929,7 +2906,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     updated.forEach((t, i) => { t.rank = i + 1; });
                                     setLocalStandings(updated);
                                   }}
-                                  className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white"
+                                  className="p-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                   title="Move Up"
                                 >
                                   <ChevronUp className="w-3.5 h-3.5" />
@@ -2947,7 +2924,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     updated.forEach((t, i) => { t.rank = i + 1; });
                                     setLocalStandings(updated);
                                   }}
-                                  className="p-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white"
+                                  className="p-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                   title="Move Down"
                                 >
                                   <ChevronDown className="w-3.5 h-3.5" />
@@ -2964,7 +2941,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                   setLocalStandings(updated);
                                   showNotification(`✓ Removed ${team.teamName} from standings.`);
                                 }}
-                                className="p-1 rounded bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-white transition-colors"
+                                className="p-1 rounded bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                                 title="Delete Club"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2977,7 +2954,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   </table>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     <span>Top 2 teams qualify for ECNL National Playoffs (Champions League)</span>
@@ -3002,56 +2979,56 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           {activeTab === 'team' && (
             <div className="space-y-6">
               <div>
-                <h3 className="font-condensed font-black text-xl uppercase text-white mb-1">
+                <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white mb-1">
                   Team Identity & Facility Details
                 </h3>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Club & Team Name</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Club & Team Name</label>
                   <input
                     type="text"
                     value={localTeamInfo.teamName}
                     onChange={(e) => setLocalTeamInfo({ ...localTeamInfo, teamName: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Age Group / Birth Year</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Age Group / Birth Year</label>
                   <input
                     type="text"
                     value={localTeamInfo.ageGroup}
                     onChange={(e) => setLocalTeamInfo({ ...localTeamInfo, ageGroup: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Home Facility</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Home Facility</label>
                   <input
                     type="text"
                     value={localTeamInfo.homeFacility}
                     onChange={(e) => setLocalTeamInfo({ ...localTeamInfo, homeFacility: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Facility Address</label>
+                  <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Facility Address</label>
                   <input
                     type="text"
                     value={localTeamInfo.facilityAddress}
                     onChange={(e) => setLocalTeamInfo({ ...localTeamInfo, facilityAddress: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
-                <div className="sm:col-span-2 p-3 bg-slate-950/50 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                <div className="sm:col-span-2 p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
                   <div>
-                    <label className="block text-white font-bold mb-0.5">Show College Recruitment Hub</label>
-                    <p className="text-xs text-slate-400">Enable this section when the spring college showcase season begins.</p>
+                    <label className="block text-slate-900 dark:text-white font-bold mb-0.5">Show College Recruitment Hub</label>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Enable this section when the spring college showcase season begins.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -3060,37 +3037,43 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       checked={localTeamInfo.showRecruitmentHub !== false}
                       onChange={(e) => setLocalTeamInfo({ ...localTeamInfo, showRecruitmentHub: e.target.checked })}
                     />
-                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-slate-100 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                 </div>
 
-                <div className="sm:col-span-2 pt-2 border-t border-slate-800/80">
+                <div className="sm:col-span-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
                   <TeamPhotoManager
                     currentPhotoUrl={localTeamInfo.teamPhotoUrl}
                     currentCaption={localTeamInfo.teamPhotoCaption}
                     onUpdate={(url, caption) => {
-                      setLocalTeamInfo(prev => ({
-                        ...prev,
+                      const updatedInfo = {
+                        ...localTeamInfo,
                         teamPhotoUrl: url,
-                        teamPhotoCaption: caption || prev.teamPhotoCaption
-                      }));
+                        teamPhotoCaption: caption || localTeamInfo.teamPhotoCaption
+                      };
+                      setLocalTeamInfo(updatedInfo);
+                      onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Updated official squad photo!');
                     }}
                     onRemove={() => {
-                      setLocalTeamInfo(prev => ({
-                        ...prev,
+                      const updatedInfo = {
+                        ...localTeamInfo,
                         teamPhotoUrl: '',
-                      }));
+                      };
+                      setLocalTeamInfo(updatedInfo);
+                      onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Removed team squad photo.');
                     }}
                     onRestoreDefault={() => {
                       const defaultUrl = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80';
                       const defaultCaption = '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
-                      setLocalTeamInfo(prev => ({
-                        ...prev,
+                      const updatedInfo = {
+                        ...localTeamInfo,
                         teamPhotoUrl: defaultUrl,
                         teamPhotoCaption: defaultCaption
-                      }));
+                      };
+                      setLocalTeamInfo(updatedInfo);
+                      onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Restored default squad photo.');
                     }}
                   />
@@ -3098,10 +3081,10 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               </div>
 
               <div>
-                <h4 className="font-condensed font-black text-lg uppercase text-white mb-2">
+                <h4 className="font-condensed font-black text-lg uppercase text-slate-900 dark:text-white mb-2">
                   Top Announcement Notification Banner
                 </h4>
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -3113,12 +3096,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       })}
                       className="rounded text-blue-600 w-4 h-4"
                     />
-                    <label htmlFor="show_announcement" className="text-white font-bold">Display Banner at Top of Website</label>
+                    <label htmlFor="show_announcement" className="text-slate-900 dark:text-white font-bold">Display Banner at Top of Website</label>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-slate-400 font-bold block mb-1">Badge Text</label>
+                      <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Badge Text</label>
                       <input
                         type="text"
                         value={localTeamInfo.announcement.badge}
@@ -3126,11 +3109,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           ...localTeamInfo,
                           announcement: { ...localTeamInfo.announcement, badge: e.target.value }
                         })}
-                        className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                        className="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="text-slate-400 font-bold block mb-1">Announcement Message</label>
+                      <label className="text-slate-500 dark:text-slate-400 font-bold block mb-1">Announcement Message</label>
                       <input
                         type="text"
                         value={localTeamInfo.announcement.text}
@@ -3138,7 +3121,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           ...localTeamInfo,
                           announcement: { ...localTeamInfo.announcement, text: e.target.value }
                         })}
-                        className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-white"
+                        className="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
@@ -3151,22 +3134,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           {activeTab === 'media' && (
             <div className="space-y-8">
               {/* SECTION 0: OFFICIAL SQUAD PORTRAIT PHOTO (TEAM BANNER & ROSTER) */}
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/30 to-slate-900 border border-slate-800 shadow-xl space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/30 to-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-[#00ADEF] shadow-inner">
                       <Camera className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white font-condensed tracking-wider">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-slate-900 dark:text-white font-condensed tracking-wider">
                           Official Showcase
                         </span>
-                        <h3 className="font-condensed font-black text-xl uppercase text-white tracking-wide">
+                        <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white tracking-wide">
                           Official Squad Portrait & Team Photo
                         </h3>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         Manage the team portrait image displayed in the Official Squad Showcase banner above the player roster and in recruitment packs.
                       </p>
                     </div>
@@ -3222,11 +3205,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#00ADEF] text-slate-950 font-condensed tracking-wider">
                           Permanent Link
                         </span>
-                        <h3 className="font-condensed font-black text-xl uppercase text-white tracking-wide">
+                        <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white tracking-wide">
                           Master Team Album List & Photo Hub
                         </h3>
                       </div>
-                      <p className="text-xs text-slate-300 mt-0.5">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
                         Set the permanent master gallery URL (e.g., Willow Glen Photography Linktree). This link is permanently featured at the top of the Google Photos panel.
                       </p>
                     </div>
@@ -3236,7 +3219,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     href={masterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-colors shrink-0"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 text-xs font-bold transition-colors shrink-0"
                   >
                     <span>Test Link</span>
                     <ExternalLink className="w-3.5 h-3.5 text-[#00ADEF]" />
@@ -3246,7 +3229,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 <form onSubmit={handleSaveMasterLink} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-slate-200 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase mb-1">
                         Permanent Master Album List URL *
                       </label>
                       <input
@@ -3255,12 +3238,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         placeholder="https://linktr.ee/willow_glen_photography"
                         value={masterUrl}
                         onChange={(e) => setMasterUrl(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-blue-500/40 text-white text-xs focus:border-blue-400 font-mono font-bold"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-blue-500/40 text-slate-900 dark:text-white text-xs focus:border-blue-400 font-mono font-bold"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                         Gallery Hub Title
                       </label>
                       <input
@@ -3268,12 +3251,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         placeholder="Willow Glen Photography • Team Photo Hub"
                         value={masterTitle}
                         onChange={(e) => setMasterTitle(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                         Photographer / Credit Name
                       </label>
                       <input
@@ -3281,12 +3264,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         placeholder="Willow Glen Photography"
                         value={masterPhotographer}
                         onChange={(e) => setMasterPhotographer(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                       />
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                         Subtitle / Description
                       </label>
                       <input
@@ -3294,7 +3277,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         placeholder="Official team matchday albums, high-resolution tournament archives, and downloadable player galleries."
                         value={masterSubtitle}
                         onChange={(e) => setMasterSubtitle(e.target.value)}
-                        className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -3302,7 +3285,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <div className="flex items-center justify-end pt-2">
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-700/30 transition-all border border-blue-400/40 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-700/30 transition-all border border-blue-400/40 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
                       <span>Save Master Permanent Link</span>
@@ -3313,16 +3296,16 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
               {/* SECTION 2: SPECIFIC MATCH & EVENT GOOGLE PHOTOS ALBUMS */}
               <div className="space-y-4 pt-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
                       <Camera className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-condensed font-black text-xl uppercase text-white tracking-wide">
+                      <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white tracking-wide">
                         Match & Event Albums ({localAlbums.length})
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Add, edit, and organize individual match or tournament galleries (Google Photos, Linktree, or custom albums).
                       </p>
                     </div>
@@ -3333,7 +3316,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       setIsAddingAlbum(!isAddingAlbum);
                       setEditingAlbum(null);
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>{isAddingAlbum ? 'Cancel' : '+ Add Match Album'}</span>
@@ -3343,15 +3326,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 {/* Add Album Form */}
                 {isAddingAlbum && (
                   <form onSubmit={handleAddAlbumSubmit} className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0c1322] border border-emerald-600/40 shadow-xl space-y-4 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <h4 className="font-condensed font-black text-sm uppercase text-white flex items-center gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <FolderOpen className="w-4 h-4 text-emerald-400" />
                         <span>Add New Match Album Link</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => setIsAddingAlbum(false)}
-                        className="text-slate-400 hover:text-white"
+                        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -3359,7 +3342,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Album Title *
                         </label>
                         <input
@@ -3368,12 +3351,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="e.g., ECNL Round 1 vs San Juan SC"
                           value={newAlbumTitle}
                           onChange={(e) => setNewAlbumTitle(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Album URL * (Google Photos, Linktree, or gallery link)
                         </label>
                         <input
@@ -3382,12 +3365,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="https://photos.app.goo.gl/... or https://..."
                           value={newAlbumUrl}
                           onChange={(e) => setNewAlbumUrl(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500 font-mono"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500 font-mono"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Subtitle / Highlights
                         </label>
                         <input
@@ -3395,12 +3378,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="e.g., 3-1 Win in Davis, CA"
                           value={newAlbumSubtitle}
                           onChange={(e) => setNewAlbumSubtitle(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Match / Event Date
                         </label>
                         <input
@@ -3408,12 +3391,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="e.g., Spring 2026 Season"
                           value={newAlbumDate}
                           onChange={(e) => setNewAlbumDate(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Badge Tag (e.g. Matchday, Showcase, Tournament)
                         </label>
                         <input
@@ -3421,12 +3404,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="Matchday"
                           value={newAlbumBadge}
                           onChange={(e) => setNewAlbumBadge(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Photo Count Text
                         </label>
                         <input
@@ -3434,12 +3417,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           placeholder="e.g., 120+ Photos"
                           value={newAlbumPhotoCount}
                           onChange={(e) => setNewAlbumPhotoCount(e.target.value)}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500"
                         />
                       </div>
 
                       <div className="sm:col-span-2 space-y-2">
-                        <label className="block text-xs font-bold text-slate-300 uppercase">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">
                           Cover Image URL or Device Upload (Optional)
                         </label>
                         <div className="flex gap-2">
@@ -3448,9 +3431,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="https://images.unsplash.com/... or direct image link"
                             value={newAlbumCover}
                             onChange={(e) => setNewAlbumCover(e.target.value)}
-                            className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-emerald-500 font-mono"
+                            className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-emerald-500 font-mono"
                           />
-                          <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 cursor-pointer shrink-0">
+                          <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 cursor-pointer shrink-0">
                             <Upload className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Upload Image</span>
                             <input
@@ -3475,17 +3458,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <button
                         type="button"
                         onClick={() => setIsAddingAlbum(false)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Save Match Album
                       </button>
@@ -3496,15 +3479,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 {/* Edit Album Modal/Form */}
                 {editingAlbum && (
                   <form onSubmit={handleSaveEditedAlbum} className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0c1322] border border-blue-500/60 shadow-2xl space-y-4 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <h4 className="font-condensed font-black text-sm uppercase text-white flex items-center gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <Edit2 className="w-4 h-4 text-blue-400" />
                         <span>Edit Album: {editingAlbum.title}</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => setEditingAlbum(null)}
-                        className="text-slate-400 hover:text-white"
+                        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -3512,7 +3495,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Album Title *
                         </label>
                         <input
@@ -3520,12 +3503,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           required
                           value={editingAlbum.title}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, title: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Album URL *
                         </label>
                         <input
@@ -3533,60 +3516,60 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           required
                           value={editingAlbum.albumUrl}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, albumUrl: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500 font-mono"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Subtitle / Highlights
                         </label>
                         <input
                           type="text"
                           value={editingAlbum.subtitle || ''}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, subtitle: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Match / Event Date
                         </label>
                         <input
                           type="text"
                           value={editingAlbum.date || ''}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, date: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Badge Tag
                         </label>
                         <input
                           type="text"
                           value={editingAlbum.badge || ''}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, badge: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                           Photo Count
                         </label>
                         <input
                           type="text"
                           value={editingAlbum.photoCount || ''}
                           onChange={(e) => setEditingAlbum({ ...editingAlbum, photoCount: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                         />
                       </div>
 
                       <div className="sm:col-span-2 space-y-2">
-                        <label className="block text-xs font-bold text-slate-300 uppercase">
+                        <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">
                           Cover Image URL
                         </label>
                         <div className="flex gap-2">
@@ -3594,9 +3577,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             type="url"
                             value={editingAlbum.coverImageUrl}
                             onChange={(e) => setEditingAlbum({ ...editingAlbum, coverImageUrl: e.target.value })}
-                            className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500 font-mono"
+                            className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                           />
-                          <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 cursor-pointer shrink-0">
+                          <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 cursor-pointer shrink-0">
                             <Upload className="w-3.5 h-3.5 text-blue-400" />
                             <span>Upload Image</span>
                             <input
@@ -3621,17 +3604,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <button
                         type="button"
                         onClick={() => setEditingAlbum(null)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Save Album Changes
                       </button>
@@ -3644,9 +3627,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   {localAlbums.map((album, idx) => (
                     <div 
                       key={album.id}
-                      className="group relative rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden hover:border-emerald-500/60 transition-all flex flex-col justify-between"
+                      className="group relative rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-emerald-500/60 transition-all flex flex-col justify-between"
                     >
-                      <div className="relative aspect-[16/10] bg-slate-950 overflow-hidden">
+                      <div className="relative aspect-[16/10] bg-slate-50 dark:bg-slate-950 overflow-hidden">
                         <img
                           src={getSafeImageSrc(album.coverImageUrl, DEFAULT_ACTION_PHOTOS[0].url)}
                           alt={album.title}
@@ -3666,7 +3649,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               setEditingAlbum(album);
                               setIsAddingAlbum(false);
                             }}
-                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
                             title="Edit album details"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -3675,7 +3658,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleDeleteAlbum(album.id)}
-                            className="p-1.5 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white border border-red-800/80 transition-colors cursor-pointer"
                             title="Delete match album link"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -3685,23 +3668,23 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
                         <div>
-                          <h5 className="font-condensed font-black text-sm text-white uppercase line-clamp-1">
+                          <h5 className="font-condensed font-black text-sm text-slate-900 dark:text-white uppercase line-clamp-1">
                             {album.title}
                           </h5>
                           {album.subtitle && (
-                            <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
                               {album.subtitle}
                             </p>
                           )}
                         </div>
 
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               disabled={idx === 0}
                               onClick={() => handleMoveAlbum(idx, 'up')}
-                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:bg-slate-800 text-xs"
+                              className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                               title="Move album up"
                             >
                               <ChevronUp className="w-3.5 h-3.5" />
@@ -3710,7 +3693,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               type="button"
                               disabled={idx === localAlbums.length - 1}
                               onClick={() => handleMoveAlbum(idx, 'down')}
-                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:bg-slate-800 text-xs"
+                              className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                               title="Move album down"
                             >
                               <ChevronDown className="w-3.5 h-3.5" />
@@ -3722,7 +3705,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             href={album.albumUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-bold border border-emerald-800 transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-600 text-emerald-300 hover:text-slate-900 dark:hover:text-white text-xs font-bold border border-emerald-800 transition-colors"
                           >
                             <span>Open</span>
                             <ExternalLink className="w-3 h-3" />
@@ -3735,17 +3718,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               </div>
 
               {/* SECTION 3: ACTION CAROUSEL PHOTOS */}
-              <div className="space-y-4 pt-6 border-t border-slate-800">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-[#00ADEF]">
                       <Camera className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-condensed font-black text-xl uppercase text-white tracking-wide">
+                      <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white tracking-wide">
                         Action Photo Carousel ({localPhotos.length})
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         Manage high-resolution match action photos displayed in the hero rotating carousel.
                       </p>
                     </div>
@@ -3756,7 +3739,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       setIsAddingPhoto(!isAddingPhoto);
                       setEditingPhoto(null);
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>{isAddingPhoto ? 'Cancel' : '+ Add Action Photo'}</span>
@@ -3766,15 +3749,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 {/* Add Photo Form */}
                 {isAddingPhoto && (
                   <form onSubmit={handleAddPhotoSubmit} className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0c1322] border border-blue-600/40 shadow-xl space-y-4 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <h4 className="font-condensed font-black text-sm uppercase text-white flex items-center gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <ImageIcon className="w-4 h-4 text-[#00ADEF]" />
                         <span>Add New Action Photo to Carousel</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => setIsAddingPhoto(false)}
-                        className="text-slate-400 hover:text-white"
+                        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -3784,7 +3767,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       {/* Image Input with Device Upload & URL */}
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Image URL or Upload *
                           </label>
                           <input
@@ -3793,13 +3776,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="https://images.unsplash.com/... or direct image link"
                             value={newPhotoUrl}
                             onChange={(e) => setNewPhotoUrl(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500 font-mono"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                           />
                         </div>
 
                         {/* File Upload Helper */}
                         <div className="flex items-center gap-2">
-                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold border border-slate-700 cursor-pointer transition-colors">
+                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold border border-slate-300 dark:border-slate-700 cursor-pointer transition-colors">
                             <Upload className="w-3.5 h-3.5 text-[#00ADEF]" />
                             <span>Upload Image from Device</span>
                             <input
@@ -3826,7 +3809,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       {/* Photo Metadata */}
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Photo Title / Headline
                           </label>
                           <input
@@ -3834,12 +3817,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="e.g., ECNL Showcase Match Winners"
                             value={newPhotoTitle}
                             onChange={(e) => setNewPhotoTitle(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Subtitle / Match Details
                           </label>
                           <input
@@ -3847,12 +3830,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="e.g., High pressing attack and transition play"
                             value={newPhotoSubtitle}
                             onChange={(e) => setNewPhotoSubtitle(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Badge Tag (e.g. Match Highlight, Showcase, Defense)
                           </label>
                           <input
@@ -3860,23 +3843,23 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             placeholder="e.g., Match Highlight"
                             value={newPhotoTag}
                             onChange={(e) => setNewPhotoTag(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <button
                         type="button"
                         onClick={() => setIsAddingPhoto(false)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Add to Carousel
                       </button>
@@ -3887,15 +3870,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 {/* Edit Photo Form */}
                 {editingPhoto && (
                   <form onSubmit={handleSaveEditedPhoto} className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-[#0c1322] border border-blue-500/60 shadow-2xl space-y-4 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <h4 className="font-condensed font-black text-sm uppercase text-white flex items-center gap-2">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white flex items-center gap-2">
                         <Edit2 className="w-4 h-4 text-blue-400" />
                         <span>Edit Carousel Photo</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => setEditingPhoto(null)}
-                        className="text-slate-400 hover:text-white"
+                        className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -3904,7 +3887,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Image URL *
                           </label>
                           <input
@@ -3912,12 +3895,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             required
                             value={editingPhoto.url}
                             onChange={(e) => setEditingPhoto({ ...editingPhoto, url: e.target.value })}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500 font-mono"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                           />
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold border border-slate-700 cursor-pointer transition-colors">
+                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-bold border border-slate-300 dark:border-slate-700 cursor-pointer transition-colors">
                             <Upload className="w-3.5 h-3.5 text-[#00ADEF]" />
                             <span>Upload Replacement Image</span>
                             <input
@@ -3943,54 +3926,54 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Photo Title / Headline
                           </label>
                           <input
                             type="text"
                             value={editingPhoto.title}
                             onChange={(e) => setEditingPhoto({ ...editingPhoto, title: e.target.value })}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Subtitle / Match Details
                           </label>
                           <input
                             type="text"
                             value={editingPhoto.subtitle || ''}
                             onChange={(e) => setEditingPhoto({ ...editingPhoto, subtitle: e.target.value })}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                          <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">
                             Badge Tag
                           </label>
                           <input
                             type="text"
                             value={editingPhoto.tag || ''}
                             onChange={(e) => setEditingPhoto({ ...editingPhoto, tag: e.target.value })}
-                            className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:border-blue-500"
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                       <button
                         type="button"
                         onClick={() => setEditingPhoto(null)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Save Photo Changes
                       </button>
@@ -4003,9 +3986,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   {localPhotos.map((photo, index) => (
                     <div 
                       key={photo.id}
-                      className="group relative rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden hover:border-blue-500/60 transition-all flex flex-col justify-between"
+                      className="group relative rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-blue-500/60 transition-all flex flex-col justify-between"
                     >
-                      <div className="relative aspect-[16/10] bg-slate-950 overflow-hidden">
+                      <div className="relative aspect-[16/10] bg-slate-50 dark:bg-slate-950 overflow-hidden">
                         <img
                           src={getSafeImageSrc(photo.url, DEFAULT_ACTION_PHOTOS[0].url)}
                           alt={photo.title}
@@ -4025,7 +4008,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               setEditingPhoto(photo);
                               setIsAddingPhoto(false);
                             }}
-                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
                             title="Edit photo"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -4034,7 +4017,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleDeletePhoto(photo.id)}
-                            className="p-1.5 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-red-950/80 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white border border-red-800/80 transition-colors cursor-pointer"
                             title="Delete photo from carousel"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -4043,21 +4026,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </div>
 
                       <div className="p-3 space-y-1">
-                        <h5 className="font-condensed font-black text-sm text-white uppercase line-clamp-1">
+                        <h5 className="font-condensed font-black text-sm text-slate-900 dark:text-white uppercase line-clamp-1">
                           {photo.title}
                         </h5>
                         {photo.subtitle && (
-                          <p className="text-[11px] text-slate-400 line-clamp-1">
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
                             {photo.subtitle}
                           </p>
                         )}
-                        <div className="pt-2 text-[10px] text-slate-500 font-bold flex items-center justify-between border-t border-slate-800/60 mt-2">
+                        <div className="pt-2 text-[10px] text-slate-500 font-bold flex items-center justify-between border-t border-slate-200 dark:border-slate-800/60 mt-2">
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               disabled={index === 0}
                               onClick={() => handleMovePhoto(index, 'up')}
-                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 text-xs"
                               title="Move slide earlier"
                             >
                               <ChevronUp className="w-3.5 h-3.5" />
@@ -4066,12 +4049,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               type="button"
                               disabled={index === localPhotos.length - 1}
                               onClick={() => handleMovePhoto(index, 'down')}
-                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 text-xs"
                               title="Move slide later"
                             >
                               <ChevronDown className="w-3.5 h-3.5" />
                             </button>
-                            <span className="ml-1 text-slate-400">{photo.date || 'Active Slide'}</span>
+                            <span className="ml-1 text-slate-500 dark:text-slate-400">{photo.date || 'Active Slide'}</span>
                           </div>
                           <span className="text-blue-400 font-mono">Slide #{index + 1}</span>
                         </div>
@@ -4084,14 +4067,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               {/* SECTION 4: INSTAGRAM POST EMBED QUICK LINKS */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/40 to-slate-900 border border-purple-800/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-slate-900 dark:text-white">
                     <Instagram className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-condensed font-black text-base uppercase text-white">
+                    <h4 className="font-condensed font-black text-base uppercase text-slate-900 dark:text-white">
                       Official Team Instagram Account
                     </h4>
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
                       Follow <strong>@deanzaforce_2011g_ecnl</strong> for real-time match scores and highlight reels.
                     </p>
                   </div>
@@ -4101,7 +4084,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   href="https://www.instagram.com/deanzaforce_2011g_ecnl/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-all"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-all"
                 >
                   <Instagram className="w-4 h-4" />
                   <span>Open Instagram Profile</span>
@@ -4117,11 +4100,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               <div className="p-5 rounded-2xl bg-gradient-to-b from-[#10182c] to-[#0a0f1d] border border-blue-900/60 shadow-xl space-y-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-400" />
-                  <h3 className="font-condensed font-black text-xl uppercase text-white">
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">
                     Quick-Paste Roster Text Assistant
                   </h3>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   Have a roster list from TeamSnap, SportsEngine, or an email? Simply paste it here (one player per line) and our parser will automatically detect jersey numbers, player names, and positions.
                 </p>
 
@@ -4130,13 +4113,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   value={rawRosterInput}
                   onChange={(e) => setRawRosterInput(e.target.value)}
                   placeholder="Paste roster lines here, e.g.:&#10;1 Maya Lin GK Mitty 4.25&#10;2 Elena Rostova RB St Francis&#10;7 Kaia Vance FW Cupertino..."
-                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:border-blue-500 focus:outline-none"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-mono text-xs focus:border-blue-500 focus:outline-none"
                 />
 
                 <div className="flex items-center justify-between">
                   <button
                     onClick={handleParseRawText}
-                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md transition-colors"
                   >
                     Parse & Populate Player Squad
                   </button>
@@ -4148,12 +4131,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
               {/* Data Backup & Reset */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-condensed font-black text-base uppercase text-white mb-1">
+                    <h4 className="font-condensed font-black text-base uppercase text-slate-900 dark:text-white mb-1">
                       Download Roster CSV Backup
                     </h4>
-                    <p className="text-xs text-slate-400 mb-3">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                       Export all current players to a CSV spreadsheet you can edit offline.
                     </p>
                   </div>
@@ -4182,14 +4165,14 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold mb-2"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold mb-2"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download CSV Backup</span>
                   </button>
 
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
                       Upload Roster CSV:
                     </p>
                     <input 
@@ -4286,17 +4269,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         reader.readAsText(file);
                         e.target.value = ''; // Reset input
                       }}
-                      className="text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 cursor-pointer"
+                      className="text-xs text-slate-600 dark:text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 cursor-pointer"
                     />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+                <div className="p-4 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-condensed font-black text-base uppercase text-white mb-1">
+                    <h4 className="font-condensed font-black text-base uppercase text-slate-900 dark:text-white mb-1">
                       Reset to Official Sample Data
                     </h4>
-                    <p className="text-xs text-slate-400 mb-3">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                       Restore default De Anza Force players, realistic stats, match fixtures, and NorCal standings.
                     </p>
                   </div>
@@ -4315,21 +4298,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 bg-[#070b14] border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
-          <div className="text-xs text-slate-400">
-            Current Roster: <strong className="text-white">{localPlayers.length}</strong> Players
+        <div className="p-4 bg-slate-50 dark:bg-[#070b14] border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Current Roster: <strong className="text-slate-900 dark:text-white">{localPlayers.length}</strong> Players
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold"
+              className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
             >
               Close
             </button>
             <button
               onClick={handleSaveAll}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-lg shadow-blue-900/40"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-lg shadow-blue-900/40"
             >
               Save & Apply All
             </button>
@@ -4346,7 +4329,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             }}
           >
             <div 
-              className="w-full max-w-md rounded-2xl bg-[#0e1627] border border-red-500/50 p-6 shadow-2xl space-y-4"
+              className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0e1627] border border-red-500/50 p-6 shadow-2xl space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 text-red-400">
@@ -4354,25 +4337,25 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <Trash2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-condensed font-black text-xl uppercase text-white">Delete Player</h3>
-                  <p className="text-xs text-slate-400">Remove player from team roster</p>
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">Delete Player</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Remove player from team roster</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Are you sure you want to permanently remove <strong className="text-white">#{playerPendingDelete.jerseyNumber} {playerPendingDelete.name}</strong> from the team roster?
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Are you sure you want to permanently remove <strong className="text-slate-900 dark:text-white">#{playerPendingDelete.jerseyNumber} {playerPendingDelete.name}</strong> from the team roster?
               </p>
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setPlayerPendingDelete(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => executeDeletePlayer(playerPendingDelete)}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-950/50 transition-colors"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-red-950/50 transition-colors"
                 >
                   Yes, Remove Player
                 </button>
@@ -4391,7 +4374,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             }}
           >
             <div 
-              className="w-full max-w-md rounded-2xl bg-[#0e1627] border border-red-500/50 p-6 shadow-2xl space-y-4"
+              className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0e1627] border border-red-500/50 p-6 shadow-2xl space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 text-red-400">
@@ -4399,25 +4382,25 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <Trash2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-condensed font-black text-xl uppercase text-white">Delete Staff Member</h3>
-                  <p className="text-xs text-slate-400">Remove coach from staff roster</p>
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">Delete Staff Member</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Remove coach from staff roster</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Are you sure you want to remove <strong className="text-white">{coachPendingDelete.name}</strong> ({coachPendingDelete.role}) from the coaching staff?
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{coachPendingDelete.name}</strong> ({coachPendingDelete.role}) from the coaching staff?
               </p>
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setCoachPendingDelete(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={() => executeDeleteCoach(coachPendingDelete)}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-950/50 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-red-950/50 transition-colors cursor-pointer"
                 >
                   Yes, Remove Staff Member
                 </button>
@@ -4436,7 +4419,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             }}
           >
             <div 
-              className="w-full max-w-md rounded-2xl bg-[#0e1627] border border-yellow-500/50 p-6 shadow-2xl space-y-4"
+              className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0e1627] border border-yellow-500/50 p-6 shadow-2xl space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 text-yellow-400">
@@ -4444,18 +4427,18 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <RotateCcw className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-condensed font-black text-xl uppercase text-white">Reset to Official Defaults</h3>
-                  <p className="text-xs text-slate-400">Restore default team roster & schedule</p>
+                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white">Reset to Official Defaults</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Restore default team roster & schedule</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 This will restore the original De Anza Force official ECNL roster and schedule fixtures.
               </p>
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -4466,7 +4449,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     onResetToDefaults();
                     onClose();
                   }}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg transition-colors"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-slate-900 dark:text-white text-xs font-bold shadow-lg transition-colors"
                 >
                   Confirm Reset
                 </button>
@@ -4475,7 +4458,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           </div>
         )}
 
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
