@@ -186,11 +186,11 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
             {tournaments.map((t) => (
               <div
                 key={t.id}
-                className="p-4 rounded-2xl bg-gradient-to-b from-slate-900 to-[#090e1a] border border-slate-200 dark:border-slate-800 hover:border-yellow-500/40 shadow-xl transition-all flex flex-col justify-between"
+                className="p-4 rounded-2xl bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-[#090e1a] border border-slate-200 dark:border-slate-800 hover:border-yellow-500/40 shadow-xl transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-yellow-950 text-yellow-400 border border-yellow-700/50">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700/50">
                       {t.placement}
                     </span>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.year}</span>

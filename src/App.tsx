@@ -486,6 +486,7 @@ export default function App() {
       <AnimatePresence>
         {selectedPlayer && (
           <PlayerModal
+            key="player-modal"
             player={selectedPlayer}
             teamInfo={teamInfo}
             coaches={coaches}
@@ -508,6 +509,7 @@ export default function App() {
       <AnimatePresence>
         {isEditorOpen && (
           <TeamEditorModal
+            key="team-editor-modal"
             isOpen={true}
             onClose={() => {
               setIsEditorOpen(false);

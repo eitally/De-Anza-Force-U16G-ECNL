@@ -706,7 +706,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        transition={{ type: "spring", duration: 0.4, bounce: 0 }}
         className="relative w-full max-w-5xl rounded-3xl bg-white dark:bg-[#0b111e] border border-blue-800/60 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -2811,8 +2810,20 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               className="w-12 text-center p-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200"
                             />
                           </td>
-                          <td className="p-2 text-center font-bold text-slate-600 dark:text-slate-300">
-                            {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                          <td className="p-2 text-center">
+                            <input
+                              type="number"
+                              value={team.goalDifference}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10) || 0;
+                                const updated = localStandings.map((t, i) => i === index ? { 
+                                  ...t, 
+                                  goalDifference: val 
+                                } : t);
+                                setLocalStandings(updated);
+                              }}
+                              className="w-12 text-center p-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200"
+                            />
                           </td>
                           <td className="p-2 text-center">
                             <input

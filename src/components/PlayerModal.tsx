@@ -56,7 +56,6 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        transition={{ type: "spring", duration: 0.4, bounce: 0 }}
         className="relative w-full max-w-4xl rounded-3xl bg-white dark:bg-[#0b101d] border border-blue-900/60 shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
