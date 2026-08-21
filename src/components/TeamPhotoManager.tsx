@@ -12,7 +12,7 @@ import {
   Link2,
   AlertCircle
 } from 'lucide-react';
-import { DEFAULT_PLAYER_PHOTO, handleImageError, getSafeImageSrc } from '../utils/imageUtils';
+import { compressImage, DEFAULT_PLAYER_PHOTO, handleImageError, getSafeImageSrc } from '../utils/imageUtils';
 
 interface TeamPhotoManagerProps {
   photoUrl?: string;

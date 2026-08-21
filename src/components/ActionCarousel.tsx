@@ -45,6 +45,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
   masterAlbumInfo: propMasterAlbum,
   customPhotos,
   onOpenPhotoManager,
+  isAdminMode = false,
   className = '',
 }) => {
   const [activeTab, setActiveTab] = useState<'carousel' | 'instagram'>('carousel');

@@ -62,9 +62,9 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
   const [hasLiked, setHasLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(postData.likes);
   const [isEditing, setIsEditing] = useState(false);
-  const [editCaption, setEditCaption] = useState(postData.caption);
+  const [editCaption, setEditCaption] = useState((postData?.caption || ''));
   const [editImageUrl, setEditImageUrl] = useState(postData.postImageUrl);
-  const [editPostUrl, setEditPostUrl] = useState(postData.postUrl);
+  const [editPostUrl, setEditPostUrl] = useState((postData?.postUrl || ''));
   const [editEmbedPostId, setEditEmbedPostId] = useState(postData.embedPostId || 'DB-o1yBSe0n');
   const [iframeKey, setIframeKey] = useState(Date.now());
 
@@ -106,7 +106,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
       ...postData,
       caption: editCaption,
       postImageUrl: editImageUrl || postData.postImageUrl,
-      postUrl: editPostUrl || postData.postUrl,
+      postUrl: editPostUrl || (postData?.postUrl || ''),
       embedPostId: extracted || editEmbedPostId || postData.embedPostId || 'DB-o1yBSe0n',
     };
     setPostData(updated);
@@ -115,7 +115,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
     setIsEditing(false);
   };
 
-  const currentEmbedPostId = postData.embedPostId || extractPostId(postData.postUrl) || 'DB-o1yBSe0n';
+  const currentEmbedPostId = postData.embedPostId || extractPostId((postData?.postUrl || '')) || 'DB-o1yBSe0n';
   const iframeSrc = `https://www.instagram.com/p/${currentEmbedPostId}/embed/captioned/`;
 
   return (
@@ -125,7 +125,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
         <div className="flex items-center gap-3">
           {/* Avatar with Instagram Gradient Ring */}
           <a 
-            href={postData.postUrl}
+            href={(postData?.postUrl || '')}
             target="_blank"
             rel="noopener noreferrer"
             className="relative p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 hover:scale-105 transition-transform"
@@ -142,12 +142,12 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
           <div>
             <div className="flex items-center gap-1.5 leading-tight">
               <a
-                href={postData.postUrl}
+                href={(postData?.postUrl || '')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-[#00ADEF] transition-colors"
               >
-                @{postData.accountHandle}
+                @{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}
               </a>
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 fill-blue-400 text-slate-900" />
             </div>
@@ -184,7 +184,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
           </div>
 
           <a
-            href={postData.postUrl}
+            href={(postData?.postUrl || '')}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-all active:scale-95"
@@ -212,17 +212,17 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
               src={iframeSrc}
               className="w-full h-[460px] sm:h-[500px] border-0 rounded-xl bg-white dark:bg-[#090d18]"
               allow="encrypted-media; autoplay; clipboard-write; picture-in-picture"
-              title={`Instagram post from @${postData.accountHandle}`}
+              title={`Instagram post from @${(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}`}
             />
           </div>
           
           <div className="w-full flex items-center justify-between px-3 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Live Post Embed: @{postData.accountHandle}</span>
+              <span>Live Post Embed: @{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}</span>
             </div>
             <a
-              href={postData.postUrl}
+              href={(postData?.postUrl || '')}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#00ADEF] hover:underline flex items-center gap-1 font-bold"
@@ -252,7 +252,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
 
             {/* View on Instagram Floating Pill */}
             <a
-              href={postData.postUrl}
+              href={(postData?.postUrl || '')}
               target="_blank"
               rel="noopener noreferrer"
               className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-slate-900 dark:text-white text-[11px] font-bold border border-slate-300 dark:border-slate-700/80 backdrop-blur-md inline-flex items-center gap-1.5 transition-all shadow-lg hover:border-pink-500"
@@ -277,7 +277,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
                 </button>
 
                 <a
-                  href={postData.postUrl}
+                  href={(postData?.postUrl || '')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -287,7 +287,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
                 </a>
 
                 <a
-                  href={postData.postUrl}
+                  href={(postData?.postUrl || '')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -309,15 +309,15 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
 
             {/* Caption */}
             <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              <span className="font-bold text-slate-900 dark:text-white mr-1.5">@{postData.accountHandle}</span>
-              {postData.caption}
+              <span className="font-bold text-slate-900 dark:text-white mr-1.5">@{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}</span>
+              {(postData?.caption || '')}
             </div>
 
             {/* Timestamp & Direct Link */}
             <div className="flex items-center justify-between pt-1 text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
-              <span>{postData.postedDate}</span>
+              <span>{(postData?.postedDate || '')}</span>
               <a
-                href={postData.postUrl}
+                href={(postData?.postUrl || '')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#00ADEF] hover:underline"

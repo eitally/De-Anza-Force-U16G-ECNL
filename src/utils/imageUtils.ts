@@ -208,37 +208,57 @@ export function handleImageError(
 
 export async function compressImage(file: File, maxWidth = 1280, quality = 0.7): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(img.src);
-          return;
-        }
+    if (!file) {
+      reject(new Error("No file provided"));
+      return;
+    }
 
-        let width = img.width;
-        let height = img.height;
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = (e) => reject(new Error("FileReader failed"));
+        reader.readAsDataURL(file);
+        return;
+      }
 
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
+      let width = img.width;
+      let height = img.height;
 
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
 
-        // Convert to highly compressed WebP or JPEG
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      try {
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         resolve(dataUrl);
-      };
-      img.onerror = (e) => reject(e);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = (e) => reject(new Error("Fallback FileReader failed"));
+        reader.readAsDataURL(file);
+      }
     };
-    reader.onerror = (e) => reject(e);
+
+    img.onerror = (e) => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = (ev) => resolve(ev.target?.result as string);
+      reader.onerror = (ev) => reject(new Error("Fallback FileReader failed"));
+      reader.readAsDataURL(file);
+    };
+
+    img.src = objectUrl;
   });
 }

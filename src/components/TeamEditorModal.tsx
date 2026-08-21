@@ -11,7 +11,7 @@ import type {
   GooglePhotosAlbum, 
   MasterAlbumInfo
 } from '../types';
-import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, DEFAULT_COACH_PHOTO } from '../utils/imageUtils';
+import { compressImage, getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, DEFAULT_COACH_PHOTO } from '../utils/imageUtils';
 import { 
   INITIAL_STANDINGS, 
   DEFAULT_ACTION_PHOTOS, 
