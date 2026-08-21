@@ -3435,13 +3435,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (event) => {
-                                    if (event.target?.result) {
-                                      setNewAlbumCover(event.target.result as string);
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  compressImage(file, 1200, 0.7).then(dataUrl => {
+                                    setNewPhotoUrl(dataUrl);
+                                  }).catch(e => {
+                                    console.error(e);
+                                    showNotification('⚠️ Failed to process image upload.');
+                                  });
                                 }
                               }}
                             />
@@ -3784,13 +3783,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = (event) => {
-                                    if (event.target?.result) {
-                                      setNewPhotoUrl(event.target.result as string);
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  compressImage(file, 1200, 0.75).then(dataUrl => {
+                                    setNewPhotoUrl(dataUrl);
+                                  }).catch(e => {
+                                    console.error(e);
+                                  });
                                 }
                               }}
                             />

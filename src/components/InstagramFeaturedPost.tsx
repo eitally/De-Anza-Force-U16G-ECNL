@@ -46,6 +46,7 @@ export const DEFAULT_INSTAGRAM_POST: InstagramPostData = {
 };
 
 interface InstagramFeaturedPostProps {
+  isAdminMode?: boolean;
   post?: InstagramPostData;
   className?: string;
 }
@@ -53,6 +54,7 @@ interface InstagramFeaturedPostProps {
 export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
   post = DEFAULT_INSTAGRAM_POST,
   className = '',
+  isAdminMode = false,
 }) => {
   const [postData, setPostData] = useState<InstagramPostData>(post);
 
@@ -66,27 +68,19 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
   const [editEmbedPostId, setEditEmbedPostId] = useState(postData.embedPostId || 'DB-o1yBSe0n');
   const [iframeKey, setIframeKey] = useState(Date.now());
 
-  // Listen for external updates
+  // Listen for Firebase updates
   useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem('daf_featured_ig_post');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setPostData(parsed);
-          setLikeCount(parsed.likes || 342);
+    const unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        if (data.featuredInstagramPost) {
+          setPostData(data.featuredInstagramPost);
+          setLikeCount(data.featuredInstagramPost.likes || 342);
           setIframeKey(Date.now());
-        } catch (e) {
-          console.error(e);
         }
       }
-    };
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('daf_media_updated', handleStorage);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('daf_media_updated', handleStorage);
-    };
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleLike = () => {

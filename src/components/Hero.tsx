@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 interface HeroProps {
+  isAdminMode?: boolean;
   teamInfo: TeamInfo;
   nextMatch?: Match;
   onOpenScoutPack: () => void;
@@ -30,7 +31,7 @@ interface HeroProps {
   onOpenPhotoManager?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({
+export const Hero: React.FC<HeroProps> = ({ isAdminMode = false, 
   teamInfo,
   nextMatch,
   onOpenScoutPack,

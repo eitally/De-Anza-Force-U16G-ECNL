@@ -60,22 +60,22 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
     setTimeout(() => setFeedbackMsg(null), 3000);
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showToast('⚠️ Please upload an image file (JPEG, PNG, WebP).');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      if (dataUrl) {
-        setCurrentUrl(dataUrl);
-        onUpdate(dataUrl, currentCaption);
-        showToast('✓ Squad photo uploaded successfully!');
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      showToast('Compressing image...');
+      const compressedDataUrl = await compressImage(file, 1600, 0.75);
+      setCurrentUrl(compressedDataUrl);
+      onUpdate(compressedDataUrl, currentCaption);
+      showToast('✓ Squad photo uploaded successfully!');
+    } catch (e) {
+      console.error(e);
+      showToast('⚠️ Failed to compress image.');
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {

@@ -30,6 +30,7 @@ export type { ActionPhoto, GooglePhotosAlbum, MasterAlbumInfo };
 export { DEFAULT_ACTION_PHOTOS, DEFAULT_GOOGLE_PHOTOS_ALBUMS, DEFAULT_MASTER_ALBUM_INFO };
 
 interface ActionCarouselProps {
+  isAdminMode?: boolean;
   photos?: ActionPhoto[];
   albums?: GooglePhotosAlbum[];
   masterAlbumInfo?: MasterAlbumInfo;
@@ -49,20 +50,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
   const [activeTab, setActiveTab] = useState<'carousel' | 'instagram'>('carousel');
 
   // Photos state
-  const [photos, setPhotos] = useState<ActionPhoto[]>(() => {
-    if (propPhotos) return propPhotos;
-    if (customPhotos) return customPhotos;
-    const saved = localStorage.getItem('daf_action_photos');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return DEFAULT_ACTION_PHOTOS;
-  });
+  const [photos, setPhotos] = useState<ActionPhoto[]>(propPhotos || customPhotos || DEFAULT_ACTION_PHOTOS);
 
   // Google Photos Albums state
   const [albums, setAlbums] = useState<GooglePhotosAlbum[]>(() => {
@@ -119,51 +107,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
     }
   }, [propMasterAlbum]);
 
-  // Listen for media updates from TeamEditorModal or other storage events
-  useEffect(() => {
-    const handleMediaSync = () => {
-      const savedPhotos = localStorage.getItem('daf_action_photos');
-      if (savedPhotos) {
-        try {
-          const parsed = JSON.parse(savedPhotos);
-          if (Array.isArray(parsed)) {
-            setPhotos(parsed);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      const savedAlbums = localStorage.getItem('daf_google_photos_albums');
-      if (savedAlbums) {
-        try {
-          const parsed = JSON.parse(savedAlbums);
-          if (Array.isArray(parsed)) {
-            setAlbums(parsed);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      const savedMaster = localStorage.getItem('daf_master_album_info');
-      if (savedMaster) {
-        try {
-          const parsed = JSON.parse(savedMaster);
-          if (parsed && parsed.url) {
-            setMasterAlbum(parsed);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleMediaSync);
-    window.addEventListener('daf_media_updated', handleMediaSync);
-    return () => {
-      window.removeEventListener('storage', handleMediaSync);
-      window.removeEventListener('daf_media_updated', handleMediaSync);
-    };
-  }, []);
+  
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % (photos.length || 1));
@@ -398,7 +342,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
       {/* VIEW 3: LATEST INSTAGRAM POST */}
       {activeTab === 'instagram' && (
         <div>
-          <InstagramFeaturedPost />
+          <InstagramFeaturedPost isAdminMode={isAdminMode} />
         </div>
       )}
 
