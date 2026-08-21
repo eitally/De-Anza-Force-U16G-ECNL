@@ -316,7 +316,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       }
 
       // Sync Master Album info
-      let activeMaster = DEFAULT_MASTER_ALBUM_INFO;
+      let activeMaster: MasterAlbumInfo = DEFAULT_MASTER_ALBUM_INFO;
       if (masterAlbumInfo && masterAlbumInfo.url) {
         activeMaster = masterAlbumInfo;
       } else {
