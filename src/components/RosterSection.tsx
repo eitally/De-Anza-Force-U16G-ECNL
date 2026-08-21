@@ -348,7 +348,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                           onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
                         />
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                          <div className="font-bold text-black dark:text-white text-sm group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                             {player.name}
                             {player.isCaptain && (
                               <span className="text-[9px] font-black bg-amber-500 text-black px-1.5 py-0.2 rounded font-condensed">CAPTAIN</span>

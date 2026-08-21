@@ -84,7 +84,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                 className="w-full h-full object-cover object-top"
                 onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
               />
-              <div className="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/95 border-2 border-red-500 text-slate-900 dark:text-white font-display font-bold text-2xl sm:text-3xl shadow-2xl">
+              <div className="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/95 border-2 border-red-500 text-black dark:text-white font-display font-bold text-2xl sm:text-3xl shadow-2xl">
                 #{player.jerseyNumber}
               </div>
               {player.isCaptain && (
@@ -121,7 +121,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   )}
                 </div>
 
-                <h2 className="font-condensed font-black text-3xl sm:text-5xl uppercase text-slate-900 dark:text-white tracking-tight leading-tight">
+                <h2 className="font-condensed font-black text-3xl sm:text-5xl uppercase text-black dark:text-white tracking-tight leading-tight">
                   {player.name}
                 </h2>
 
@@ -377,7 +377,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   </div>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Are you sure you want to permanently remove <strong className="text-slate-900 dark:text-white">#{player.jerseyNumber} {player.name}</strong> from the official team roster?
+                  Are you sure you want to permanently remove <strong className="text-black dark:text-white">#{player.jerseyNumber} {player.name}</strong> from the official team roster?
                 </p>
                 <div className="flex items-center justify-end gap-2.5 pt-2">
                   <button

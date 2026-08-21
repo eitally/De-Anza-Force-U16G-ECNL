@@ -66,7 +66,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         {/* Jersey Number Shield Badge (Top Left) - Ultra Legible Athletic Font */}
         <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5">
           <div className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-950/95 backdrop-blur-md border-2 border-red-500 shadow-2xl flex items-center justify-center min-w-[40px]">
-            <span className="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white leading-none tracking-normal drop-shadow-md">
+            <span className="font-display font-bold text-xl sm:text-2xl text-black dark:text-white leading-none tracking-normal drop-shadow-md">
               #{player.jerseyNumber}
             </span>
           </div>
@@ -113,7 +113,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <div>
           {/* Player Name */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-condensed font-black text-xl sm:text-2xl uppercase text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+            <h3 className="font-condensed font-black text-xl sm:text-2xl uppercase text-black dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
               {player.name}
             </h3>
             <div className="flex items-center gap-1.5 shrink-0">
