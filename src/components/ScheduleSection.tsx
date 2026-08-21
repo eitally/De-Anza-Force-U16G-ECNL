@@ -122,7 +122,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                 onClick={() => setViewMode('compact')}
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'compact'
-                    ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                    ? 'bg-blue-600 text-white shadow'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Compact List View"
@@ -134,7 +134,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                 onClick={() => setViewMode('cards')}
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'cards'
-                    ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                    ? 'bg-blue-600 text-white shadow'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="Cards Grid View"
@@ -154,7 +154,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
               onClick={() => setFilter('upcoming')}
               className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 filter === 'upcoming'
-                  ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                  ? 'bg-blue-600 text-white shadow'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -165,7 +165,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
               onClick={() => setFilter('completed')}
               className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 filter === 'completed'
-                  ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                  ? 'bg-blue-600 text-white shadow'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -176,7 +176,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
               onClick={() => setFilter('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-sans font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 filter === 'all'
-                  ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                  ? 'bg-blue-600 text-white shadow'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -347,7 +347,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                           href={match.mapUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-blue-600 text-blue-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-blue-600 text-blue-400 hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
                           title="GPS Directions"
                         >
                           <Navigation className="w-3.5 h-3.5" />
@@ -356,7 +356,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                         {match.status === 'upcoming' && (
                           <button
                             onClick={() => handleExportICS(match)}
-                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-blue-600 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-blue-600 text-slate-600 dark:text-slate-300 hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
                             title="Add to Calendar (.ics)"
                           >
                             <CalendarPlus className="w-3.5 h-3.5" />
@@ -463,7 +463,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                       {match.status === 'upcoming' && (
                         <button
                           onClick={() => handleExportICS(match)}
-                          className="px-2 py-1 rounded bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white text-xs font-bold flex items-center gap-1"
+                          className="px-2 py-1 rounded bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-bold flex items-center gap-1"
                         >
                           <CalendarPlus className="w-3 h-3" />
                           <span>+Cal</span>

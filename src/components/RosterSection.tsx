@@ -99,7 +99,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               onOpenTeamPhotoEditor && (
                 <button
                   onClick={onOpenTeamPhotoEditor}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   <Camera className="w-3.5 h-3.5" />
                   <span>+ Upload Squad Portrait</span>
@@ -208,7 +208,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setViewMode('grid')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                     viewMode === 'grid'
-                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                      ? 'bg-blue-600 text-white shadow'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                   title="Card Grid View"
@@ -219,7 +219,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setViewMode('table')}
                   className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                     viewMode === 'table'
-                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                      ? 'bg-blue-600 text-white shadow'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                   title="Table View"
@@ -343,7 +343,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                             e.stopPropagation();
                             onSelectPlayer(player);
                           }}
-                          className="px-3 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white font-bold text-xs border border-blue-500/40 transition-colors cursor-pointer"
+                          className="px-3 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white font-bold text-xs border border-blue-500/40 transition-colors cursor-pointer"
                         >
                           Profile
                         </button>
@@ -371,7 +371,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                 setSelectedPosition('All');
                 setCommitmentFilter('All');
                               }}
-              className="px-4 py-2 rounded-xl bg-blue-600 text-slate-900 dark:text-white font-bold text-xs cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs cursor-pointer"
             >
               Reset All Filters
             </button>
@@ -384,7 +384,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
             <div className="relative w-full h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
               <div className="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-xs uppercase">
+                  <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-condensed font-black text-xs uppercase">
                     Squad Portrait
                   </span>
                   <span className="text-sm font-bold text-slate-900 dark:text-white truncate">

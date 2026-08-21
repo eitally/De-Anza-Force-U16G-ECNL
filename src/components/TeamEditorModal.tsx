@@ -774,7 +774,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         {/* Header Bar */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-950 via-[#0a1224] to-red-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-slate-900 dark:text-white shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md">
               <Settings className="w-5 h-5" />
             </div>
             <div>
@@ -828,7 +828,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 }}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
+                    ? 'bg-blue-600 text-white shadow'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-900'
                 }`}
               >
@@ -1097,7 +1097,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         </p>
                       </div>
 
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
                         <Upload className="w-3.5 h-3.5" />
                         <span>Upload Photo from Device</span>
                         <input
@@ -1275,7 +1275,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold shadow-md"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md"
                       >
                         Save Player
                       </button>
@@ -1323,7 +1323,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             hometown: 'Bay Area, CA',
                           });
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs shadow transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add New Player</span>
@@ -1577,7 +1577,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     setIsCreatingPlayer(false);
                                     setEditingPlayer(player);
                                   }}
-                                  className="p-1.5 rounded-lg bg-blue-950 text-blue-300 hover:bg-blue-600 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+                                  className="p-1.5 rounded-lg bg-blue-950 text-blue-300 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
                                   title="Edit player details"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
@@ -1816,7 +1816,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md shadow-blue-900/30 cursor-pointer"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md shadow-blue-900/30 cursor-pointer"
                       >
                         {isCreatingCoach ? 'Add Staff Member' : 'Save Coach Profile'}
                       </button>
@@ -1841,7 +1841,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                     <button
                       onClick={handleCreateNewCoach}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-md transition-colors cursor-pointer self-start sm:self-auto"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-md transition-colors cursor-pointer self-start sm:self-auto"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add New Coach / Staff</span>
@@ -1901,7 +1901,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 setIsCreatingCoach(false);
                                 setEditingCoach(coach);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800 text-xs font-bold transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800 text-xs font-bold transition-colors cursor-pointer"
                             >
                               <Edit2 className="w-3 h-3" />
                               <span>Edit</span>
@@ -1968,7 +1968,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       setLocalMatches([newMatch, ...localMatches]);
                       showNotification('Added new match fixture.');
                     }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs cursor-pointer shrink-0 shadow-lg shadow-blue-900/30"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shrink-0 shadow-lg shadow-blue-900/30"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add New Match</span>
@@ -2160,7 +2160,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             }}
                             className={`py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                               m.isHome 
-                                ? 'bg-blue-600 text-slate-900 dark:text-white shadow' 
+                                ? 'bg-blue-600 text-white shadow' 
                                 : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
                             }`}
                           >
@@ -3207,7 +3207,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-slate-900 dark:text-white font-condensed tracking-wider">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-600 text-white font-condensed tracking-wider">
                           Official Showcase
                         </span>
                         <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white tracking-wide">
@@ -3350,7 +3350,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <div className="flex items-center justify-end pt-2">
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-700/30 transition-all border border-blue-400/40 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-700/30 transition-all border border-blue-400/40 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
                       <span>Save Master Permanent Link</span>
@@ -3678,7 +3678,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Save Album Changes
                       </button>
@@ -3713,7 +3713,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               setEditingAlbum(album);
                               setIsAddingAlbum(false);
                             }}
-                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
                             title="Edit album details"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -3817,7 +3817,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       setIsAddingPhoto(!isAddingPhoto);
                       setEditingPhoto(null);
                     }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>{isAddingPhoto ? 'Cancel' : '+ Add Action Photo'}</span>
@@ -3935,7 +3935,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Add to Carousel
                       </button>
@@ -4049,7 +4049,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
+                        className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow"
                       >
                         Save Photo Changes
                       </button>
@@ -4084,7 +4084,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               setEditingPhoto(photo);
                               setIsAddingPhoto(false);
                             }}
-                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-slate-900 dark:hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-blue-950/80 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-800/80 transition-colors cursor-pointer"
                             title="Edit photo"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -4195,7 +4195,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 <div className="flex items-center justify-between">
                   <button
                     onClick={handleParseRawText}
-                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md transition-colors"
+                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md transition-colors"
                   >
                     Parse & Populate Player Squad
                   </button>

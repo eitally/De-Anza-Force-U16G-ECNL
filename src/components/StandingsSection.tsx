@@ -106,7 +106,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                           {team.teamName}
                         </span>
                         {isDeAnza && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-600 text-slate-900 dark:text-white shadow">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow">
                             OUR SQUAD
                           </span>
                         )}

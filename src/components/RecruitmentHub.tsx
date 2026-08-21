@@ -71,7 +71,7 @@ export const RecruitmentHub: React.FC<RecruitmentHubProps> = ({
 
           <button
             onClick={onOpenScoutPack}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-black text-sm uppercase tracking-wider shadow-lg shadow-blue-900/40 transition-all active:scale-95 border border-blue-400/40 cursor-pointer shrink-0 self-start md:self-auto"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-black text-sm uppercase tracking-wider shadow-lg shadow-blue-900/40 transition-all active:scale-95 border border-blue-400/40 cursor-pointer shrink-0 self-start md:self-auto"
           >
             <FileDown className="w-4 h-4" />
             <span>Generate Official Scouting Packet (PDF)</span>
@@ -163,7 +163,7 @@ export const RecruitmentHub: React.FC<RecruitmentHubProps> = ({
             <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800/80">
               <a
                 href={`mailto:${recruitingCoach.email}?subject=College Scouting Inquiry - De Anza Force U16 ECNL`}
-                className="flex items-center justify-between p-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-bold text-xs shadow-md transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />

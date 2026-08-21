@@ -196,7 +196,7 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>{currentUrl ? 'Replace Photo File' : 'Upload Photo File'}</span>
@@ -297,7 +297,7 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
           <div className="relative max-w-5xl w-full bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xl">
             <div className="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-xs uppercase">
+                <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-condensed font-black text-xs uppercase">
                   Full Resolution Preview
                 </span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white truncate">

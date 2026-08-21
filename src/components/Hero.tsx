@@ -53,7 +53,7 @@ export const Hero: React.FC<HeroProps> = ({ isAdminMode = false,
       <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-600 via-red-500 to-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.8)]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start lg:items-stretch">
           
           {/* Left Column: Team Identity & Headlines */}
           <div className="lg:col-span-7 flex flex-col items-start text-left">
@@ -157,11 +157,11 @@ export const Hero: React.FC<HeroProps> = ({ isAdminMode = false,
           </div>
 
           {/* Right Column: Action Photo Carousel & Next Match Spotlight */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
+          <div className="lg:col-span-5 flex flex-col gap-4 lg:h-full">
             {/* Action Carousel Section */}
-            <div className="relative">
+            <div className="relative lg:h-full flex flex-col">
               {/* The Carousel */}
-              <ActionCarousel 
+              <ActionCarousel className="lg:h-full flex flex-col flex-1" 
                 photos={actionPhotos}
                 albums={googlePhotosAlbums}
                 masterAlbumInfo={masterAlbumInfo}

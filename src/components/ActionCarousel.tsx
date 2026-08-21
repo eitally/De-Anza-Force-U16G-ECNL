@@ -162,7 +162,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
             onClick={() => setActiveTab('carousel')}
             className={`px-3 py-1.5 rounded-lg text-xs font-condensed font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'carousel'
-                ? 'bg-blue-600 text-slate-900 dark:text-white shadow border border-blue-400/40'
+                ? 'bg-blue-600 text-white shadow border border-blue-400/40'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -209,18 +209,18 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
       {/* VIEW 1: ACTION PHOTO ROTATING CAROUSEL */}
       {activeTab === 'carousel' && (
         <div 
-          className="relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/90 shadow-2xl group select-none"
+          className="relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/90 shadow-2xl group select-none flex-1 flex flex-col"
           onMouseEnter={() => setIsPlaying(false)}
           onMouseLeave={() => setIsPlaying(true)}
         >
           {/* Main Aspect Ratio Image Box */}
-          <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-white dark:bg-slate-900">
+          <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:absolute lg:inset-0 overflow-hidden bg-white dark:bg-slate-900">
             <img
               key={currentPhoto.id || currentIndex}
               src={getSafeImageSrc(currentPhoto.url, DEFAULT_ACTION_PHOTOS[0].url)}
               alt={currentPhoto.title || 'Match action photo'}
               onError={(e) => handleImageError(e, DEFAULT_ACTION_PHOTOS[0].url)}
-              className="w-full h-full object-cover object-center transition-all duration-700 ease-out transform group-hover:scale-105"
+              className="w-full h-full object-contain object-center transition-all duration-700 ease-out transform group-hover:scale-105 bg-black/5 dark:bg-black/40"
               referrerPolicy="no-referrer"
             />
 
@@ -365,7 +365,7 @@ export const ActionCarousel: React.FC<ActionCarouselProps> = ({
                 href={masterAlbum.url || 'https://linktr.ee/willow_glen_photography'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white text-xs font-bold"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold"
               >
                 <FolderOpen className="w-3.5 h-3.5" />
                 <span>Team Photo Hub</span>

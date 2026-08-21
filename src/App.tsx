@@ -220,7 +220,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-blue-600 selection:text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white dark:selection:text-white">
       
       {/* Top Main Navigation */}
       <Navbar
@@ -383,7 +383,7 @@ export default function App() {
               <span>Member of ECNL Girls & US Club Soccer</span>
               <button
                 onClick={scrollToTop}
-                className="p-2 rounded-lg bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-blue-600 transition-colors"
+                className="p-2 rounded-lg bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-white hover:bg-blue-600 transition-colors"
                 aria-label="Scroll to top"
               >
                 <ArrowUp className="w-4 h-4" />
