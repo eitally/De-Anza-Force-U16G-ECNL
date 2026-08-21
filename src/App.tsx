@@ -224,6 +224,7 @@ export default function App() {
       
       {/* Top Main Navigation */}
       <Navbar
+        masterAlbumInfo={masterAlbumInfo}
         teamInfo={teamInfo}
         nextMatch={nextMatch}
         onOpenScoutPack={() => setIsScoutPackOpen(true)}

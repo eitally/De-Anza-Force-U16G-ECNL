@@ -22,7 +22,10 @@ import {
   Sun
 } from 'lucide-react';
 
+import { MasterAlbumInfo } from '../types';
+
 interface NavbarProps {
+  masterAlbumInfo?: MasterAlbumInfo;
   teamInfo: TeamInfo;
   nextMatch?: Match;
   onOpenScoutPack: () => void;
@@ -30,6 +33,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  masterAlbumInfo,
   teamInfo,
   nextMatch,
   onOpenScoutPack,
@@ -87,6 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
+  
   const navLinks = [
     { label: 'Roster', href: '#roster', icon: Users, badge: `${playerCount}` },
     { label: 'Schedule', href: '#schedule', icon: Calendar },
@@ -94,6 +99,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: 'Recruiting Hub', href: '#recruiting', icon: GraduationCap },
     { label: 'Staff', href: '#staff', icon: ShieldCheck },
   ];
+
+  const mediaHubUrl = masterAlbumInfo?.url || 'https://linktr.ee/willow_glen_photography';
+  
+  navLinks.push({ label: 'Media Hub', href: mediaHubUrl, icon: ImageIcon, isExternal: true });
+
 
   return (
     <header className="sticky top-0 z-40 w-full transition-all duration-200">
@@ -213,6 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <a
                     key={item.label}
                     href={item.href}
+                    {...(item.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-blue-950/40 hover:border-blue-700/50 transition-all"
                   >
