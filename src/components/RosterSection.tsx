@@ -74,7 +74,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
           <div>
             <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-slate-900 dark:text-white leading-none">
-              2026-2027 <span className="text-blue-500">OFFICIAL ROSTER</span>
+              2026-2027 <span className="text-[#00ADEF]">OFFICIAL ROSTER</span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
               Showcasing all {players.length} student-athletes on the De Anza Force U16 ECNL squad. 
@@ -141,22 +141,22 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
             
             {/* Position Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800 overflow-x-auto scrollbar-none text-xs">
               {(['All', 'Forward', 'Midfielder', 'Defender', 'Goalkeeper'] as const).map((pos) => (
                 <button
                   key={pos}
                   onClick={() => setSelectedPosition(pos)}
-                  className={`px-3.5 py-2 rounded-xl text-sm sm:text-base font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                     selectedPosition === pos
-                      ? 'bg-blue-600 text-slate-900 dark:text-white shadow-lg shadow-blue-900/40 border border-blue-400/50'
-                      : 'bg-white dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                      ? 'bg-[#00ADEF]/10 dark:bg-[#00ADEF]/20 text-[#00ADEF] border border-[#00ADEF]/30'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 border border-transparent'
                   }`}
                 >
                   <span>{pos === 'All' ? 'Full Squad' : pos}</span>
                   <span
                     className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
                       selectedPosition === pos
-                        ? 'bg-white/20 text-slate-900 dark:text-white'
+                        ? 'bg-[#00ADEF]/20 text-[#00ADEF]'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                     }`}
                   >
@@ -380,8 +380,8 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
         {/* Squad Photo Lightbox Modal */}
         {isPhotoLightboxOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="relative max-w-5xl w-full bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-md">
+            <div className="relative w-full h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
               <div className="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-xs uppercase">
@@ -399,7 +399,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                 </button>
               </div>
 
-              <div className="relative aspect-video max-h-[75vh] overflow-auto bg-black flex items-center justify-center">
+              <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
                 <img
                   src={teamPhotoUrl}
                   alt={teamPhotoCaption}
