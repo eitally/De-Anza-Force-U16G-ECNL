@@ -55,15 +55,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       >
         {/* Header */}
         <div className="relative p-6 bg-gradient-to-b from-[#131b2e] to-[#0b101d] border-b border-slate-200 dark:border-slate-800 text-center">
-          <button
-            id="admin-login-close-btn"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
           <div className="flex justify-center mb-3">
             <ClubCrest size="md" />
           </div>

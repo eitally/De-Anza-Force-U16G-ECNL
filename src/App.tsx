@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { db, TEAM_DATA_DOC } from './lib/firebase';
+import { onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { AnimatePresence } from 'motion/react';
 import { Player, Match, StandingTeam, Coach, TeamInfo, ActionPhoto, GooglePhotosAlbum, MasterAlbumInfo } from './types';
 import { 
@@ -46,108 +48,24 @@ import {
   Lock
 } from 'lucide-react';
 
-const STORAGE_KEYS = {
-  PLAYERS: 'deanza_force_players_v2',
-  MATCHES: 'deanza_force_matches_v2',
-  STANDINGS: 'deanza_force_standings_v2',
-  COACHES: 'deanza_force_coaches_v2',
-  TEAM_INFO: 'deanza_force_team_info_v2',
-  ACTION_PHOTOS: 'daf_action_photos',
-  GOOGLE_PHOTOS_ALBUMS: 'daf_google_photos_albums',
-  MASTER_ALBUM_INFO: 'daf_master_album_info',
-};
-
 export default function App() {
   // Load data from localStorage or initialize with default sample data
-  const [players, setPlayers] = useState<Player[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAYERS);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_PLAYERS;
-  });
+  const [players, setPlayers] = useState<Player[]>(INITIAL_PLAYERS);
 
-  const [matches, setMatches] = useState<Match[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.MATCHES);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_MATCHES;
-  });
+  const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
 
-  const [standings, setStandings] = useState<StandingTeam[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.STANDINGS);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_STANDINGS;
-  });
+  const [standings, setStandings] = useState<StandingTeam[]>(INITIAL_STANDINGS);
 
-  const [coaches, setCoaches] = useState<Coach[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.COACHES);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_COACHES;
-  });
+  const [coaches, setCoaches] = useState<Coach[]>(INITIAL_COACHES);
 
-  const [teamInfo, setTeamInfo] = useState<TeamInfo>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_TEAM_INFO;
-  });
+  const [teamInfo, setTeamInfo] = useState<TeamInfo>(INITIAL_TEAM_INFO);
 
   // Media States
-  const [actionPhotos, setActionPhotos] = useState<ActionPhoto[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.ACTION_PHOTOS);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return DEFAULT_ACTION_PHOTOS;
-  });
+  const [actionPhotos, setActionPhotos] = useState<ActionPhoto[]>(DEFAULT_ACTION_PHOTOS);
 
-  const [googlePhotosAlbums, setGooglePhotosAlbums] = useState<GooglePhotosAlbum[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.GOOGLE_PHOTOS_ALBUMS);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return DEFAULT_GOOGLE_PHOTOS_ALBUMS;
-  });
+  const [googlePhotosAlbums, setGooglePhotosAlbums] = useState<GooglePhotosAlbum[]>(DEFAULT_GOOGLE_PHOTOS_ALBUMS);
 
-  const [masterAlbumInfo, setMasterAlbumInfo] = useState<MasterAlbumInfo>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.MASTER_ALBUM_INFO);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.url) return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return DEFAULT_MASTER_ALBUM_INFO;
-  });
+  const [masterAlbumInfo, setMasterAlbumInfo] = useState<MasterAlbumInfo>(DEFAULT_MASTER_ALBUM_INFO);
 
   // UI Modal States
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -158,41 +76,37 @@ export default function App() {
   const [initialEditingPlayer, setInitialEditingPlayer] = useState<Player | null>(null);
   const [initialEditingCoach, setInitialEditingCoach] = useState<Coach | null>(null);
 
-  // Handle storage and bfcache sync for media
+  // Firebase real-time data sync
   useEffect(() => {
-    const handleStorageChange = () => {
-      try {
-        const savedPhotos = localStorage.getItem(STORAGE_KEYS.ACTION_PHOTOS);
-        if (savedPhotos) {
-          const parsed = JSON.parse(savedPhotos);
-          if (Array.isArray(parsed)) setActionPhotos(parsed);
-        }
-        
-        const savedAlbums = localStorage.getItem(STORAGE_KEYS.GOOGLE_PHOTOS_ALBUMS);
-        if (savedAlbums) {
-          const parsed = JSON.parse(savedAlbums);
-          if (Array.isArray(parsed)) setGooglePhotosAlbums(parsed);
-        }
-        
-        const savedMaster = localStorage.getItem(STORAGE_KEYS.MASTER_ALBUM_INFO);
-        if (savedMaster) {
-          const parsed = JSON.parse(savedMaster);
-          if (parsed && parsed.url) setMasterAlbumInfo(parsed);
-        }
-      } catch (e) {
-        console.error(e);
+    const unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        if (data.players) setPlayers(data.players);
+        if (data.matches) setMatches(data.matches);
+        if (data.standings) setStandings(data.standings);
+        if (data.coaches) setCoaches(data.coaches);
+        if (data.teamInfo) setTeamInfo(data.teamInfo);
+        if (data.actionPhotos) setActionPhotos(data.actionPhotos);
+        if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
+        if (data.masterAlbumInfo) setMasterAlbumInfo(data.masterAlbumInfo);
+      } else {
+        // If no data, initialize it
+        setDoc(TEAM_DATA_DOC, {
+          players: INITIAL_PLAYERS,
+          matches: INITIAL_MATCHES,
+          standings: INITIAL_STANDINGS,
+          coaches: INITIAL_COACHES,
+          teamInfo: INITIAL_TEAM_INFO,
+          actionPhotos: DEFAULT_ACTION_PHOTOS,
+          googlePhotosAlbums: DEFAULT_GOOGLE_PHOTOS_ALBUMS,
+          masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO
+        });
       }
-    };
+    }, (error) => {
+      console.error("Firestore listener error:", error);
+    });
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('daf_media_updated', handleStorageChange);
-    window.addEventListener('pageshow', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('daf_media_updated', handleStorageChange);
-      window.removeEventListener('pageshow', handleStorageChange);
-    };
+    return () => unsubscribe();
   }, []);
 
   // Admin Mode Toggle (Hide triggers from public via URL query parameter)
@@ -221,11 +135,7 @@ export default function App() {
   // Sync to localStorage
   const handleSavePlayers = (updated: Player[]) => {
     setPlayers(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true });
   };
 
   const handleDeletePlayer = (playerId: string) => {
@@ -238,79 +148,46 @@ export default function App() {
 
   const handleSaveMatches = (updated: Match[]) => {
     setMatches(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.MATCHES, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
-
+    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true });
+    
     // Automatically recalculate and sync De Anza Force standings and team season record from match schedule
     const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
     setStandings(synced.updatedStandings);
     setTeamInfo(synced.updatedTeamInfo);
-    try {
-      localStorage.setItem(STORAGE_KEYS.STANDINGS, JSON.stringify(synced.updatedStandings));
-      localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify(synced.updatedTeamInfo));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { 
+      standings: synced.updatedStandings, 
+      teamInfo: synced.updatedTeamInfo 
+    }, { merge: true });
   };
 
   const handleSaveStandings = (updated: StandingTeam[]) => {
     setStandings(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.STANDINGS, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true });
   };
 
   const handleSaveCoaches = (updated: Coach[]) => {
     setCoaches(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.COACHES, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true });
   };
 
   const handleSaveTeamInfo = (updated: TeamInfo) => {
     setTeamInfo(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true });
   };
 
   const handleSaveActionPhotos = (updated: ActionPhoto[]) => {
     setActionPhotos(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.ACTION_PHOTOS, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('daf_media_updated'));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true });
   };
 
   const handleSaveGooglePhotosAlbums = (updated: GooglePhotosAlbum[]) => {
     setGooglePhotosAlbums(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.GOOGLE_PHOTOS_ALBUMS, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('daf_media_updated'));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true });
   };
 
   const handleSaveMasterAlbumInfo = (updated: MasterAlbumInfo) => {
     setMasterAlbumInfo(updated);
-    try {
-      localStorage.setItem(STORAGE_KEYS.MASTER_ALBUM_INFO, JSON.stringify(updated));
-      window.dispatchEvent(new CustomEvent('daf_media_updated'));
-    } catch (e) {
-      console.error(e);
-    }
+    setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true });
   };
 
   const handleResetToDefaults = () => {
@@ -322,19 +199,17 @@ export default function App() {
     setActionPhotos(DEFAULT_ACTION_PHOTOS);
     setGooglePhotosAlbums(DEFAULT_GOOGLE_PHOTOS_ALBUMS);
     setMasterAlbumInfo(DEFAULT_MASTER_ALBUM_INFO);
-    try {
-      localStorage.removeItem(STORAGE_KEYS.PLAYERS);
-      localStorage.removeItem(STORAGE_KEYS.MATCHES);
-      localStorage.removeItem(STORAGE_KEYS.STANDINGS);
-      localStorage.removeItem(STORAGE_KEYS.COACHES);
-      localStorage.removeItem(STORAGE_KEYS.TEAM_INFO);
-      localStorage.removeItem(STORAGE_KEYS.ACTION_PHOTOS);
-      localStorage.removeItem(STORAGE_KEYS.GOOGLE_PHOTOS_ALBUMS);
-      localStorage.removeItem(STORAGE_KEYS.MASTER_ALBUM_INFO);
-      window.dispatchEvent(new CustomEvent('daf_media_updated'));
-    } catch (e) {
-      console.error(e);
-    }
+    
+    setDoc(TEAM_DATA_DOC, {
+      players: INITIAL_PLAYERS,
+      matches: INITIAL_MATCHES,
+      standings: INITIAL_STANDINGS,
+      coaches: INITIAL_COACHES,
+      teamInfo: INITIAL_TEAM_INFO,
+      actionPhotos: DEFAULT_ACTION_PHOTOS,
+      googlePhotosAlbums: DEFAULT_GOOGLE_PHOTOS_ALBUMS,
+      masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO
+    });
   };
 
   // Find next upcoming match

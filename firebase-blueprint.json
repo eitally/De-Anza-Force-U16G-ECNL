@@ -1,0 +1,10 @@
+{
+  "rulesVersion": "2",
+  "collections": [
+    {
+      "name": "deanza_force_data",
+      "description": "Global data for the team",
+      "type": "unauthenticated"
+    }
+  ]
+}

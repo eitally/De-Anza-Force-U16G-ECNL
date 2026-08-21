@@ -4,7 +4,6 @@ import { PlayerCard } from './PlayerCard';
 import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
 import { 
   Users, 
-  Search, 
   LayoutGrid, 
   List, 
   Camera,
@@ -29,10 +28,8 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
   onOpenTeamPhotoEditor,
 }) => {
   const [selectedPosition, setSelectedPosition] = useState<PositionCategory | 'All'>('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [commitmentFilter, setCommitmentFilter] = useState<'All' | 'Committed' | 'Uncommitted'>('All');
+    const [commitmentFilter, setCommitmentFilter] = useState<'All' | 'Committed' | 'Uncommitted'>('All');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [showTeamPhoto, setShowTeamPhoto] = useState(true);
   const [isPhotoLightboxOpen, setIsPhotoLightboxOpen] = useState(false);
 
   const teamPhotoUrl = teamInfo?.teamPhotoUrl;
@@ -54,20 +51,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         return false;
       }
 
-      // Search Query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = (player.name || '').toLowerCase().includes(q);
-        const matchesJersey = (player.jerseyNumber ?? '').toString().includes(q);
-        const matchesSchool = (player.highSchool || '').toLowerCase().includes(q);
-        const matchesPosition = (player.specificPosition || '').toLowerCase().includes(q) || (player.primaryPosition || '').toLowerCase().includes(q);
-        const matchesCommitment = (player.commitment || '').toLowerCase().includes(q);
-        return matchesName || matchesJersey || matchesSchool || matchesPosition || matchesCommitment;
-      }
-
       return true;
     });
-  }, [players, selectedPosition, commitmentFilter, searchQuery]);
+  }, [players, selectedPosition, commitmentFilter]);
 
   // Position counts
   const counts = useMemo(() => {
@@ -99,15 +85,6 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
           <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
             {teamPhotoUrl ? (
               <>
-                <button
-                  onClick={() => setShowTeamPhoto(!showTeamPhoto)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  <Camera className="w-3.5 h-3.5 text-blue-400" />
-                  <span>{showTeamPhoto ? 'Hide Squad Portrait' : 'View Squad Portrait'}</span>
-                  {showTeamPhoto ? <ChevronUp className="w-3.5 h-3.5 text-slate-500" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500" />}
-                </button>
-
                 {onOpenTeamPhotoEditor && (
                   <button
                     onClick={onOpenTeamPhotoEditor}
@@ -133,9 +110,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         </div>
 
         {/* Official Squad Photo Banner */}
-        {teamPhotoUrl && showTeamPhoto && (
+        {teamPhotoUrl && (
           <div className="mt-5 rounded-2xl overflow-hidden bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl group relative">
-            <div className="relative aspect-[21/9] sm:aspect-[24/9] md:aspect-[3/1] max-h-[380px] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+            <div onClick={() => setIsPhotoLightboxOpen(true)} className="relative aspect-[21/9] sm:aspect-[24/9] md:aspect-[3/1] max-h-[380px] w-full overflow-hidden bg-slate-50 dark:bg-slate-950 cursor-pointer">
               <img
                 src={teamPhotoUrl}
                 alt={teamPhotoCaption}
@@ -147,22 +124,13 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               {/* Overlay Badges & Controls */}
               <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-5 sm:right-5 flex items-end justify-between gap-3">
                 <div>
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-600 text-slate-900 dark:text-white font-condensed font-black text-[10px] sm:text-xs uppercase tracking-wider mb-1">
-                    <Users className="w-3 h-3" />
-                    <span>Official Squad Portrait</span>
-                  </div>
+                  
                   <h3 className="font-condensed font-black text-base sm:text-xl md:text-2xl text-slate-900 dark:text-white drop-shadow-md">
                     {teamPhotoCaption}
                   </h3>
                 </div>
 
-                <button
-                  onClick={() => setIsPhotoLightboxOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950/80 hover:bg-white dark:hover:bg-slate-900 text-slate-900 dark:text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 shadow-md backdrop-blur-sm cursor-pointer transition-colors shrink-0"
-                >
-                  <Maximize2 className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="hidden sm:inline">High-Res</span>
-                </button>
+                
               </div>
             </div>
           </div>
@@ -178,7 +146,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                 <button
                   key={pos}
                   onClick={() => setSelectedPosition(pos)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-sm sm:text-base font-condensed font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                     selectedPosition === pos
                       ? 'bg-blue-600 text-slate-900 dark:text-white shadow-lg shadow-blue-900/40 border border-blue-400/50'
                       : 'bg-white dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -206,7 +174,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setCommitmentFilter('All')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'All'
-                      ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40'
+                      ? 'bg-blue-100 dark:bg-blue-600/30 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-500/40'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
@@ -216,7 +184,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setCommitmentFilter('Uncommitted')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'Uncommitted'
-                      ? 'bg-red-600/30 text-red-300 border border-red-500/40'
+                      ? 'bg-red-100 dark:bg-red-600/30 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-500/40'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
@@ -226,7 +194,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   onClick={() => setCommitmentFilter('Committed')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
                     commitmentFilter === 'Committed'
-                      ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40'
+                      ? 'bg-emerald-100 dark:bg-emerald-600/30 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
@@ -263,25 +231,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
           </div>
 
-          {/* Search Input Bar */}
-          <div className="relative w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search players by name, jersey #, high school, position, or commitment..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          
         </div>
 
         {/* Results Counter */}
@@ -420,8 +370,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               onClick={() => {
                 setSelectedPosition('All');
                 setCommitmentFilter('All');
-                setSearchQuery('');
-              }}
+                              }}
               className="px-4 py-2 rounded-xl bg-blue-600 text-slate-900 dark:text-white font-bold text-xs cursor-pointer"
             >
               Reset All Filters

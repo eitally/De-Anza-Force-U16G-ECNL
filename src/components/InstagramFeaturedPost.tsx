@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { db, TEAM_DATA_DOC } from '../lib/firebase';
+import { onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { 
   Instagram, 
   Heart, 
@@ -52,17 +54,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
   post = DEFAULT_INSTAGRAM_POST,
   className = '',
 }) => {
-  const [postData, setPostData] = useState<InstagramPostData>(() => {
-    const saved = localStorage.getItem('daf_featured_ig_post');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return post;
-  });
+  const [postData, setPostData] = useState<InstagramPostData>(post);
 
   const [viewMode, setViewMode] = useState<'iframe' | 'card'>('iframe');
   const [hasLiked, setHasLiked] = useState(false);
@@ -124,8 +116,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
       embedPostId: extracted || editEmbedPostId || postData.embedPostId || 'DB-o1yBSe0n',
     };
     setPostData(updated);
-    localStorage.setItem('daf_featured_ig_post', JSON.stringify(updated));
-    window.dispatchEvent(new CustomEvent('daf_media_updated'));
+    setDoc(TEAM_DATA_DOC, { featuredInstagramPost: updated }, { merge: true });
     setIframeKey(Date.now());
     setIsEditing(false);
   };

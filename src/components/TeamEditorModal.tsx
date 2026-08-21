@@ -380,12 +380,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     setLocalAlbums(albumsList);
     setLocalMasterAlbum(masterInfo);
 
-    try {
-      localStorage.setItem('daf_action_photos', JSON.stringify(photosList));
-      localStorage.setItem('daf_google_photos_albums', JSON.stringify(albumsList));
-      localStorage.setItem('daf_master_album_info', JSON.stringify(masterInfo));
-      
-      // Also update teamInfo socialLinks if photosHub is used
+      // Update teamInfo socialLinks if photosHub is used
       setLocalTeamInfo(prev => ({
         ...prev,
         socialLinks: {
@@ -393,12 +388,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           photosHub: masterInfo.url
         }
       }));
-
-      window.dispatchEvent(new CustomEvent('daf_media_updated'));
-      window.dispatchEvent(new Event('storage'));
-    } catch (e) {
-      console.error(e);
-    }
 
     if (onSaveActionPhotos) onSaveActionPhotos(photosList);
     if (onSaveGooglePhotosAlbums) onSaveGooglePhotosAlbums(albumsList);
@@ -732,14 +721,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             >
               <Save className="w-4 h-4" />
               <span>Save Changes</span>
-            </button>
-
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-red-600 transition-colors border border-slate-300 dark:border-slate-700"
-              aria-label="Close editor"
-            >
-              <X className="w-5 h-5" />
             </button>
           </div>
         </div>

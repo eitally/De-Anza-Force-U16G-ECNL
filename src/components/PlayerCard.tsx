@@ -49,7 +49,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       className="group relative flex flex-col rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#101726] dark:to-[#0a0e1a] border border-slate-200 dark:border-slate-800/90 hover:border-blue-500/60 shadow-lg hover:shadow-2xl hover:shadow-blue-950/50 transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-1"
     >
       {/* Top Card Image & Jersey Number Area */}
-      <div className="relative w-full h-56 sm:h-60 bg-slate-50 dark:bg-[#0c1220] overflow-hidden">
+      <div className="relative w-full h-64 sm:h-72 bg-slate-50 dark:bg-[#0c1220] overflow-hidden">
         {/* Atmospheric Glow */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#101726] via-transparent to-transparent z-10" />
 
@@ -159,11 +159,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               </span>
 
               {player.commitment !== 'Uncommitted' ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold font-condensed tracking-wide uppercase">
+                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900/40">
                   {player.commitment}
                 </span>
               ) : (
-                <span className="text-slate-500 dark:text-slate-400 font-bold font-condensed tracking-wide uppercase">
+                <span className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold bg-slate-50 dark:bg-slate-800/40 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                   Class of {player.gradYear}
                 </span>
               )}
@@ -174,39 +174,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           <p className="mt-3 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
             {player.bio}
           </p>
-        </div>
-
-        {/* Bottom Card Footer with Stats & Action */}
-        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs">
-          {/* Quick Stat */}
-          <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
-            <div>
-              <span className="font-bold text-slate-900 dark:text-white">{player.stats.appearances}</span> App
-            </div>
-            {player.primaryPosition === 'Goalkeeper' ? (
-              <div>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">{player.stats.cleanSheets || 0}</span> CS
-              </div>
-            ) : (
-              <>
-                <div>
-                  <span className="font-bold text-cyan-600 dark:text-cyan-300">{player.stats.starts ?? player.stats.appearances}</span> Starts
-                </div>
-                <div>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{player.stats.goals}</span> G
-                </div>
-                <div>
-                  <span className="font-bold text-red-600 dark:text-red-400">{player.stats.assists}</span> A
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Inspect Button */}
-          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 inline-flex items-center gap-1 group-hover:underline">
-            <span>Profile</span>
-            <ExternalLink className="w-3 h-3" />
-          </span>
         </div>
       </div>
     </div>

@@ -62,21 +62,13 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
         {/* Top Header Glow Bar */}
         <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-red-500 to-blue-600 shrink-0" />
         {/* Modal Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-30 p-2 rounded-full bg-black/70 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-red-600 transition-colors border border-slate-300 dark:border-slate-700"
-          aria-label="Close modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {/* Scrollable Content */}
         <div className="overflow-y-auto p-5 sm:p-8 space-y-6">
           
           {/* Top Profile Summary Header */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch pb-6 border-b border-slate-200 dark:border-slate-800">
             {/* Player Photo with Jersey Badge */}
-            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl aspect-square max-h-72 w-full">
+            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl w-full aspect-square md:aspect-auto md:h-full">
               <img
                 key={`${player.id}_${safePhotoSrc}`}
                 src={safePhotoSrc}
@@ -93,11 +85,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   <span>CAPTAIN</span>
                 </div>
               )}
-              <div className="absolute bottom-3 left-3 right-3 px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-slate-300 dark:border-slate-700 text-center">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-400">
-                  {player.specificPosition}
-                </span>
-              </div>
+              
             </div>
 
             {/* Core Info & College Credentials */}
@@ -116,7 +104,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                     </span>
                   ) : (
                     <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-red-950/80 text-red-300 border border-red-700">
-                      Uncommitted Prospective Student-Athlete
+                      Uncommitted
                     </span>
                   )}
                 </div>
@@ -306,15 +294,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   </a>
                 )}
 
-                {recruitingCoach && (
-                  <a
-                    href={`mailto:${recruitingCoach.email}?subject=College Scouting Inquiry: ${player.name} (#${player.jerseyNumber}) - De Anza Force U16 ECNL`}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Scout Inquiry</span>
-                  </a>
-                )}
+                
               </div>
             </div>
           </div>
@@ -323,7 +303,16 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#090d16] border border-blue-950 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <Shield className="w-4 h-4 text-blue-400" />
-              <span>College Recruiting Liaison: <strong className="text-slate-900 dark:text-white">{recruitingCoach?.name}</strong> ({recruitingCoach?.email})</span>
+              <span>College Recruiting Liaison: <strong className="text-slate-900 dark:text-white">{recruitingCoach?.name}</strong></span>
+              {recruitingCoach && (
+                <a
+                  href={`mailto:${recruitingCoach.email}?subject=College Scouting Inquiry: ${player.name} (#${player.jerseyNumber}) - De Anza Force U16 ECNL`}
+                  className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] shadow-sm transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Email Liaison</span>
+                </a>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
