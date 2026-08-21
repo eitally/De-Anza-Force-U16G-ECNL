@@ -3,15 +3,11 @@ import { db, TEAM_DATA_DOC } from '../lib/firebase';
 import { onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { 
   Instagram, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
   ExternalLink, 
   CheckCircle2, 
   Sparkles,
   Edit3,
   X,
-  Layers,
   Globe,
   RefreshCw
 } from 'lucide-react';
@@ -58,12 +54,8 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
 }) => {
   const [postData, setPostData] = useState<InstagramPostData>(post);
 
-  const [viewMode, setViewMode] = useState<'iframe' | 'card'>('iframe');
-  const [hasLiked, setHasLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(postData.likes);
   const [isEditing, setIsEditing] = useState(false);
   const [editCaption, setEditCaption] = useState((postData?.caption || ''));
-  const [editImageUrl, setEditImageUrl] = useState(postData.postImageUrl);
   const [editPostUrl, setEditPostUrl] = useState((postData?.postUrl || ''));
   const [editEmbedPostId, setEditEmbedPostId] = useState(postData.embedPostId || 'DB-o1yBSe0n');
   const [iframeKey, setIframeKey] = useState(Date.now());
@@ -75,7 +67,6 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
         const data = doc.data();
         if (data.featuredInstagramPost) {
           setPostData(data.featuredInstagramPost);
-          setLikeCount(data.featuredInstagramPost.likes || 342);
           setIframeKey(Date.now());
         }
       }
@@ -83,15 +74,6 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
     return () => unsubscribe();
   }, []);
 
-  const handleLike = () => {
-    if (hasLiked) {
-      setHasLiked(false);
-      setLikeCount((prev) => prev - 1);
-    } else {
-      setHasLiked(true);
-      setLikeCount((prev) => prev + 1);
-    }
-  };
 
   // Helper to extract Instagram post ID from URL
   const extractPostId = (url: string): string | null => {
@@ -105,7 +87,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
     const updated: InstagramPostData = {
       ...postData,
       caption: editCaption,
-      postImageUrl: editImageUrl || postData.postImageUrl,
+      postImageUrl: postData.postImageUrl,
       postUrl: editPostUrl || (postData?.postUrl || ''),
       embedPostId: extracted || editEmbedPostId || postData.embedPostId || 'DB-o1yBSe0n',
     };
@@ -159,29 +141,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
 
         {/* View Toggle & Action Buttons */}
         <div className="flex items-center gap-2">
-          {/* Mode Switcher */}
-          <div className="flex items-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-0.5 text-[11px] font-bold">
-            <button
-              onClick={() => setViewMode('iframe')}
-              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                viewMode === 'iframe'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-slate-900 dark:text-white shadow'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
-              }`}
-            >
-              Instagram Embed
-            </button>
-            <button
-              onClick={() => setViewMode('card')}
-              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                viewMode === 'card'
-                  ? 'bg-blue-600 text-slate-900 dark:text-white shadow'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
-              }`}
-            >
-              Custom Card
-            </button>
-          </div>
+          
 
           <a
             href={(postData?.postUrl || '')}
@@ -193,141 +153,45 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
             <span>Open Page</span>
           </a>
 
-          <button
-            onClick={() => setIsEditing(true)}
-            className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
-            title="Edit Instagram Embed & Details"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-          </button>
+          {isAdminMode && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
+              title="Edit Instagram Embed & Details"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* VIEW MODE 1: OFFICIAL INSTAGRAM EMBED (IFRAME) */}
-      {viewMode === 'iframe' && (
-        <div className="p-3 bg-slate-50 dark:bg-slate-950 flex flex-col items-center">
-          <div className="w-full max-w-[480px] rounded-xl overflow-hidden bg-black/40 border border-slate-200 dark:border-slate-800 shadow-inner">
-            <iframe
-              key={iframeKey}
-              src={iframeSrc}
-              className="w-full h-[460px] sm:h-[500px] border-0 rounded-xl bg-white dark:bg-[#090d18]"
-              allow="encrypted-media; autoplay; clipboard-write; picture-in-picture"
-              title={`Instagram post from @${(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}`}
-            />
-          </div>
-          
-          <div className="w-full flex items-center justify-between px-3 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Live Post Embed: @{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}</span>
-            </div>
-            <a
-              href={(postData?.postUrl || '')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#00ADEF] hover:underline flex items-center gap-1 font-bold"
-            >
-              <span>View on Instagram</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
+      {/* OFFICIAL INSTAGRAM EMBED (IFRAME) */}
+      <div className="p-3 bg-slate-50 dark:bg-slate-950 flex flex-col items-center">
+        <div className="w-full max-w-[480px] rounded-xl overflow-hidden bg-black/40 border border-slate-200 dark:border-slate-800 shadow-inner">
+          <iframe
+            key={iframeKey}
+            src={iframeSrc}
+            className="w-full h-[460px] sm:h-[500px] border-0 rounded-xl bg-white dark:bg-[#090d18]"
+            allow="encrypted-media; autoplay; clipboard-write; picture-in-picture"
+            title={`Instagram post from @${(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}`}
+          />
         </div>
-      )}
-
-      {/* VIEW MODE 2: INTERACTIVE CUSTOM CARD */}
-      {viewMode === 'card' && (
-        <div>
-          {/* Post Photo */}
-          <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-50 dark:bg-slate-950 overflow-hidden group">
-            <img
-              src={getSafeImageSrc(postData.postImageUrl, DEFAULT_INSTAGRAM_POST.postImageUrl)}
-              alt="Instagram Post"
-              onError={(e) => handleImageError(e, DEFAULT_INSTAGRAM_POST.postImageUrl)}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              referrerPolicy="no-referrer"
-            />
-
-            {/* Subtle Gradient & Hover Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-60" />
-
-            {/* View on Instagram Floating Pill */}
-            <a
-              href={(postData?.postUrl || '')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-slate-900 dark:text-white text-[11px] font-bold border border-slate-300 dark:border-slate-700/80 backdrop-blur-md inline-flex items-center gap-1.5 transition-all shadow-lg hover:border-pink-500"
-            >
-              <span>View on Instagram</span>
-              <ExternalLink className="w-3 h-3 text-pink-400" />
-            </a>
+        
+        <div className="w-full flex items-center justify-between px-3 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Live Post Embed: @{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}</span>
           </div>
-
-          {/* Interactive Engagement Bar */}
-          <div className="p-3.5 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleLike}
-                  className={`transition-transform active:scale-125 cursor-pointer ${
-                    hasLiked ? 'text-rose-500 fill-rose-500' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                  aria-label="Like post"
-                >
-                  <Heart className={`w-5 h-5 ${hasLiked ? 'fill-rose-500' : ''}`} />
-                </button>
-
-                <a
-                  href={(postData?.postUrl || '')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
-                  aria-label="Comment on Instagram"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                </a>
-
-                <a
-                  href={(postData?.postUrl || '')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
-                  aria-label="Share post"
-                >
-                  <Share2 className="w-4 h-4" />
-                </a>
-              </div>
-
-              <span className="text-[10px] text-slate-500 font-mono">
-                Post ID: {currentEmbedPostId}
-              </span>
-            </div>
-
-            {/* Likes Count */}
-            <div className="text-xs font-bold text-slate-900 dark:text-white">
-              {likeCount.toLocaleString()} likes
-            </div>
-
-            {/* Caption */}
-            <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              <span className="font-bold text-slate-900 dark:text-white mr-1.5">@{(postData?.accountHandle || 'deanzaforce_2011g_ecnl')}</span>
-              {(postData?.caption || '')}
-            </div>
-
-            {/* Timestamp & Direct Link */}
-            <div className="flex items-center justify-between pt-1 text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
-              <span>{(postData?.postedDate || '')}</span>
-              <a
-                href={(postData?.postUrl || '')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#00ADEF] hover:underline"
-              >
-                @deanzaforce_2011g_ecnl
-              </a>
-            </div>
-          </div>
+          <a
+            href={(postData?.postUrl || '')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-500 hover:text-emerald-400 font-semibold"
+          >
+            View live
+          </a>
         </div>
-      )}
+      </div>
 
       {/* Edit Modal */}
       {isEditing && (
@@ -365,17 +229,6 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
                   onChange={(e) => setEditEmbedPostId(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs"
                   placeholder="e.g. DB-o1yBSe0n"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-600 dark:text-slate-300 uppercase mb-1">Fallback Photo URL (For Custom Card)</label>
-                <input
-                  type="url"
-                  value={editImageUrl}
-                  onChange={(e) => setEditImageUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
-                  placeholder="https://..."
                 />
               </div>
 

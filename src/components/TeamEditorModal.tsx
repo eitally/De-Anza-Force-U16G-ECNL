@@ -188,6 +188,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [newPhotoSubtitle, setNewPhotoSubtitle] = useState('');
   const [newPhotoTag, setNewPhotoTag] = useState('');
   const [isAddingPhoto, setIsAddingPhoto] = useState(false);
+  const [isDragOverPhotos, setIsDragOverPhotos] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<ActionPhoto | null>(null);
 
   // Media sub-modal / form states for Google Photos Match Albums
@@ -409,6 +410,44 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   };
 
   // Action Photos Handlers
+  const handlePhotosDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverPhotos(true);
+  };
+  const handlePhotosDragLeave = () => setIsDragOverPhotos(false);
+  const handlePhotosDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverPhotos(false);
+    
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    
+    showNotification(`Processing ${files.length} photo(s)...`);
+    
+    const newPhotos: ActionPhoto[] = [];
+    for (const file of files) {
+      try {
+        const compressedUrl = await compressImage(file, 1000, 0.7);
+        newPhotos.push({
+          id: `photo_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          url: compressedUrl,
+          title: 'Match Action Highlight',
+          subtitle: 'De Anza Force U16 ECNL Matchday Play',
+          tag: 'Matchday Action',
+          date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        });
+      } catch (err) {
+        console.error("Failed to compress photo", err);
+      }
+    }
+    
+    if (newPhotos.length > 0) {
+      const updated = [...newPhotos, ...localPhotos];
+      saveMedia(updated, localAlbums, localMasterAlbum);
+      showNotification(`✓ Added ${newPhotos.length} action photo(s) to carousel!`);
+    }
+  };
+
   const handleAddPhotoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPhotoUrl.trim()) return;
@@ -522,7 +561,41 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     onSaveStandings(localStandings);
     onSaveCoaches(localCoaches);
     onSaveTeamInfo(localTeamInfo);
-    saveMedia(localPhotos, localAlbums, localMasterAlbum);
+    // Auto-save any in-progress photo addition
+    let finalPhotos = [...localPhotos];
+    if (isAddingPhoto && newPhotoUrl.trim()) {
+      finalPhotos = [
+        {
+          id: `photo_${Date.now()}`,
+          url: newPhotoUrl.trim(),
+          title: newPhotoTitle.trim() || 'Match Action Highlight',
+          subtitle: newPhotoSubtitle.trim() || 'De Anza Force U16 ECNL Matchday Play',
+          tag: newPhotoTag.trim() || 'Matchday Action',
+          date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        },
+        ...finalPhotos
+      ];
+      setNewPhotoUrl('');
+      setNewPhotoTitle('');
+      setNewPhotoSubtitle('');
+      setNewPhotoTag('');
+      setIsAddingPhoto(false);
+    }
+    
+    // Auto-save any in-progress photo edits
+    if (editingPhoto) {
+      finalPhotos = finalPhotos.map(p => p.id === editingPhoto.id ? editingPhoto : p);
+      setEditingPhoto(null);
+    }
+    
+    // Auto-save any in-progress album edits
+    let finalAlbums = [...localAlbums];
+    if (editingAlbum) {
+      finalAlbums = finalAlbums.map(a => a.id === editingAlbum.id ? editingAlbum : a);
+      setEditingAlbum(null);
+    }
+
+    saveMedia(finalPhotos, finalAlbums, localMasterAlbum);
     showNotification('✓ All team changes saved successfully!');
   };
 
@@ -3709,7 +3782,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               </div>
 
               {/* SECTION 3: ACTION CAROUSEL PHOTOS */}
-              <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div 
+                className={`space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300 relative rounded-2xl ${isDragOverPhotos ? 'bg-blue-900/20 border-blue-500/50 p-4 ring-2 ring-blue-500' : ''}`}
+                onDragOver={handlePhotosDragOver}
+                onDragLeave={handlePhotosDragLeave}
+                onDrop={handlePhotosDrop}
+              >
+                {isDragOverPhotos && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl border-2 border-dashed border-blue-500 pointer-events-none">
+                    <div className="text-center">
+                      <Upload className="w-12 h-12 text-[#00ADEF] mx-auto mb-3 animate-bounce" />
+                      <h3 className="font-condensed font-black text-2xl text-white uppercase tracking-wider">Drop Photos to Add</h3>
+                      <p className="text-sm text-slate-300">Images will be automatically compressed and saved</p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-[#00ADEF]">
