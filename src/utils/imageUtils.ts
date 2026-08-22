@@ -206,6 +206,10 @@ export function handleImageError(
 
 
 
+export async function compressHeadshot(file: File, maxDim = 400, quality = 0.65): Promise<string> {
+  return compressImage(file, maxDim, quality);
+}
+
 export async function compressImage(file: File, maxWidth = 1280, quality = 0.7): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -223,7 +227,7 @@ export async function compressImage(file: File, maxWidth = 1280, quality = 0.7):
       if (!ctx) {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = (e) => reject(new Error("FileReader failed"));
+        reader.onerror = () => reject(new Error("FileReader failed"));
         reader.readAsDataURL(file);
         return;
       }
@@ -231,13 +235,23 @@ export async function compressImage(file: File, maxWidth = 1280, quality = 0.7):
       let width = img.width;
       let height = img.height;
 
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
+      // Scale down proportionally if larger than maxWidth
+      if (width > maxWidth || height > maxWidth) {
+        if (width >= height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxWidth) / height);
+          height = maxWidth;
+        }
       }
 
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = Math.max(width, 1);
+      canvas.height = Math.max(height, 1);
+
+      // Better image quality when downscaling
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
 
       try {
@@ -246,16 +260,16 @@ export async function compressImage(file: File, maxWidth = 1280, quality = 0.7):
       } catch (err) {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = (e) => reject(new Error("Fallback FileReader failed"));
+        reader.onerror = () => reject(new Error("Fallback FileReader failed"));
         reader.readAsDataURL(file);
       }
     };
 
-    img.onerror = (e) => {
+    img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
       const reader = new FileReader();
       reader.onload = (ev) => resolve(ev.target?.result as string);
-      reader.onerror = (ev) => reject(new Error("Fallback FileReader failed"));
+      reader.onerror = () => reject(new Error("Fallback FileReader failed"));
       reader.readAsDataURL(file);
     };
 

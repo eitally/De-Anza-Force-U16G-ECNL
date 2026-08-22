@@ -11,7 +11,7 @@ import type {
   GooglePhotosAlbum, 
   MasterAlbumInfo
 } from '../types';
-import { compressImage, getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, DEFAULT_COACH_PHOTO } from '../utils/imageUtils';
+import { compressImage, compressHeadshot, getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, DEFAULT_COACH_PHOTO, CLUB_LOGO_URL } from '../utils/imageUtils';
 import { 
   INITIAL_STANDINGS, 
   DEFAULT_ACTION_PHOTOS, 
@@ -609,7 +609,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     saveMedia(finalPhotos, finalAlbums, localMasterAlbum);
 
     if (onSaveAllData) {
-      onSaveAllData({
+      console.log("Saving data:", finalPlayers); onSaveAllData({
         players: finalPlayers,
         matches: localMatches,
         standings: localStandings,
@@ -639,16 +639,32 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     e.preventDefault();
     if (!editingPlayer) return;
 
+    let updated: Player[];
     if (isCreatingPlayer) {
-      const newPlayer = { ...editingPlayer, id: `p_${Date.now()}` };
-      const updated = [...localPlayers, newPlayer];
+      const newPlayer = { ...editingPlayer, id: editingPlayer.id || `p_${Date.now()}` };
+      updated = [...localPlayers, newPlayer];
       setLocalPlayers(updated);
-            setIsCreatingPlayer(false);
-      showNotification(`✓ Player added locally. (Click Save & Close when done)`);
+      setIsCreatingPlayer(false);
+      showNotification(`✓ Added #${newPlayer.jerseyNumber} ${newPlayer.name} to the roster & saved to database!`);
     } else {
-      const updated = localPlayers.map((p) => (p.id === editingPlayer.id ? editingPlayer : p));
+      updated = localPlayers.map((p) => (p.id === editingPlayer.id ? editingPlayer : p));
       setLocalPlayers(updated);
-            showNotification(`✓ Edits applied locally. (Click Save & Close when done)`);
+      showNotification(`✓ Saved changes for #${editingPlayer.jerseyNumber} ${editingPlayer.name} to database!`);
+    }
+
+    // Persist immediately to parent state and Firebase
+    onSavePlayers(updated);
+    if (onSaveAllData) {
+      onSaveAllData({
+        players: updated,
+        matches: localMatches,
+        standings: localStandings,
+        coaches: localCoaches,
+        teamInfo: localTeamInfo,
+        actionPhotos: localPhotos,
+        googlePhotosAlbums: localAlbums,
+        masterAlbumInfo: localMasterAlbum
+      });
     }
     setEditingPlayer(null);
   };
@@ -660,12 +676,50 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const executeDeletePlayer = (targetPlayer: Player) => {
     const updated = localPlayers.filter((p) => p.id !== targetPlayer.id);
     setLocalPlayers(updated);
-    // onSavePlayers(updated); (Removed direct persist)
+    onSavePlayers(updated);
+    if (onSaveAllData) {
+      onSaveAllData({
+        players: updated,
+        matches: localMatches,
+        standings: localStandings,
+        coaches: localCoaches,
+        teamInfo: localTeamInfo,
+        actionPhotos: localPhotos,
+        googlePhotosAlbums: localAlbums,
+        masterAlbumInfo: localMasterAlbum
+      });
+    }
     if (editingPlayer?.id === targetPlayer.id) {
       setEditingPlayer(null);
     }
     setPlayerPendingDelete(null);
     showNotification(`✓ Removed #${targetPlayer.jerseyNumber} ${targetPlayer.name} from the roster.`);
+  };
+
+  const handleQuickPlayerPhotoUpload = (player: Player, file: File) => {
+    compressHeadshot(file)
+      .then((compressed) => {
+        const updated = localPlayers.map(p => p.id === player.id ? { ...p, photoUrl: compressed } : p);
+        setLocalPlayers(updated);
+        onSavePlayers(updated);
+        if (onSaveAllData) {
+          onSaveAllData({
+            players: updated,
+            matches: localMatches,
+            standings: localStandings,
+            coaches: localCoaches,
+            teamInfo: localTeamInfo,
+            actionPhotos: localPhotos,
+            googlePhotosAlbums: localAlbums,
+            masterAlbumInfo: localMasterAlbum
+          });
+        }
+        showNotification(`✓ Photo updated & saved for #${player.jerseyNumber} ${player.name}!`);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert('Failed to process image file.');
+      });
   };
 
   // Coach Management Handlers
@@ -1128,34 +1182,49 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         </p>
                       </div>
 
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload Photo from Device</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const res = event.target?.result as string;
-                              if (res) {
-                                setEditingPlayer({ ...editingPlayer, photoUrl: res });
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
-                      </label>
+                      <div className="flex items-center gap-2">
+                        {editingPlayer.photoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingPlayer({ ...editingPlayer, photoUrl: '' })}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+                            title="Reset to official club crest"
+                          >
+                            Reset to Crest
+                          </button>
+                        )}
+                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer shadow transition-colors shrink-0">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload Photo from Device</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              
+                              // Compress image to lightweight ~15KB JPEG
+                              compressHeadshot(file)
+                                .then((res) => {
+                                  setEditingPlayer({ ...editingPlayer, photoUrl: res });
+                                  showNotification('✓ Photo loaded. Click "Apply Player Edits" or "Save & Close" to save to database.');
+                                })
+                                .catch((err) => {
+                                  console.error("Compression failed:", err);
+                                  alert("Failed to process image. Please try a smaller file.");
+                                });
+                            }}
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                       {/* Live Image Preview */}
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border-2 border-blue-500/60 shrink-0 shadow relative">
                         <img
-                          key={editingPlayer.photoUrl}
+                          key={editingPlayer.photoUrl || 'default'}
                           src={getSafeImageSrc(editingPlayer.photoUrl, DEFAULT_PLAYER_PHOTO)}
                           alt="Preview"
                           className="w-full h-full object-cover object-top"
@@ -1167,7 +1236,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         <input
                           type="text"
                           placeholder="Paste image URL (e.g. https://... or Google Drive link)"
-                          value={editingPlayer.photoUrl}
+                          value={editingPlayer.photoUrl || ''}
                           onChange={(e) => setEditingPlayer({ ...editingPlayer, photoUrl: e.target.value })}
                           className="w-full p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:border-blue-500 font-mono"
                         />
@@ -1574,13 +1643,32 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             </td>
                             <td className="py-2 px-3">
                               <div className="flex items-center gap-2">
-                                <img
-                                  key={`${player.id}_${player.photoUrl}`}
-                                  src={getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO)}
-                                  alt={player.name}
-                                  className="w-7 h-7 rounded-full object-cover border border-slate-300 dark:border-slate-700 shrink-0"
-                                  onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
-                                />
+                                <label 
+                                  className="relative group cursor-pointer shrink-0 block"
+                                  title={`Click to quickly upload new photo for ${player.name}`}
+                                >
+                                  <img
+                                    key={`${player.id}_${player.photoUrl}`}
+                                    src={getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO)}
+                                    alt={player.name}
+                                    className="w-8 h-8 rounded-full object-cover border-2 border-slate-300 dark:border-slate-700 group-hover:border-blue-500 transition-colors"
+                                    onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
+                                  />
+                                  <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                                    <Camera className="w-3.5 h-3.5 text-blue-300" />
+                                  </div>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        handleQuickPlayerPhotoUpload(player, file);
+                                      }
+                                    }}
+                                  />
+                                </label>
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span className="font-bold text-slate-900 dark:text-white">{player.name}</span>
                                   {player.isCaptain && (

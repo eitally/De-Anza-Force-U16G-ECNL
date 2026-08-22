@@ -132,10 +132,28 @@ export default function App() {
     }
   };
 
-  // Sync to localStorage
+  // Save Players & Sync to Firestore
   const handleSavePlayers = (updated: Player[]) => {
     setPlayers(updated);
-    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true }).catch(console.error);
+    if (selectedPlayer) {
+      const refreshedSelected = updated.find(p => p.id === selectedPlayer.id);
+      if (refreshedSelected) {
+        setSelectedPlayer(refreshedSelected);
+      }
+    }
+    try {
+      localStorage.setItem('daf_team_players', JSON.stringify(updated));
+    } catch (e) {
+      console.warn("LocalStorage save notice:", e);
+    }
+    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true }).catch((err) => {
+      console.error("Firestore player save error:", err);
+    });
+  };
+
+  const handleUpdatePlayerPhoto = (playerId: string, newPhotoUrl: string) => {
+    const updated = players.map((p) => (p.id === playerId ? { ...p, photoUrl: newPhotoUrl } : p));
+    handleSavePlayers(updated);
   };
 
   const handleDeletePlayer = (playerId: string) => {
@@ -428,6 +446,10 @@ export default function App() {
             teamInfo={teamInfo}
             coaches={coaches}
             onClose={() => setSelectedPlayer(null)}
+            onEditPlayer={(player) => handleOpenTeamEditor('players', player)}
+            onDeletePlayer={handleDeletePlayer}
+            onUpdatePlayerPhoto={handleUpdatePlayerPhoto}
+            isAdminMode={true}
           />
         )}
       </AnimatePresence>

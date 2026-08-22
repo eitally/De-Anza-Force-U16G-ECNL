@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Player, TeamInfo, Coach } from '../types';
-import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
+import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, compressHeadshot } from '../utils/imageUtils';
 import { 
   X, 
   GraduationCap, 
@@ -18,7 +18,9 @@ import {
   MapPin,
   FileDown,
   Trash2,
-  Instagram
+  Instagram,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 interface PlayerModalProps {
@@ -28,6 +30,8 @@ interface PlayerModalProps {
   onClose: () => void;
   onEditPlayer?: (player: Player) => void;
   onDeletePlayer?: (playerId: string, playerName: string) => void;
+  onUpdatePlayerPhoto?: (playerId: string, photoUrl: string) => void;
+  isAdminMode?: boolean;
 }
 
 export const PlayerModal: React.FC<PlayerModalProps> = ({
@@ -37,12 +41,31 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
   onClose,
   onEditPlayer,
   onDeletePlayer,
+  onUpdatePlayerPhoto,
+  isAdminMode = false,
 }) => {
   if (!player) return null;
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [photoSavedNotice, setPhotoSavedNotice] = useState<string | null>(null);
   const recruitingCoach = coaches && coaches.length > 0 ? (coaches.find(c => (c.role || '').toLowerCase().includes('recruiting')) || coaches[0]) : null;
   const safePhotoSrc = getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onUpdatePlayerPhoto) return;
+
+    compressHeadshot(file)
+      .then((res) => {
+        onUpdatePlayerPhoto(player.id, res);
+        setPhotoSavedNotice('✓ Photo saved to database!');
+        setTimeout(() => setPhotoSavedNotice(null), 3500);
+      })
+      .catch((err) => {
+        console.error("Photo compression failed:", err);
+        alert("Failed to process photo file. Please try a smaller image.");
+      });
+  };
 
   return (
     <motion.div 
@@ -77,7 +100,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
           {/* Top Profile Summary Header */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch pb-6 border-b border-slate-200 dark:border-slate-800">
             {/* Player Photo with Jersey Badge */}
-            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl w-full h-64 sm:h-80 md:aspect-auto md:h-full">
+            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl w-full h-64 sm:h-80 md:aspect-auto md:h-full group">
               <img
                 key={`${player.id}_${safePhotoSrc}`}
                 src={safePhotoSrc}
@@ -94,7 +117,27 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   <span>CAPTAIN</span>
                 </div>
               )}
-              
+
+              {/* Direct Photo Upload Button for Admins */}
+              {onUpdatePlayerPhoto && (
+                <label className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white text-xs font-bold backdrop-blur-md border border-white/20 shadow-xl cursor-pointer transition-all hover:scale-105 active:scale-95">
+                  <Camera className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Change Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhotoUpload}
+                  />
+                </label>
+              )}
+
+              {/* Photo Saved Notification */}
+              {photoSavedNotice && (
+                <div className="absolute inset-x-3 bottom-14 p-2 rounded-xl bg-emerald-950/90 border border-emerald-500 text-emerald-200 text-center text-xs font-bold shadow-2xl animate-in fade-in">
+                  {photoSavedNotice}
+                </div>
+              )}
             </div>
 
             {/* Core Info & College Credentials */}
