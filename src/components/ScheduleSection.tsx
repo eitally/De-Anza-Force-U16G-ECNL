@@ -80,7 +80,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
       'PRODID:-//De Anza Force U16 ECNL//Soccer Match//EN',
       'BEGIN:VEVENT',
       `SUMMARY:De Anza Force U16 ${match.isHome ? 'vs' : 'at'} ${match.opponent}`,
-      `DESCRIPTION:De Anza Force U16 ECNL Soccer Match\\nCompetition: ${match.competition}\\nKit: ${match.homeKitColor}\\nNotes: ${match.gameNotes || 'Bring both blue and black jerseys.'}`,
+      `DESCRIPTION:De Anza Force U16 ECNL Soccer Match\\nCompetition: ${match.competition}\\nKit: ${match.isHome ? 'Blue / Red Accents' : 'Black'}\\nNotes: ${match.gameNotes || 'Bring both blue and black jerseys.'}`,
       `LOCATION:${match.venue}, ${match.address}`,
       `DTSTART:${match.date.replace(/-/g, '')}T180000Z`,
       `DTEND:${match.date.replace(/-/g, '')}T200000Z`,
@@ -262,7 +262,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
 
                         {/* Mobile Status Tag */}
                         <span className={`lg:hidden px-2 py-0.5 rounded-md text-[11px] font-sans font-bold uppercase tracking-wider ${
-                          match.isHome ? 'bg-blue-950/90 text-[#00ADEF] border border-blue-800/80' : 'bg-amber-950/90 text-amber-300 border border-amber-800/80'
+                          match.isHome ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-[#00ADEF] border border-blue-200 dark:border-blue-800' : 'bg-slate-800 text-white border border-slate-700'
                         }`}>
                           {match.isHome ? 'HOME' : 'AWAY'}
                         </span>
@@ -273,9 +273,9 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           {/* Home / Away Pill Badge (Large, legible font) */}
                           <span className={`hidden lg:inline-flex items-center justify-center px-2.5 py-0.5 rounded-md text-[11px] font-sans font-bold uppercase tracking-wider shrink-0 ${
-                            match.isHome 
-                              ? 'bg-blue-950/90 text-[#00ADEF] border border-blue-800/80 shadow-xs' 
-                              : 'bg-amber-950/90 text-amber-300 border border-amber-800/80 shadow-xs'
+                            match.isHome
+                              ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-[#00ADEF] border border-blue-200 dark:border-blue-800 shadow-xs'
+                              : 'bg-slate-800 text-white border border-slate-700 shadow-xs'
                           }`}>
                             {match.isHome ? 'HOME' : 'AWAY'}
                           </span>
@@ -283,7 +283,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                           <div className="flex flex-col min-w-0">
                             <span className="font-sans font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
                               De Anza Force{' '}
-                              <span className={match.isHome ? 'text-slate-500 dark:text-slate-400 font-bold' : 'text-amber-400 font-black'}>
+                              <span className={match.isHome ? 'text-slate-500 dark:text-slate-400 font-bold' : 'text-slate-500 dark:text-slate-400 font-bold'}>
                                 {match.isHome ? 'vs' : 'at'}
                               </span>{' '}
                               {match.opponent}
@@ -324,7 +324,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                           <a href={match.mapUrl} target="_blank" rel="noopener noreferrer" className="truncate text-xs font-semibold hover:text-blue-400 hover:underline">{match.venue}</a>
                         </div>
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
-                          <span className="text-blue-400 font-semibold">Kit: {match.homeKitColor}</span>
+                          <span className="text-blue-400 font-semibold">Kit: {match.isHome ? 'Blue / Red Accents' : 'Black'}</span>
                           {match.fieldNumber && <span>Field: {match.fieldNumber}</span>}
                         </div>
                       </div>
@@ -404,7 +404,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white truncate">
                         De Anza Force{' '}
-                        <span className={match.isHome ? 'text-slate-500 dark:text-slate-400 font-bold' : 'text-amber-400 font-black'}>
+                        <span className={match.isHome ? 'text-slate-500 dark:text-slate-400 font-bold' : 'text-slate-500 dark:text-slate-400 font-bold'}>
                           {match.isHome ? 'vs' : 'at'}
                         </span>{' '}
                         {match.opponent}
@@ -429,7 +429,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                         </div>
                       ) : (
                         <span className={`text-[11px] font-sans font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
-                          match.isHome ? 'bg-blue-950/90 text-[#00ADEF] border border-blue-800/80' : 'bg-amber-950/90 text-amber-300 border border-amber-800/80'
+                          match.isHome ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-[#00ADEF] border border-blue-200 dark:border-blue-800' : 'bg-slate-800 text-white border border-slate-700'
                         }`}>
                           {match.isHome ? 'HOME' : 'AWAY'}
                         </span>
@@ -438,7 +438,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-blue-400 font-semibold">Kit: {match.homeKitColor}</span>
+                    <span className="text-[10px] text-blue-400 font-semibold">Kit: {match.isHome ? 'Blue / Red Accents' : 'Black'}</span>
                     <div className="flex items-center gap-1.5">
                       {match.videoLiveStreamUrl && (
                         <a

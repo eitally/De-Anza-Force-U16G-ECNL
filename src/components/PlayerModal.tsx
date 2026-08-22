@@ -177,7 +177,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
           <div>
             <h3 className="font-condensed font-black text-lg uppercase tracking-wider text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
               <Shield className="w-4 h-4 text-blue-400" />
-              2025/2026 Season Performance Stats
+              2026/2027 Season Performance Stats
             </h3>
             
             {(!player.stats.appearances && !player.stats.starts && !player.stats.goals && !player.stats.assists && !player.stats.cleanSheets && !player.stats.saves) ? (

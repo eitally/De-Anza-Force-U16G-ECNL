@@ -21,7 +21,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
           <div>
             <h2 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-slate-900 dark:text-white leading-none">
-              LEAGUE <span className="text-yellow-400">STANDINGS</span> & TROPHIES
+              LEAGUE <span className="text-[#00ADEF]">STANDINGS</span> & TROPHIES
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
               Official 2026-2027 Northern California ECNL table standings and national championship tournament pathways.

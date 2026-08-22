@@ -43,7 +43,9 @@ export const INITIAL_TEAM_INFO: TeamInfo = {
     "photosHub": "https://linktr.ee/willow_glen_photography"
   },
   "teamPhotoUrl": "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80",
-  "teamPhotoCaption": "2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff"
+  "teamPhotoCaption": "2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff",
+  "recentForm": ["W", "W", "D", "W", "L"],
+  "recentFormStat": "3 Clean Sheets in last 5 matches"
 };
 export const INITIAL_PLAYERS: Player[] = [
   {

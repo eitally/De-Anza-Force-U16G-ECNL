@@ -49,7 +49,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
       className="group relative flex flex-col rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#101726] dark:to-[#0a0e1a] border border-slate-200 dark:border-slate-800/90 hover:border-blue-500/60 shadow-lg hover:shadow-2xl hover:shadow-blue-950/50 transition-all duration-300 overflow-hidden cursor-pointer transform hover:-translate-y-1"
     >
       {/* Top Card Image & Jersey Number Area */}
-      <div className="relative w-full h-64 sm:h-72 bg-slate-50 dark:bg-[#0c1220] overflow-hidden">
+      <div className="relative w-full aspect-[4/5] bg-slate-50 dark:bg-[#0c1220] overflow-hidden">
         {/* Atmospheric Glow */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#101726] via-transparent to-transparent z-10" />
 

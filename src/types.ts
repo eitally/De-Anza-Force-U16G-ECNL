@@ -156,6 +156,8 @@ export interface TeamInfo {
   };
   teamPhotoUrl?: string;
   teamPhotoCaption?: string;
+  recentForm?: ('W' | 'D' | 'L' | '-')[];
+  recentFormStat?: string;
 }
 
 export interface ActionPhoto {

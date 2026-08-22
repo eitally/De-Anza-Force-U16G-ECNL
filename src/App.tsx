@@ -224,11 +224,11 @@ export default function App() {
       
       {/* Top Main Navigation */}
       <Navbar
-        masterAlbumInfo={masterAlbumInfo}
         teamInfo={teamInfo}
         nextMatch={nextMatch}
         onOpenScoutPack={() => setIsScoutPackOpen(true)}
         playerCount={players.length}
+          isAdminMode={isAdminMode}
       />
 
       {/* Main Content Sections */}
@@ -239,10 +239,7 @@ export default function App() {
           nextMatch={nextMatch}
           onOpenScoutPack={() => setIsScoutPackOpen(true)}
           playerCount={players.length}
-          actionPhotos={actionPhotos}
-          googlePhotosAlbums={googlePhotosAlbums}
-          masterAlbumInfo={masterAlbumInfo}
-          onOpenPhotoManager={isAdminMode ? () => handleOpenTeamEditor('media') : undefined}
+          isAdminMode={isAdminMode}
         />
 
         {/* Dynamic Roster Showcase */}
@@ -434,9 +431,6 @@ export default function App() {
         matches={matches}
         standings={standings}
         coaches={coaches}
-        actionPhotos={actionPhotos}
-        googlePhotosAlbums={googlePhotosAlbums}
-        masterAlbumInfo={masterAlbumInfo}
         onSavePlayers={handleSavePlayers}
         onSaveMatches={handleSaveMatches}
         onSaveStandings={handleSaveStandings}
