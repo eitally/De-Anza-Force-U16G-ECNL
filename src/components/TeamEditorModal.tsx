@@ -366,8 +366,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     const synced = syncStandingsAndTeamInfoWithMatches(localMatches, localStandings, localTeamInfo);
     setLocalStandings(synced.updatedStandings);
     setLocalTeamInfo(synced.updatedTeamInfo);
-    onSaveStandings(synced.updatedStandings);
-    onSaveTeamInfo(synced.updatedTeamInfo);
+    
     showNotification(`⚡ Auto-synced season record (${synced.computed.wins}W-${synced.computed.losses}L-${synced.computed.draws}D) and past 5 match form [${synced.computed.form.filter(f => f !== '-').join(', ')}]!`);
   };
 
@@ -390,9 +389,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         }
       }));
 
-    if (onSaveActionPhotos) onSaveActionPhotos(photosList);
-    if (onSaveGooglePhotosAlbums) onSaveGooglePhotosAlbums(albumsList);
-    if (onSaveMasterAlbumInfo) onSaveMasterAlbumInfo(masterInfo);
+    
   };
 
   // Master Album Link Handler
@@ -620,7 +617,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     }
 
     saveMedia(finalPhotos, finalAlbums, localMasterAlbum);
+    if (onSaveActionPhotos) onSaveActionPhotos(finalPhotos);
+    if (onSaveGooglePhotosAlbums) onSaveGooglePhotosAlbums(finalAlbums);
+    if (onSaveMasterAlbumInfo) onSaveMasterAlbumInfo(localMasterAlbum);
     showNotification('✓ All team changes saved successfully!');
+    setTimeout(() => onClose(), 800);
   };
 
   // Save single player edits
@@ -632,14 +633,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       const newPlayer = { ...editingPlayer, id: `p_${Date.now()}` };
       const updated = [...localPlayers, newPlayer];
       setLocalPlayers(updated);
-      onSavePlayers(updated);
-      setIsCreatingPlayer(false);
-      showNotification(`✓ Added new player #${editingPlayer.jerseyNumber} ${editingPlayer.name}`);
+            setIsCreatingPlayer(false);
+      showNotification(`✓ Player added locally. (Click Save & Close when done)`);
     } else {
       const updated = localPlayers.map((p) => (p.id === editingPlayer.id ? editingPlayer : p));
       setLocalPlayers(updated);
-      onSavePlayers(updated);
-      showNotification(`✓ Updated profile for ${editingPlayer.name}`);
+            showNotification(`✓ Edits applied locally. (Click Save & Close when done)`);
     }
     setEditingPlayer(null);
   };
@@ -651,7 +650,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const executeDeletePlayer = (targetPlayer: Player) => {
     const updated = localPlayers.filter((p) => p.id !== targetPlayer.id);
     setLocalPlayers(updated);
-    onSavePlayers(updated); // Persist immediately to localStorage and App state
+    // onSavePlayers(updated); (Removed direct persist)
     if (editingPlayer?.id === targetPlayer.id) {
       setEditingPlayer(null);
     }
@@ -684,7 +683,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       const newCoach = { ...editingCoach, id: editingCoach.id || `c_${Date.now()}` };
       const updated = [...localCoaches, newCoach];
       setLocalCoaches(updated);
-      onSaveCoaches(updated);
+      // onSaveCoaches(updated);
       setIsCreatingCoach(false);
       showNotification(`✓ Added ${newCoach.name} to coaching staff`);
     } else {
@@ -782,10 +781,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      onClick={() => {
-        handleSaveAll();
-        onClose();
-      }}
+      onClick={handleSaveAll}
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto bg-black/90 backdrop-blur-md"
     >
       <motion.div 
@@ -1302,7 +1298,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         type="submit"
                         className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md"
                       >
-                        Save Player
+                        Apply Player Edits
                       </button>
                     </div>
                   </div>
@@ -1843,7 +1839,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         type="submit"
                         className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-md shadow-blue-900/30 cursor-pointer"
                       >
-                        {isCreatingCoach ? 'Add Staff Member' : 'Save Coach Profile'}
+                        {isCreatingCoach ? 'Add Staff Member' : 'Apply Coach Edits'}
                       </button>
                     </div>
                   </div>
@@ -2084,15 +2080,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                           </span>{' '}
                           {m.opponent || 'Opponent'}
                         </span>
-                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${
-                          m.status === 'completed' 
-                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60' 
-                            : m.status === 'live' 
-                            ? 'bg-red-950 text-red-300 border border-red-700/60 animate-pulse' 
-                            : 'bg-blue-950 text-blue-300 border border-blue-700/60'
-                        }`}>
-                          {m.status} {m.status === 'completed' && `(${m.teamScore ?? 0} - ${m.opponentScore ?? 0})`}
-                        </span>
+                        
+{m.status === 'completed' && m.teamScore !== undefined && m.opponentScore !== undefined && (
+  <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${
+    m.teamScore > m.opponentScore ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60' : 
+    m.teamScore === m.opponentScore ? 'bg-amber-950 text-amber-300 border border-amber-700/60' :
+    'bg-red-950 text-red-300 border border-red-700/60'
+  }`}>
+    {m.teamScore > m.opponentScore ? 'W' : m.teamScore === m.opponentScore ? 'D' : 'L'} ({m.teamScore} - {m.opponentScore})
+  </span>
+)}
+
                         <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-condensed font-black uppercase tracking-wider ${
                           m.isHome ? 'bg-blue-950/90 text-[#00ADEF] border border-blue-800/80' : 'bg-amber-950/90 text-amber-300 border border-amber-800/80'
                         }`}>
@@ -2251,33 +2249,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
                       {/* Status & Scores */}
                       <div className="sm:col-span-1 lg:col-span-4">
-                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Match Status & Result</label>
+                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Match Result / Score</label>
                         <div className="flex items-center gap-2 mt-1">
-                          <select
-                            value={m.status}
-                            onChange={(e) => {
-                              const updated = [...localMatches];
-                              updated[index].status = e.target.value as any;
-                              setLocalMatches(updated);
-                            }}
-                            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none cursor-pointer shrink-0"
-                          >
-                            <option value="upcoming">Upcoming</option>
-                            <option value="live">LIVE</option>
-                            <option value="completed">Completed</option>
-                          </select>
-
-                          {(m.status === 'completed' || m.status === 'live') && (
+                          {true && (
                             <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                               <div className="text-center">
                                 <span className="text-[9px] text-blue-400 block font-bold">Force</span>
                                 <input
                                   type="number"
                                   min="0"
-                                  value={m.teamScore ?? 0}
+                                  value={m.teamScore ?? ''} placeholder="-"
                                   onChange={(e) => {
                                     const updated = [...localMatches];
-                                    updated[index].teamScore = parseInt(e.target.value, 10) || 0;
+                                    const val = parseInt(e.target.value, 10);
+                                    updated[index].teamScore = isNaN(val) ? undefined : val;
+                                    updated[index].status = (updated[index].teamScore !== undefined || updated[index].opponentScore !== undefined) ? 'completed' : 'upcoming';
                                     setLocalMatches(updated);
                                   }}
                                   className="w-10 p-1 text-center font-black text-slate-900 dark:text-white bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700"
@@ -2289,10 +2275,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                 <input
                                   type="number"
                                   min="0"
-                                  value={m.opponentScore ?? 0}
+                                  value={m.opponentScore ?? ''} placeholder="-"
                                   onChange={(e) => {
                                     const updated = [...localMatches];
-                                    updated[index].opponentScore = parseInt(e.target.value, 10) || 0;
+                                    const val = parseInt(e.target.value, 10);
+                                    updated[index].opponentScore = isNaN(val) ? undefined : val;
+                                    updated[index].status = (updated[index].teamScore !== undefined || updated[index].opponentScore !== undefined) ? 'completed' : 'upcoming';
                                     setLocalMatches(updated);
                                   }}
                                   className="w-10 p-1 text-center font-black text-slate-900 dark:text-white bg-white dark:bg-slate-900 rounded border border-slate-300 dark:border-slate-700"
@@ -2666,7 +2654,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         }).map((team, idx) => ({ ...team, rank: idx + 1 }));
 
                         setLocalStandings(sorted);
-                        onSaveStandings(sorted);
+                        // onSaveStandings(sorted);
                         showNotification('✓ Recalculated Points, Goal Difference, PPG, and re-ranked table!');
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors cursor-pointer"
@@ -2702,7 +2690,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         };
                         const updated = [...localStandings, newTeam];
                         setLocalStandings(updated);
-                        onSaveStandings(updated);
+                        // onSaveStandings(updated);
                         showNotification('✓ Added new team to standings table.');
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-colors cursor-pointer"
@@ -2716,7 +2704,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       onClick={() => {
                         if (window.confirm('Reset standings table to default NorCal U16 ECNL league data?')) {
                           setLocalStandings(INITIAL_STANDINGS);
-                          onSaveStandings(INITIAL_STANDINGS);
+                          // onSaveStandings(INITIAL_STANDINGS);
                           showNotification('✓ Reset standings table to default ECNL league data.');
                         }
                       }}
@@ -3085,9 +3073,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onSaveStandings(localStandings);
-                      onSaveTeamInfo(localTeamInfo);
-                      showNotification('✓ Saved Standings & Record changes to live site!');
+                      showNotification('✓ Changes applied locally. (Click Save & Close when done)');
                     }}
                     className="px-4 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#0095ce] text-slate-950 font-black uppercase text-xs tracking-wider transition-colors shadow-lg cursor-pointer"
                   >
@@ -3175,7 +3161,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         teamPhotoCaption: caption || localTeamInfo.teamPhotoCaption
                       };
                       setLocalTeamInfo(updatedInfo);
-                      onSaveTeamInfo(updatedInfo);
+                      // onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Updated official squad photo!');
                     }}
                     onRemove={() => {
@@ -3184,7 +3170,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         teamPhotoUrl: '',
                       };
                       setLocalTeamInfo(updatedInfo);
-                      onSaveTeamInfo(updatedInfo);
+                      // onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Removed team squad photo.');
                     }}
                     onRestoreDefault={() => {
@@ -3196,7 +3182,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         teamPhotoCaption: defaultCaption
                       };
                       setLocalTeamInfo(updatedInfo);
-                      onSaveTeamInfo(updatedInfo);
+                      // onSaveTeamInfo(updatedInfo);
                       showNotification('✓ Restored default squad photo.');
                     }}
                   />
@@ -3289,7 +3275,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       teamPhotoCaption: caption || localTeamInfo.teamPhotoCaption
                     };
                     setLocalTeamInfo(updatedInfo);
-                    onSaveTeamInfo(updatedInfo);
+                    // onSaveTeamInfo(updatedInfo);
                     showNotification('✓ Updated official squad photo!');
                   }}
                   onRemove={() => {
@@ -3298,7 +3284,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       teamPhotoUrl: '',
                     };
                     setLocalTeamInfo(updatedInfo);
-                    onSaveTeamInfo(updatedInfo);
+                    // onSaveTeamInfo(updatedInfo);
                     showNotification('✓ Removed team squad photo.');
                   }}
                   onRestoreDefault={() => {
@@ -3310,7 +3296,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       teamPhotoCaption: defaultCaption
                     };
                     setLocalTeamInfo(updatedInfo);
-                    onSaveTeamInfo(updatedInfo);
+                    // onSaveTeamInfo(updatedInfo);
                     showNotification('✓ Restored default squad photo.');
                   }}
                 />
@@ -3485,7 +3471,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                             }
                             
                             setLocalPlayers(newPlayers);
-                            onSavePlayers(newPlayers); // Auto-save imported players
+                            // onSavePlayers(newPlayers);
                             showNotification(`✓ Successfully imported ${newPlayers.length} players from CSV.`);
                           } catch (err: any) {
                             console.error(err);
@@ -3534,13 +3520,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold"
             >
-              Close
+              Cancel / Discard
             </button>
             <button
               onClick={handleSaveAll}
               className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-slate-900 dark:text-white font-condensed font-bold text-sm uppercase tracking-wider shadow-lg shadow-blue-900/40"
             >
-              Save & Apply All
+              Save & Close Editor
             </button>
           </div>
         </div>

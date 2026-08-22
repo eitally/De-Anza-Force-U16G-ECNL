@@ -310,9 +310,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                               </span>
                             </div>
                           ) : (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
-                              Upcoming
-                            </span>
+                            null
                           )}
                         </div>
                       </div>

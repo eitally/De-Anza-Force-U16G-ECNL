@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "ai-studio-deanzaforcesocce-67829d24-5955-4daa-965e-bbfccc815d47",
+    "rules": "firestore.rules"
+  }
+}
