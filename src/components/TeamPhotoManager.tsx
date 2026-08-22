@@ -67,8 +67,8 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
     }
 
     try {
-      showToast('Compressing image...');
-      const compressedDataUrl = await compressImage(file, 1600, 0.75);
+      showToast('Processing high-resolution squad photo...');
+      const compressedDataUrl = await compressImage(file);
       setCurrentUrl(compressedDataUrl);
       onUpdate(compressedDataUrl, currentCaption);
       showToast('✓ Squad photo uploaded successfully!');

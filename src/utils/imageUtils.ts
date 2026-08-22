@@ -206,11 +206,15 @@ export function handleImageError(
 
 
 
-export async function compressHeadshot(file: File, maxDim = 400, quality = 0.65): Promise<string> {
+/**
+ * Produces crisp, high-resolution 1-2MB JPEGs (up to 2560px, 0.92 quality)
+ * preserving all fine details, jersey text, and sharp focus.
+ */
+export async function compressHeadshot(file: File, maxDim = 2560, quality = 0.92): Promise<string> {
   return compressImage(file, maxDim, quality);
 }
 
-export async function compressImage(file: File, maxWidth = 1280, quality = 0.7): Promise<string> {
+export async function compressImage(file: File, maxWidth = 2560, quality = 0.92): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!file) {
       reject(new Error("No file provided"));
@@ -235,7 +239,7 @@ export async function compressImage(file: File, maxWidth = 1280, quality = 0.7):
       let width = img.width;
       let height = img.height;
 
-      // Scale down proportionally if larger than maxWidth
+      // Only scale down if image exceeds max dimensions (e.g. 2560px)
       if (width > maxWidth || height > maxWidth) {
         if (width >= height) {
           height = Math.round((height * maxWidth) / width);
@@ -249,7 +253,7 @@ export async function compressImage(file: File, maxWidth = 1280, quality = 0.7):
       canvas.width = Math.max(width, 1);
       canvas.height = Math.max(height, 1);
 
-      // Better image quality when downscaling
+      // High-quality image downsampling
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);

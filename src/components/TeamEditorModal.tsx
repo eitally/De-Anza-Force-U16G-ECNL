@@ -426,7 +426,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     const newPhotos: ActionPhoto[] = [];
     for (const file of files) {
       try {
-        const compressedUrl = await compressImage(file, 1000, 0.7);
+        const compressedUrl = await compressImage(file);
         newPhotos.push({
           id: `photo_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
           url: compressedUrl,
@@ -1204,11 +1204,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                               const file = e.target.files?.[0];
                               if (!file) return;
                               
-                              // Compress image to lightweight ~15KB JPEG
+                              // Process image into high-resolution 1-2MB JPEG
                               compressHeadshot(file)
                                 .then((res) => {
                                   setEditingPlayer({ ...editingPlayer, photoUrl: res });
-                                  showNotification('✓ Photo loaded. Click "Apply Player Edits" or "Save & Close" to save to database.');
+                                  showNotification('✓ High-res photo loaded. Click "Apply Player Edits" or "Save & Close" to save to database.');
                                 })
                                 .catch((err) => {
                                   console.error("Compression failed:", err);

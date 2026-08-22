@@ -6,6 +6,12 @@
 import React, { useState, useEffect } from 'react';
 import { db, TEAM_DATA_DOC } from './lib/firebase';
 import { onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { 
+  savePlayerPhotoToFirestore, 
+  subscribeToPlayerPhotos, 
+  sanitizeGlobalDocPayload, 
+  getLocalCachedPlayerPhoto 
+} from './utils/photoStore';
 import { AnimatePresence } from 'motion/react';
 import { Player, Match, StandingTeam, Coach, TeamInfo, ActionPhoto, GooglePhotosAlbum, MasterAlbumInfo } from './types';
 import { 
@@ -81,7 +87,14 @@ export default function App() {
     const unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
-        if (data.players) setPlayers(data.players);
+        if (data.players) {
+          // Hydrate with local cache if present
+          const hydrated = (data.players as Player[]).map(p => {
+            const cached = getLocalCachedPlayerPhoto(p.id);
+            return cached ? { ...p, photoUrl: cached } : p;
+          });
+          setPlayers(hydrated);
+        }
         if (data.matches) setMatches(data.matches);
         if (data.standings) setStandings(data.standings);
         if (data.coaches) setCoaches(data.coaches);
@@ -106,7 +119,25 @@ export default function App() {
       console.error("Firestore listener error:", error);
     });
 
-    return () => unsubscribe();
+    // Real-time high-res player photos subscriber
+    const unsubPhotos = subscribeToPlayerPhotos((photosMap) => {
+      setPlayers((currentPlayers) => {
+        let changed = false;
+        const merged = currentPlayers.map((p) => {
+          if (photosMap[p.id] && photosMap[p.id] !== p.photoUrl) {
+            changed = true;
+            return { ...p, photoUrl: photosMap[p.id] };
+          }
+          return p;
+        });
+        return changed ? merged : currentPlayers;
+      });
+    });
+
+    return () => {
+      unsubscribe();
+      unsubPhotos();
+    };
   }, []);
 
   // Admin Mode Toggle (Hide triggers from public via URL query parameter)
@@ -141,23 +172,40 @@ export default function App() {
         setSelectedPlayer(refreshedSelected);
       }
     }
+    
+    // Save high-resolution photos into individual chunked Firestore documents
+    updated.forEach((player) => {
+      if (player.photoUrl) {
+        savePlayerPhotoToFirestore(player.id, player.photoUrl);
+      }
+    });
+
     try {
       localStorage.setItem('daf_team_players', JSON.stringify(updated));
     } catch (e) {
       console.warn("LocalStorage save notice:", e);
     }
-    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true }).catch((err) => {
+
+    // Save sanitized global payload so the global doc remains under Firestore 1MB limit
+    const cleanPayload = sanitizeGlobalDocPayload({ players: updated });
+    setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
       console.error("Firestore player save error:", err);
     });
   };
 
   const handleUpdatePlayerPhoto = (playerId: string, newPhotoUrl: string) => {
     const updated = players.map((p) => (p.id === playerId ? { ...p, photoUrl: newPhotoUrl } : p));
+    setPlayers(updated);
+    if (selectedPlayer?.id === playerId) {
+      setSelectedPlayer({ ...selectedPlayer, photoUrl: newPhotoUrl });
+    }
+    savePlayerPhotoToFirestore(playerId, newPhotoUrl);
     handleSavePlayers(updated);
   };
 
   const handleDeletePlayer = (playerId: string) => {
     const updated = players.filter((p) => p.id !== playerId);
+    savePlayerPhotoToFirestore(playerId, '');
     handleSavePlayers(updated);
     if (selectedPlayer?.id === playerId) {
       setSelectedPlayer(null);
@@ -224,6 +272,13 @@ export default function App() {
     data.standings = synced.updatedStandings;
     data.teamInfo = synced.updatedTeamInfo;
 
+    // Save high-resolution player photos to Firestore chunked storage
+    data.players.forEach((player) => {
+      if (player.photoUrl) {
+        savePlayerPhotoToFirestore(player.id, player.photoUrl);
+      }
+    });
+
     setPlayers(data.players);
     setMatches(data.matches);
     setStandings(data.standings);
@@ -233,7 +288,8 @@ export default function App() {
     setGooglePhotosAlbums(data.googlePhotosAlbums);
     setMasterAlbumInfo(data.masterAlbumInfo);
 
-    setDoc(TEAM_DATA_DOC, data, { merge: true }).catch(console.error);
+    const cleanPayload = sanitizeGlobalDocPayload(data);
+    setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch(console.error);
   };
 
   const handleResetToDefaults = () => {
