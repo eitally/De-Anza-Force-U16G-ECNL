@@ -228,7 +228,6 @@ export default function App() {
         nextMatch={nextMatch}
         onOpenScoutPack={() => setIsScoutPackOpen(true)}
         playerCount={players.length}
-          isAdminMode={isAdminMode}
       />
 
       {/* Main Content Sections */}

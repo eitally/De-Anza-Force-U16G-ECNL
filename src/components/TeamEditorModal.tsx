@@ -556,10 +556,34 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
   // Save all changes
   const handleSaveAll = () => {
-    onSavePlayers(localPlayers);
+    // Auto-save any in-progress player edits
+    let finalPlayers = [...localPlayers];
+    if (editingPlayer) {
+      if (isCreatingPlayer) {
+        finalPlayers = [...finalPlayers, { ...editingPlayer, id: `p_${Date.now()}` }];
+      } else {
+        finalPlayers = finalPlayers.map(p => p.id === editingPlayer.id ? editingPlayer : p);
+      }
+      setEditingPlayer(null);
+      setIsCreatingPlayer(false);
+    }
+
+    // Auto-save any in-progress coach edits
+    let finalCoaches = [...localCoaches];
+    if (editingCoach) {
+      if (isCreatingCoach) {
+        finalCoaches = [...finalCoaches, { ...editingCoach, id: `c_${Date.now()}` }];
+      } else {
+        finalCoaches = finalCoaches.map(c => c.id === editingCoach.id ? editingCoach : c);
+      }
+      setEditingCoach(null);
+      setIsCreatingCoach(false);
+    }
+
+    onSavePlayers(finalPlayers);
     onSaveMatches(localMatches);
     onSaveStandings(localStandings);
-    onSaveCoaches(localCoaches);
+    onSaveCoaches(finalCoaches);
     onSaveTeamInfo(localTeamInfo);
     // Auto-save any in-progress photo addition
     let finalPhotos = [...localPhotos];
