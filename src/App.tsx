@@ -135,7 +135,7 @@ export default function App() {
   // Sync to localStorage
   const handleSavePlayers = (updated: Player[]) => {
     setPlayers(updated);
-    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true }).catch(console.error);
   };
 
   const handleDeletePlayer = (playerId: string) => {
@@ -148,7 +148,7 @@ export default function App() {
 
   const handleSaveMatches = (updated: Match[]) => {
     setMatches(updated);
-    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch(console.error);
     
     // Automatically recalculate and sync De Anza Force standings and team season record from match schedule
     const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
@@ -157,37 +157,37 @@ export default function App() {
     setDoc(TEAM_DATA_DOC, { 
       standings: synced.updatedStandings, 
       teamInfo: synced.updatedTeamInfo 
-    }, { merge: true });
+    }, { merge: true }).catch(console.error);
   };
 
   const handleSaveStandings = (updated: StandingTeam[]) => {
     setStandings(updated);
-    setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveCoaches = (updated: Coach[]) => {
     setCoaches(updated);
-    setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveTeamInfo = (updated: TeamInfo) => {
     setTeamInfo(updated);
-    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveActionPhotos = (updated: ActionPhoto[]) => {
     setActionPhotos(updated);
-    setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveGooglePhotosAlbums = (updated: GooglePhotosAlbum[]) => {
     setGooglePhotosAlbums(updated);
-    setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveMasterAlbumInfo = (updated: MasterAlbumInfo) => {
     setMasterAlbumInfo(updated);
-    setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true }).catch(console.error);
   };
 
   const handleResetToDefaults = () => {
