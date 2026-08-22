@@ -90,6 +90,7 @@ interface TeamEditorModalProps {
   onSaveActionPhotos?: (photos: ActionPhoto[]) => void;
   onSaveGooglePhotosAlbums?: (albums: GooglePhotosAlbum[]) => void;
   onSaveMasterAlbumInfo?: (info: MasterAlbumInfo) => void;
+  onSaveAllData?: (data: any) => void;
   onResetToDefaults: () => void;
   initialEditingPlayer?: Player | null;
   initialEditingCoach?: Coach | null;
@@ -115,6 +116,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   onSaveActionPhotos,
   onSaveGooglePhotosAlbums,
   onSaveMasterAlbumInfo,
+  onSaveAllData,
   onResetToDefaults,
   initialEditingPlayer,
   initialEditingCoach,
@@ -550,7 +552,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     if (editingAlbum?.id === albumId) setEditingAlbum(null);
     showNotification('✓ Removed Google Photos match album link.');
   };
-
   // Save all changes
   const handleSaveAll = () => {
     // Auto-save any in-progress player edits
@@ -577,11 +578,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       setIsCreatingCoach(false);
     }
 
-    onSavePlayers(finalPlayers);
-    onSaveMatches(localMatches);
-    onSaveStandings(localStandings);
-    onSaveCoaches(finalCoaches);
-    onSaveTeamInfo(localTeamInfo);
     // Auto-save any in-progress photo addition
     let finalPhotos = [...localPhotos];
     if (isAddingPhoto && newPhotoUrl.trim()) {
@@ -603,13 +599,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       setIsAddingPhoto(false);
     }
     
-    // Auto-save any in-progress photo edits
-    if (editingPhoto) {
-      finalPhotos = finalPhotos.map(p => p.id === editingPhoto.id ? editingPhoto : p);
-      setEditingPhoto(null);
-    }
-    
-    // Auto-save any in-progress album edits
+    // Auto-save any in-progress album addition
     let finalAlbums = [...localAlbums];
     if (editingAlbum) {
       finalAlbums = finalAlbums.map(a => a.id === editingAlbum.id ? editingAlbum : a);
@@ -617,9 +607,29 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     }
 
     saveMedia(finalPhotos, finalAlbums, localMasterAlbum);
-    if (onSaveActionPhotos) onSaveActionPhotos(finalPhotos);
-    if (onSaveGooglePhotosAlbums) onSaveGooglePhotosAlbums(finalAlbums);
-    if (onSaveMasterAlbumInfo) onSaveMasterAlbumInfo(localMasterAlbum);
+
+    if (onSaveAllData) {
+      onSaveAllData({
+        players: finalPlayers,
+        matches: localMatches,
+        standings: localStandings,
+        coaches: finalCoaches,
+        teamInfo: localTeamInfo,
+        actionPhotos: finalPhotos,
+        googlePhotosAlbums: finalAlbums,
+        masterAlbumInfo: localMasterAlbum
+      });
+    } else {
+      onSavePlayers(finalPlayers);
+      onSaveMatches(localMatches);
+      onSaveStandings(localStandings);
+      onSaveCoaches(finalCoaches);
+      onSaveTeamInfo(localTeamInfo);
+      if (onSaveActionPhotos) onSaveActionPhotos(finalPhotos);
+      if (onSaveGooglePhotosAlbums) onSaveGooglePhotosAlbums(finalAlbums);
+      if (onSaveMasterAlbumInfo) onSaveMasterAlbumInfo(localMasterAlbum);
+    }
+
     showNotification('✓ All team changes saved successfully!');
     setTimeout(() => onClose(), 800);
   };
