@@ -769,6 +769,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         className="relative w-full max-w-5xl rounded-3xl bg-white dark:bg-[#0b111e] border border-blue-800/60 shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col"
+        style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}

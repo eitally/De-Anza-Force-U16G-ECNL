@@ -27,7 +27,7 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
         </div>
 
         {/* Coaches Grid */}
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {coaches.map((coach) => (
             <div
               key={coach.id}
@@ -35,7 +35,7 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
             >
               <div>
                 {/* Photo */}
-                <div className="relative h-60 w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+                <div className="relative h-48 sm:h-56 lg:h-60 w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
                   <img
                     src={getSafeImageSrc(coach.photoUrl, DEFAULT_COACH_PHOTO)}
                     alt={coach.name}
@@ -45,15 +45,15 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
                   <div className="absolute inset-0 bg-gradient-to-t from-[#090e1c] via-transparent to-transparent" />
                   
                   <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-950/90 text-blue-300 border border-blue-700 backdrop-blur-md">
+                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-blue-950/90 text-blue-300 border border-blue-700 backdrop-blur-md">
                       {coach.role}
                     </span>
                   </div>
                 </div>
 
                 {/* Details */}
-                <div className="p-4">
-                  <h3 className="font-condensed font-black text-xl uppercase text-slate-900 dark:text-white leading-tight">
+                <div className="p-3 sm:p-4">
+                  <h3 className="font-condensed font-black text-base sm:text-xl uppercase text-slate-900 dark:text-white leading-tight">
                     {coach.name}
                   </h3>
 

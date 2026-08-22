@@ -147,7 +147,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
             href={(postData?.postUrl || '')}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-all active:scale-95"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 via-rose-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white text-xs font-bold shadow-md transition-all active:scale-95"
           >
             <Instagram className="w-3.5 h-3.5" />
             <span>Open Page</span>
@@ -156,7 +156,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
           {isAdminMode && (
             <button
               onClick={() => setIsEditing(true)}
-              className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 transition-colors"
+              className="p-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 transition-colors"
               title="Edit Instagram Embed & Details"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -201,7 +201,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
               <h4 className="font-condensed font-black text-lg text-slate-900 dark:text-white uppercase">
                 Update Instagram Post Embed
               </h4>
-              <button onClick={() => setIsEditing(false)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <button onClick={() => setIsEditing(false)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -252,7 +252,7 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-slate-900 dark:text-white font-bold"
+                  className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold"
                 >
                   Save Embed
                 </button>

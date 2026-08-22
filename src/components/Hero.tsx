@@ -75,7 +75,7 @@ export const Hero: React.FC<HeroProps> = ({ isAdminMode = false,
 
             {/* Next Matchday Quick Spotlight */}
             {nextMatch && (
-              <div className="relative rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#11192e] dark:to-[#0a0f1d] border border-slate-200 dark:border-blue-900/50 p-3.5 shadow-md overflow-hidden group">
+              <div className="relative w-full rounded-2xl bg-white dark:bg-gradient-to-b dark:from-[#11192e] dark:to-[#0a0f1d] border border-slate-200 dark:border-blue-900/50 p-3.5 shadow-md overflow-hidden group">
                 <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-200 dark:border-slate-800/80">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-red-500" />

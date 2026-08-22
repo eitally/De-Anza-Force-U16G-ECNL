@@ -57,18 +57,27 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         className="relative w-full max-w-4xl rounded-3xl bg-white dark:bg-[#0b101d] border border-blue-900/60 shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+        style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Glow Bar */}
         <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-red-500 to-blue-600 shrink-0" />
+        
         {/* Modal Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 p-2 sm:p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-all shadow-xl hover:scale-105 active:scale-95 border border-white/20"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
         {/* Scrollable Content */}
         <div className="overflow-y-auto p-5 sm:p-8 space-y-6">
           
           {/* Top Profile Summary Header */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch pb-6 border-b border-slate-200 dark:border-slate-800">
             {/* Player Photo with Jersey Badge */}
-            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl w-full aspect-square md:aspect-auto md:h-full">
+            <div className="md:col-span-4 relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-[#090d16] border border-blue-800/40 shadow-xl w-full h-64 sm:h-80 md:aspect-auto md:h-full">
               <img
                 key={`${player.id}_${safePhotoSrc}`}
                 src={safePhotoSrc}

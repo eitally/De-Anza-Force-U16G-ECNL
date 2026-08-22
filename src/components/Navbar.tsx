@@ -92,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   
-  const navLinks = [
+  const navLinks: Array<{label: string; href: string; icon: any; badge?: string; isExternal?: boolean}> = [
     { label: 'Roster', href: '#roster', icon: Users, badge: `${playerCount}` },
     { label: 'Schedule', href: '#schedule', icon: Calendar },
     { label: 'Standings', href: '#standings', icon: Trophy },
@@ -195,7 +195,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenScoutPack}
               id="nav-scout-pack-btn"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold text-slate-900 dark:text-slate-100 bg-gradient-to-r from-blue-600 to-[#00ADEF] hover:from-blue-500 hover:to-[#33beff] border border-blue-400/40 transition-all shadow-md shadow-blue-950/40 group active:scale-95 cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold text-slate-900 dark:text-slate-100 bg-gradient-to-r from-blue-600 to-[#00ADEF] hover:from-blue-500 hover:to-[#33beff] border border-blue-400/40 transition-all shadow-md shadow-blue-950/40 group active:scale-95 cursor-pointer"
               title="Generate printable scouting roster sheet for college coaches"
             >
               <FileDown className="w-3.5 h-3.5 text-slate-900 dark:text-white group-hover:scale-110 transition-transform" />
