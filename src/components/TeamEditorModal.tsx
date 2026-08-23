@@ -682,18 +682,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
     // Persist immediately to parent state and Firebase
     onSavePlayers(updated);
-    if (onSaveAllData) {
-      onSaveAllData({
-        players: updated,
-        matches: localMatches,
-        standings: localStandings,
-        coaches: localCoaches,
-        teamInfo: localTeamInfo,
-        actionPhotos: localPhotos,
-        googlePhotosAlbums: localAlbums,
-        masterAlbumInfo: localMasterAlbum
-      });
-    }
     setEditingPlayer(null);
   };
 
@@ -705,18 +693,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     const updated = localPlayers.filter((p) => p.id !== targetPlayer.id);
     setLocalPlayers(updated);
     onSavePlayers(updated);
-    if (onSaveAllData) {
-      onSaveAllData({
-        players: updated,
-        matches: localMatches,
-        standings: localStandings,
-        coaches: localCoaches,
-        teamInfo: localTeamInfo,
-        actionPhotos: localPhotos,
-        googlePhotosAlbums: localAlbums,
-        masterAlbumInfo: localMasterAlbum
-      });
-    }
     if (editingPlayer?.id === targetPlayer.id) {
       setEditingPlayer(null);
     }
@@ -730,18 +706,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         const updated = localPlayers.map(p => p.id === player.id ? { ...p, photoUrl: compressed } : p);
         setLocalPlayers(updated);
         onSavePlayers(updated);
-        if (onSaveAllData) {
-          onSaveAllData({
-            players: updated,
-            matches: localMatches,
-            standings: localStandings,
-            coaches: localCoaches,
-            teamInfo: localTeamInfo,
-            actionPhotos: localPhotos,
-            googlePhotosAlbums: localAlbums,
-            masterAlbumInfo: localMasterAlbum
-          });
-        }
         showNotification(`✓ Photo updated & saved for #${player.jerseyNumber} ${player.name}!`);
       })
       .catch((err) => {

@@ -26,6 +26,7 @@ import {
   DEFAULT_MASTER_ALBUM_INFO
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
+import { DEFAULT_INSTAGRAM_POST, InstagramPostData } from './components/InstagramFeaturedPost';
 
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -55,13 +56,18 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  // Ensure Eliot Kline's updated profile photo is primed
+  const ELIOT_KLINE_PHOTO = "https://i.imgur.com/BgA9tkV.jpeg";
+
   // Load data from localStorage or initialize with default sample data
   const [players, setPlayers] = useState<Player[]>(() => {
     try {
       const saved = localStorage.getItem('daf_team_players');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((p: Player) => (p.id === 'p1' && (!p.photoUrl || p.photoUrl.includes('mnc56aF')) ? { ...p, photoUrl: ELIOT_KLINE_PHOTO } : p));
+        }
       }
     } catch {}
     return INITIAL_PLAYERS;
@@ -113,10 +119,15 @@ export default function App() {
 
   // Media States
   const [actionPhotos, setActionPhotos] = useState<ActionPhoto[]>(DEFAULT_ACTION_PHOTOS);
-
   const [googlePhotosAlbums, setGooglePhotosAlbums] = useState<GooglePhotosAlbum[]>(DEFAULT_GOOGLE_PHOTOS_ALBUMS);
-
   const [masterAlbumInfo, setMasterAlbumInfo] = useState<MasterAlbumInfo>(DEFAULT_MASTER_ALBUM_INFO);
+  const [featuredInstagramPost, setFeaturedInstagramPost] = useState<InstagramPostData>(() => {
+    try {
+      const saved = localStorage.getItem('daf_featured_instagram_post');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_INSTAGRAM_POST;
+  });
 
   // UI Modal States
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
@@ -127,7 +138,7 @@ export default function App() {
   const [initialEditingPlayer, setInitialEditingPlayer] = useState<Player | null>(null);
   const [initialEditingCoach, setInitialEditingCoach] = useState<Coach | null>(null);
 
-  // Firebase real-time data sync
+  // Single Consolidated Firebase real-time data sync
   useEffect(() => {
     let unsubscribe = () => {};
     try {
@@ -138,6 +149,9 @@ export default function App() {
             // Hydrate with local cache if present
             const hydrated = (data.players as Player[]).map(p => {
               const cached = getLocalCachedPlayerPhoto(p.id);
+              if (p.id === 'p1' && (!p.photoUrl || p.photoUrl.includes('mnc56aF'))) {
+                return { ...p, photoUrl: ELIOT_KLINE_PHOTO };
+              }
               return cached ? { ...p, photoUrl: cached } : p;
             });
             setPlayers(hydrated);
@@ -162,6 +176,10 @@ export default function App() {
           if (data.actionPhotos) setActionPhotos(data.actionPhotos);
           if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
           if (data.masterAlbumInfo) setMasterAlbumInfo(data.masterAlbumInfo);
+          if (data.featuredInstagramPost) {
+            setFeaturedInstagramPost(data.featuredInstagramPost);
+            try { localStorage.setItem('daf_featured_instagram_post', JSON.stringify(data.featuredInstagramPost)); } catch {}
+          }
         }
       }, (error) => {
         console.warn("Firestore listener notice:", error?.message || error);
@@ -170,7 +188,7 @@ export default function App() {
       console.warn("Failed to initialize Firestore listener:", err);
     }
 
-    // Real-time high-res player photos subscriber
+    // Real-time custom player photos subscriber (Single document read)
     let unsubPhotos = () => {};
     try {
       unsubPhotos = subscribeToPlayerPhotos((photosMap) => {
@@ -219,7 +237,7 @@ export default function App() {
     }
   };
 
-  // Save Players & Sync to Firestore
+  // Save Players & Sync to Firestore (single unified document write, no loop)
   const handleSavePlayers = (updated: Player[]) => {
     setPlayers(updated);
     if (selectedPlayer) {
@@ -228,13 +246,6 @@ export default function App() {
         setSelectedPlayer(refreshedSelected);
       }
     }
-    
-    // Save high-resolution photos into individual chunked Firestore documents
-    updated.forEach((player) => {
-      if (player.photoUrl) {
-        savePlayerPhotoToFirestore(player.id, player.photoUrl);
-      }
-    });
 
     try {
       localStorage.setItem('daf_team_players', JSON.stringify(updated));
@@ -242,7 +253,7 @@ export default function App() {
       console.warn("LocalStorage save notice:", e);
     }
 
-    // Save sanitized global payload so the global doc remains under Firestore 1MB limit
+    // Save sanitized global payload to Firestore main doc
     const cleanPayload = sanitizeGlobalDocPayload({ players: updated });
     setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
       console.warn("Notice: Firestore player save status:", err?.message || err);
@@ -255,6 +266,7 @@ export default function App() {
     if (selectedPlayer?.id === playerId) {
       setSelectedPlayer({ ...selectedPlayer, photoUrl: newPhotoUrl });
     }
+    // Only write the single modified photo
     savePlayerPhotoToFirestore(playerId, newPhotoUrl);
     handleSavePlayers(updated);
   };
@@ -268,16 +280,14 @@ export default function App() {
     }
   };
 
+  // Atomic Match Schedule Save (Consolidates matches + standings into 1 write)
   const handleSaveMatches = (updated: Match[]) => {
     setMatches(updated);
     try {
       localStorage.setItem('daf_team_matches', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch((err) => {
-      console.warn("Notice: Firestore matches save status:", err?.message || err);
-    });
     
-    // Automatically recalculate and sync De Anza Force standings and team season record from match schedule if completed matches exist
+    // Automatically recalculate and sync De Anza Force standings and team season record
     const computed = computeRecordAndFormFromMatches(updated);
     if (computed.completedMatchesCount > 0) {
       const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
@@ -287,11 +297,17 @@ export default function App() {
         localStorage.setItem('daf_standings', JSON.stringify(synced.updatedStandings));
         localStorage.setItem('daf_team_info', JSON.stringify(synced.updatedTeamInfo));
       } catch {}
+      // Single atomic write for matches + standings + teamInfo
       setDoc(TEAM_DATA_DOC, { 
+        matches: updated,
         standings: synced.updatedStandings, 
         teamInfo: synced.updatedTeamInfo 
       }, { merge: true }).catch((err) => {
-        console.warn("Notice: Firestore sync standings status:", err?.message || err);
+        console.warn("Notice: Firestore matches & standings atomic save status:", err?.message || err);
+      });
+    } else {
+      setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch((err) => {
+        console.warn("Notice: Firestore matches save status:", err?.message || err);
       });
     }
   };
@@ -358,6 +374,15 @@ export default function App() {
     });
   };
 
+  const handleSaveInstagramPost = (updated: InstagramPostData) => {
+    setFeaturedInstagramPost(updated);
+    try {
+      localStorage.setItem('daf_featured_instagram_post', JSON.stringify(updated));
+    } catch {}
+    setDoc(TEAM_DATA_DOC, { featuredInstagramPost: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore Instagram save status:", err?.message || err);
+    });
+  };
 
   const handleSaveAllData = (data: {
     players: Player[];
@@ -377,14 +402,8 @@ export default function App() {
       data.teamInfo = synced.updatedTeamInfo;
     }
 
-    // Save high-resolution player photos to Firestore chunked storage
-    data.players.forEach((player) => {
-      if (player.photoUrl) {
-        savePlayerPhotoToFirestore(player.id, player.photoUrl);
-      }
-    });
-
     try {
+      localStorage.setItem('daf_team_players', JSON.stringify(data.players));
       localStorage.setItem('daf_standings', JSON.stringify(data.standings));
       localStorage.setItem('daf_team_matches', JSON.stringify(data.matches));
       localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo));
@@ -405,6 +424,7 @@ export default function App() {
     setGooglePhotosAlbums(data.googlePhotosAlbums);
     setMasterAlbumInfo(data.masterAlbumInfo);
 
+    // Single atomic setDoc for all modules
     const cleanPayload = sanitizeGlobalDocPayload(data);
     setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
       console.warn("Notice: Firestore global save status:", err?.message || err);
@@ -420,6 +440,7 @@ export default function App() {
     setActionPhotos(DEFAULT_ACTION_PHOTOS);
     setGooglePhotosAlbums(DEFAULT_GOOGLE_PHOTOS_ALBUMS);
     setMasterAlbumInfo(DEFAULT_MASTER_ALBUM_INFO);
+    setFeaturedInstagramPost(DEFAULT_INSTAGRAM_POST);
     
     setDoc(TEAM_DATA_DOC, {
       players: INITIAL_PLAYERS,
@@ -429,7 +450,8 @@ export default function App() {
       teamInfo: INITIAL_TEAM_INFO,
       actionPhotos: DEFAULT_ACTION_PHOTOS,
       googlePhotosAlbums: DEFAULT_GOOGLE_PHOTOS_ALBUMS,
-      masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO
+      masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO,
+      featuredInstagramPost: DEFAULT_INSTAGRAM_POST
     }).catch((err) => {
       console.warn("Notice: Firestore reset status:", err?.message || err);
     });
@@ -462,6 +484,8 @@ export default function App() {
           onOpenScoutPack={() => setIsScoutPackOpen(true)}
           playerCount={players.length}
           isAdminMode={isAdminMode}
+          featuredInstagramPost={featuredInstagramPost}
+          onSaveFeaturedInstagramPost={handleSaveInstagramPost}
         />
 
         {/* Dynamic Roster Showcase */}

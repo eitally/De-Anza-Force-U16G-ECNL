@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TeamInfo, Match, ActionPhoto, GooglePhotosAlbum, MasterAlbumInfo } from '../types';
 import { ClubCrest } from './ClubCrest';
 import { ActionCarousel } from './ActionCarousel';
+import { InstagramPostData } from './InstagramFeaturedPost';
 import { 
   Trophy, 
   Shield, 
@@ -25,15 +26,18 @@ interface HeroProps {
   nextMatch?: Match;
   onOpenScoutPack: () => void;
   playerCount: number;
-
+  featuredInstagramPost?: InstagramPostData;
+  onSaveFeaturedInstagramPost?: (post: InstagramPostData) => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ isAdminMode = false, 
+export const Hero: React.FC<HeroProps> = ({ 
+  isAdminMode = false, 
   teamInfo,
   nextMatch,
   onOpenScoutPack,
   playerCount,
-
+  featuredInstagramPost,
+  onSaveFeaturedInstagramPost,
 }) => {
   const [activeTab, setActiveTab] = useState<'gallery' | 'nextMatch'>('gallery');
   return (
@@ -193,7 +197,12 @@ export const Hero: React.FC<HeroProps> = ({ isAdminMode = false,
             {/* Action Carousel Section */}
             <div className="relative lg:h-full flex flex-col">
               {/* The Carousel */}
-              <ActionCarousel className="lg:h-full flex flex-col flex-1" isAdminMode={isAdminMode} />
+              <ActionCarousel 
+                className="lg:h-full flex flex-col flex-1" 
+                isAdminMode={isAdminMode} 
+                post={featuredInstagramPost}
+                onSavePost={onSaveFeaturedInstagramPost}
+              />
             </div>
           </div>
 

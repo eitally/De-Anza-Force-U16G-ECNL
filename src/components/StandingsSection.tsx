@@ -58,22 +58,28 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
           <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
             <thead className="bg-slate-50 dark:bg-[#0b1326] font-sans font-bold text-xs sm:text-sm uppercase tracking-wider text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3.5 px-4 w-12 text-center">POS</th>
-                <th className="py-3.5 px-4">CLUB / SQUAD</th>
-                <th className="py-3.5 px-3 text-center">GP</th>
-                <th className="py-3.5 px-3 text-center">W</th>
-                <th className="py-3.5 px-3 text-center">D</th>
-                <th className="py-3.5 px-3 text-center">L</th>
-                <th className="py-3.5 px-3 text-center hidden md:table-cell">GF</th>
-                <th className="py-3.5 px-3 text-center hidden md:table-cell">GA</th>
-                <th className="py-3.5 px-3 text-center">GD</th>
+                <th className="py-3.5 px-3 sm:px-4 w-12 text-center">POS</th>
+                <th className="py-3.5 px-3 sm:px-4">CLUB / SQUAD</th>
+                <th className="py-3.5 px-2.5 text-center">GP</th>
+                <th className="py-3.5 px-2.5 text-center">W</th>
+                <th className="py-3.5 px-2.5 text-center">L</th>
+                <th className="py-3.5 px-2.5 text-center">D</th>
+                <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GF</th>
+                <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GA</th>
+                <th className="py-3.5 px-2.5 text-center">GD</th>
+                <th className="py-3.5 px-2.5 text-center hidden sm:table-cell font-bold text-slate-600 dark:text-slate-300">PPG</th>
                 <th className="py-3.5 px-4 text-center font-black text-slate-900 dark:text-white">PTS</th>
-                <th className="py-3.5 px-4 text-center hidden sm:table-cell">FORM</th>
+                <th className="py-3.5 px-3 text-center hidden lg:table-cell">FORM</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
               {standings.map((team) => {
                 const isDeAnza = team.isCurrentTeam;
+                const ppg = typeof team.pointsPerGame === 'number'
+                  ? team.pointsPerGame.toFixed(2)
+                  : team.played > 0
+                  ? (team.points / team.played).toFixed(2)
+                  : '0.00';
 
                 return (
                   <tr
@@ -81,17 +87,17 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                     className={`transition-colors ${
                       isDeAnza
                         ? 'bg-gradient-to-r from-blue-950/80 via-blue-900/40 to-blue-950/80 font-semibold border-l-4 border-l-blue-500 shadow-inner'
-                        : 'hover:bg-white dark:hover:bg-slate-900/50'
+                        : 'hover:bg-slate-50/80 dark:hover:bg-slate-900/50'
                     }`}
                   >
                     {/* Rank */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-3 sm:px-4 text-center">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-sans font-bold text-xs ${
                           team.rank === 1
-                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                            ? 'bg-yellow-500/20 text-yellow-500 dark:text-yellow-400 border border-yellow-500/40'
                             : team.rank <= 3
-                            ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
+                            ? 'bg-blue-600/20 text-blue-600 dark:text-blue-300 border border-blue-500/30'
                             : 'text-slate-500 dark:text-slate-400'
                         }`}
                       >
@@ -100,53 +106,65 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                     </td>
 
                     {/* Team Name */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white uppercase tracking-tight">
-                          {team.teamName}
-                        </span>
-                        {isDeAnza && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white shadow">
-                            OUR SQUAD
+                    <td className="py-3.5 px-3 sm:px-4">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="font-sans font-bold text-sm sm:text-base text-slate-900 dark:text-white uppercase tracking-tight">
+                            {team.teamName}
                           </span>
-                        )}
+                          {isDeAnza && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-blue-600 text-white shadow whitespace-nowrap">
+                              OUR SQUAD
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                          Qualification: {team.qualification || 'n/a'}
+                        </span>
                       </div>
                     </td>
 
                     {/* Stats */}
-                    <td className="py-3.5 px-3 text-center font-semibold text-slate-600 dark:text-slate-300">{team.played}</td>
-                    <td className="py-3.5 px-3 text-center font-semibold text-slate-900 dark:text-white">{team.won}</td>
-                    <td className="py-3.5 px-3 text-center text-slate-500 dark:text-slate-400">{team.drawn}</td>
-                    <td className="py-3.5 px-3 text-center text-slate-500 dark:text-slate-400">{team.lost}</td>
-                    <td className="py-3.5 px-3 text-center hidden md:table-cell text-slate-600 dark:text-slate-300">{team.goalsFor}</td>
-                    <td className="py-3.5 px-3 text-center hidden md:table-cell text-slate-500 dark:text-slate-400">{team.goalsAgainst}</td>
-                    <td className="py-3.5 px-3 text-center font-bold text-blue-400">
+                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-600 dark:text-slate-300">{team.played}</td>
+                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-900 dark:text-white">{team.won}</td>
+                    <td className="py-3.5 px-2.5 text-center text-slate-500 dark:text-slate-400">{team.lost}</td>
+                    <td className="py-3.5 px-2.5 text-center text-slate-500 dark:text-slate-400">{team.drawn}</td>
+                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-600 dark:text-slate-300">{team.goalsFor}</td>
+                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-500 dark:text-slate-400">{team.goalsAgainst}</td>
+                    <td className="py-3.5 px-2.5 text-center font-bold text-blue-500 dark:text-blue-400">
                       {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-sans font-bold text-lg sm:text-xl text-yellow-400">
+                    <td className="py-3.5 px-2.5 text-center hidden sm:table-cell font-mono text-xs text-slate-600 dark:text-slate-300">
+                      {ppg}
+                    </td>
+                    <td className="py-3.5 px-4 text-center font-sans font-bold text-base sm:text-lg text-yellow-500 dark:text-yellow-400">
                       {team.points}
                     </td>
 
                     {/* Form Guide */}
-                    <td className="py-3.5 px-4 text-center hidden sm:table-cell">
+                    <td className="py-3.5 px-3 text-center hidden lg:table-cell">
                       <div className="flex items-center justify-center gap-1">
-                        {team.form.map((res, i) => (
-                          <span
-                            key={i}
-                            className={`w-5 h-5 rounded font-black text-[10px] flex items-center justify-center ${
-                              res === 'W'
-                                ? 'bg-emerald-600 text-slate-900 dark:text-white shadow-xs'
-                                : res === 'D'
-                                ? 'bg-amber-600 text-slate-900 dark:text-white shadow-xs'
-                                : res === 'L'
-                                ? 'bg-red-600 text-slate-900 dark:text-white shadow-xs'
-                                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 border border-slate-300 dark:border-slate-700'
-                            }`}
-                            title={res === 'W' ? 'Win' : res === 'D' ? 'Draw' : res === 'L' ? 'Loss' : 'Unplayed'}
-                          >
-                            {res}
-                          </span>
-                        ))}
+                        {team.form && team.form.length > 0 ? (
+                          team.form.map((res, i) => (
+                            <span
+                              key={i}
+                              className={`w-5 h-5 rounded font-black text-[10px] flex items-center justify-center ${
+                                res === 'W'
+                                  ? 'bg-emerald-600 text-white shadow-xs'
+                                  : res === 'D'
+                                  ? 'bg-amber-600 text-white shadow-xs'
+                                  : res === 'L'
+                                  ? 'bg-red-600 text-white shadow-xs'
+                                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 border border-slate-300 dark:border-slate-700'
+                              }`}
+                              title={res === 'W' ? 'Win' : res === 'D' ? 'Draw' : res === 'L' ? 'Loss' : 'Unplayed'}
+                            >
+                              {res}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-slate-400 text-xs">—</span>
+                        )}
                       </div>
                     </td>
                   </tr>

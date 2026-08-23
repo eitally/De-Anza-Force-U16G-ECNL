@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { db, TEAM_DATA_DOC } from '../lib/firebase';
-import { onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { 
   Instagram, 
   ExternalLink, 
@@ -44,43 +42,34 @@ export const DEFAULT_INSTAGRAM_POST: InstagramPostData = {
 interface InstagramFeaturedPostProps {
   isAdminMode?: boolean;
   post?: InstagramPostData;
+  onSavePost?: (post: InstagramPostData) => void;
   className?: string;
 }
 
 export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
   post = DEFAULT_INSTAGRAM_POST,
+  onSavePost,
   className = '',
   isAdminMode = false,
 }) => {
   const [postData, setPostData] = useState<InstagramPostData>(post);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editCaption, setEditCaption] = useState((postData?.caption || ''));
-  const [editPostUrl, setEditPostUrl] = useState((postData?.postUrl || ''));
-  const [editEmbedPostId, setEditEmbedPostId] = useState(postData.embedPostId || 'DB-o1yBSe0n');
+  const [editCaption, setEditCaption] = useState((post?.caption || ''));
+  const [editPostUrl, setEditPostUrl] = useState((post?.postUrl || ''));
+  const [editEmbedPostId, setEditEmbedPostId] = useState(post?.embedPostId || 'DB-o1yBSe0n');
   const [iframeKey, setIframeKey] = useState(Date.now());
 
-  // Listen for Firebase updates
+  // Sync state when props update
   useEffect(() => {
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (data.featuredInstagramPost) {
-            setPostData(data.featuredInstagramPost);
-            setIframeKey(Date.now());
-          }
-        }
-      }, (err) => {
-        console.warn("Instagram post listener notice:", err?.message || err);
-      });
-    } catch (err) {
-      console.warn("Failed to listen for Instagram post updates:", err);
+    if (post) {
+      setPostData(post);
+      setEditCaption(post.caption || '');
+      setEditPostUrl(post.postUrl || '');
+      setEditEmbedPostId(post.embedPostId || 'DB-o1yBSe0n');
+      setIframeKey(Date.now());
     }
-    return () => unsubscribe();
-  }, []);
-
+  }, [post]);
 
   // Helper to extract Instagram post ID from URL
   const extractPostId = (url: string): string | null => {
@@ -100,9 +89,9 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
       embedPostId: extracted || editEmbedPostId || postData.embedPostId || 'DB-o1yBSe0n',
     };
     setPostData(updated);
-    setDoc(TEAM_DATA_DOC, { featuredInstagramPost: updated }, { merge: true }).catch((err) => {
-      console.warn("Notice: Instagram post save Firestore status:", err?.message || err);
-    });
+    if (onSavePost) {
+      onSavePost(updated);
+    }
     setIframeKey(Date.now());
     setIsEditing(false);
   };
