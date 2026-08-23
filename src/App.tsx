@@ -162,8 +162,26 @@ export default function App() {
             try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
           }
           if (data.standings) {
-            setStandings(data.standings);
-            try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
+            // Check if existing Firestore standings are outdated (pre-migration)
+            const isOutdated = !Array.isArray(data.standings) ||
+              data.standings.length < 12 ||
+              data.standings[0]?.teamName !== 'MVLA ECNL G2010/11' ||
+              data.standings[0]?.pointsPerGame === undefined;
+
+            if (isOutdated) {
+              setStandings(INITIAL_STANDINGS);
+              try { localStorage.setItem('daf_standings', JSON.stringify(INITIAL_STANDINGS)); } catch {}
+              // Self-heal/update Firestore so all users get the latest standings
+              setDoc(TEAM_DATA_DOC, { standings: INITIAL_STANDINGS }, { merge: true }).catch((err) => {
+                console.warn("Firestore standings sync notice:", err);
+              });
+            } else {
+              setStandings(data.standings);
+              try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
+            }
+          } else {
+            // No standings in Firestore yet, seed with INITIAL_STANDINGS
+            setDoc(TEAM_DATA_DOC, { standings: INITIAL_STANDINGS }, { merge: true }).catch(() => {});
           }
           if (data.coaches) {
             setCoaches(data.coaches);

@@ -59,15 +59,15 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
             <thead className="bg-slate-50 dark:bg-[#0b1326] font-sans font-bold text-xs sm:text-sm uppercase tracking-wider text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="py-3.5 px-3 sm:px-4 w-12 text-center">POS</th>
-                <th className="py-3.5 px-3 sm:px-4">CLUB / SQUAD</th>
+                <th className="py-3.5 px-3 sm:px-4 min-w-[200px]">TEAMS</th>
                 <th className="py-3.5 px-2.5 text-center">GP</th>
-                <th className="py-3.5 px-2.5 text-center">W</th>
-                <th className="py-3.5 px-2.5 text-center">L</th>
-                <th className="py-3.5 px-2.5 text-center">D</th>
+                <th className="py-3.5 px-2.5 text-center">WINS</th>
+                <th className="py-3.5 px-2.5 text-center">LOSSES</th>
+                <th className="py-3.5 px-2.5 text-center">DRAWS</th>
                 <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GF</th>
                 <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GA</th>
                 <th className="py-3.5 px-2.5 text-center">GD</th>
-                <th className="py-3.5 px-2.5 text-center hidden sm:table-cell font-bold text-slate-600 dark:text-slate-300">PPG</th>
+                <th className="py-3.5 px-2.5 text-center font-bold text-slate-700 dark:text-slate-200">PPG</th>
                 <th className="py-3.5 px-4 text-center font-black text-slate-900 dark:text-white">PTS</th>
                 <th className="py-3.5 px-3 text-center hidden lg:table-cell">FORM</th>
               </tr>
@@ -75,11 +75,13 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
               {standings.map((team) => {
                 const isDeAnza = team.isCurrentTeam;
-                const ppg = typeof team.pointsPerGame === 'number'
-                  ? team.pointsPerGame.toFixed(2)
-                  : team.played > 0
-                  ? (team.points / team.played).toFixed(2)
-                  : '0.00';
+                const hasPlayed = team.played > 0;
+                
+                const ppgDisplay = hasPlayed
+                  ? (typeof team.pointsPerGame === 'number'
+                      ? team.pointsPerGame.toFixed(2)
+                      : (team.points / team.played).toFixed(2))
+                  : '';
 
                 return (
                   <tr
@@ -90,7 +92,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                         : 'hover:bg-slate-50/80 dark:hover:bg-slate-900/50'
                     }`}
                   >
-                    {/* Rank */}
+                    {/* Rank / POS */}
                     <td className="py-3.5 px-3 sm:px-4 text-center">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-sans font-bold text-xs ${
@@ -119,25 +121,59 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                           )}
                         </div>
                         <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                          Qualification: {team.qualification || 'n/a'}
+                          Qualification:{team.qualification || 'n/a'}
                         </span>
                       </div>
                     </td>
 
-                    {/* Stats */}
-                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-600 dark:text-slate-300">{team.played}</td>
-                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-900 dark:text-white">{team.won}</td>
-                    <td className="py-3.5 px-2.5 text-center text-slate-500 dark:text-slate-400">{team.lost}</td>
-                    <td className="py-3.5 px-2.5 text-center text-slate-500 dark:text-slate-400">{team.drawn}</td>
-                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-600 dark:text-slate-300">{team.goalsFor}</td>
-                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-500 dark:text-slate-400">{team.goalsAgainst}</td>
-                    <td className="py-3.5 px-2.5 text-center font-bold text-blue-500 dark:text-blue-400">
-                      {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                    {/* GP */}
+                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                      {hasPlayed ? team.played : ''}
                     </td>
-                    <td className="py-3.5 px-2.5 text-center hidden sm:table-cell font-mono text-xs text-slate-600 dark:text-slate-300">
-                      {ppg}
+
+                    {/* WINS */}
+                    <td className="py-3.5 px-2.5 text-center font-semibold text-slate-900 dark:text-white">
+                      {hasPlayed ? team.won : ''}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-sans font-bold text-base sm:text-lg text-yellow-500 dark:text-yellow-400">
+
+                    {/* LOSSES */}
+                    <td className="py-3.5 px-2.5 text-center text-slate-600 dark:text-slate-400">
+                      {hasPlayed ? team.lost : ''}
+                    </td>
+
+                    {/* DRAWS */}
+                    <td className="py-3.5 px-2.5 text-center text-slate-600 dark:text-slate-400">
+                      {hasPlayed ? team.drawn : ''}
+                    </td>
+
+                    {/* GF */}
+                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-600 dark:text-slate-300">
+                      {hasPlayed ? team.goalsFor : ''}
+                    </td>
+
+                    {/* GA */}
+                    <td className="py-3.5 px-2.5 text-center hidden md:table-cell text-slate-500 dark:text-slate-400">
+                      {hasPlayed ? team.goalsAgainst : ''}
+                    </td>
+
+                    {/* GD */}
+                    <td className="py-3.5 px-2.5 text-center font-bold">
+                      {hasPlayed ? (
+                        team.goalDifference < 0 ? (
+                          <span className="text-red-500 dark:text-red-400">{team.goalDifference}</span>
+                        ) : (
+                          <span className="text-slate-900 dark:text-white">{team.goalDifference}</span>
+                        )
+                      ) : ''}
+                    </td>
+
+                    {/* PPG */}
+                    <td className="py-3.5 px-2.5 text-center font-mono text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      {ppgDisplay}
+                    </td>
+
+                    {/* PTS */}
+                    <td className="py-3.5 px-4 text-center font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white">
                       {team.points}
                     </td>
 
