@@ -25,7 +25,7 @@ import {
   DEFAULT_GOOGLE_PHOTOS_ALBUMS,
   DEFAULT_MASTER_ALBUM_INFO
 } from './data/defaultData';
-import { syncStandingsAndTeamInfoWithMatches } from './utils/recordUtils';
+import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
 
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -56,15 +56,60 @@ import {
 
 export default function App() {
   // Load data from localStorage or initialize with default sample data
-  const [players, setPlayers] = useState<Player[]>(INITIAL_PLAYERS);
+  const [players, setPlayers] = useState<Player[]>(() => {
+    try {
+      const saved = localStorage.getItem('daf_team_players');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_PLAYERS;
+  });
 
-  const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
+  const [matches, setMatches] = useState<Match[]>(() => {
+    try {
+      const saved = localStorage.getItem('daf_team_matches');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_MATCHES;
+  });
 
-  const [standings, setStandings] = useState<StandingTeam[]>(INITIAL_STANDINGS);
+  const [standings, setStandings] = useState<StandingTeam[]>(() => {
+    try {
+      const saved = localStorage.getItem('daf_standings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_STANDINGS;
+  });
 
-  const [coaches, setCoaches] = useState<Coach[]>(INITIAL_COACHES);
+  const [coaches, setCoaches] = useState<Coach[]>(() => {
+    try {
+      const saved = localStorage.getItem('daf_team_coaches');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_COACHES;
+  });
 
-  const [teamInfo, setTeamInfo] = useState<TeamInfo>(INITIAL_TEAM_INFO);
+  const [teamInfo, setTeamInfo] = useState<TeamInfo>(() => {
+    try {
+      const saved = localStorage.getItem('daf_team_info');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.teamName) return parsed;
+      }
+    } catch {}
+    return INITIAL_TEAM_INFO;
+  });
 
   // Media States
   const [actionPhotos, setActionPhotos] = useState<ActionPhoto[]>(DEFAULT_ACTION_PHOTOS);
@@ -94,11 +139,24 @@ export default function App() {
             return cached ? { ...p, photoUrl: cached } : p;
           });
           setPlayers(hydrated);
+          try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
         }
-        if (data.matches) setMatches(data.matches);
-        if (data.standings) setStandings(data.standings);
-        if (data.coaches) setCoaches(data.coaches);
-        if (data.teamInfo) setTeamInfo(data.teamInfo);
+        if (data.matches) {
+          setMatches(data.matches);
+          try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
+        }
+        if (data.standings) {
+          setStandings(data.standings);
+          try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
+        }
+        if (data.coaches) {
+          setCoaches(data.coaches);
+          try { localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches)); } catch {}
+        }
+        if (data.teamInfo) {
+          setTeamInfo(data.teamInfo);
+          try { localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo)); } catch {}
+        }
         if (data.actionPhotos) setActionPhotos(data.actionPhotos);
         if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
         if (data.masterAlbumInfo) setMasterAlbumInfo(data.masterAlbumInfo);
@@ -214,45 +272,77 @@ export default function App() {
 
   const handleSaveMatches = (updated: Match[]) => {
     setMatches(updated);
+    try {
+      localStorage.setItem('daf_team_matches', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch(console.error);
     
-    // Automatically recalculate and sync De Anza Force standings and team season record from match schedule
-    const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
-    setStandings(synced.updatedStandings);
-    setTeamInfo(synced.updatedTeamInfo);
-    setDoc(TEAM_DATA_DOC, { 
-      standings: synced.updatedStandings, 
-      teamInfo: synced.updatedTeamInfo 
-    }, { merge: true }).catch(console.error);
+    // Automatically recalculate and sync De Anza Force standings and team season record from match schedule if completed matches exist
+    const computed = computeRecordAndFormFromMatches(updated);
+    if (computed.completedMatchesCount > 0) {
+      const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
+      setStandings(synced.updatedStandings);
+      setTeamInfo(synced.updatedTeamInfo);
+      try {
+        localStorage.setItem('daf_standings', JSON.stringify(synced.updatedStandings));
+        localStorage.setItem('daf_team_info', JSON.stringify(synced.updatedTeamInfo));
+      } catch {}
+      setDoc(TEAM_DATA_DOC, { 
+        standings: synced.updatedStandings, 
+        teamInfo: synced.updatedTeamInfo 
+      }, { merge: true }).catch(console.error);
+    }
   };
 
   const handleSaveStandings = (updated: StandingTeam[]) => {
     setStandings(updated);
-    setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true }).catch(console.error);
+    try {
+      localStorage.setItem('daf_standings', JSON.stringify(updated));
+    } catch (e) {
+      console.warn("LocalStorage standings save error:", e);
+    }
+    setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true }).catch((err) => {
+      console.error("Firestore standings save error:", err);
+    });
   };
 
   const handleSaveCoaches = (updated: Coach[]) => {
     setCoaches(updated);
+    try {
+      localStorage.setItem('daf_team_coaches', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveTeamInfo = (updated: TeamInfo) => {
     setTeamInfo(updated);
+    try {
+      localStorage.setItem('daf_team_info', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveActionPhotos = (updated: ActionPhoto[]) => {
     setActionPhotos(updated);
+    try {
+      localStorage.setItem('daf_action_photos', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveGooglePhotosAlbums = (updated: GooglePhotosAlbum[]) => {
     setGooglePhotosAlbums(updated);
+    try {
+      localStorage.setItem('daf_google_photos_albums', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true }).catch(console.error);
   };
 
   const handleSaveMasterAlbumInfo = (updated: MasterAlbumInfo) => {
     setMasterAlbumInfo(updated);
+    try {
+      localStorage.setItem('daf_master_album_info', JSON.stringify(updated));
+    } catch {}
     setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true }).catch(console.error);
   };
 
@@ -267,10 +357,13 @@ export default function App() {
     googlePhotosAlbums: GooglePhotosAlbum[];
     masterAlbumInfo: MasterAlbumInfo;
   }) => {
-    // Automatically recalculate and sync De Anza Force standings and team season record from match schedule
-    const synced = syncStandingsAndTeamInfoWithMatches(data.matches, data.standings, data.teamInfo);
-    data.standings = synced.updatedStandings;
-    data.teamInfo = synced.updatedTeamInfo;
+    // Only recalculate De Anza Force from matches if there are actual completed matches recorded
+    const computed = computeRecordAndFormFromMatches(data.matches);
+    if (computed.completedMatchesCount > 0) {
+      const synced = syncStandingsAndTeamInfoWithMatches(data.matches, data.standings, data.teamInfo);
+      data.standings = synced.updatedStandings;
+      data.teamInfo = synced.updatedTeamInfo;
+    }
 
     // Save high-resolution player photos to Firestore chunked storage
     data.players.forEach((player) => {
@@ -278,6 +371,18 @@ export default function App() {
         savePlayerPhotoToFirestore(player.id, player.photoUrl);
       }
     });
+
+    try {
+      localStorage.setItem('daf_standings', JSON.stringify(data.standings));
+      localStorage.setItem('daf_team_matches', JSON.stringify(data.matches));
+      localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo));
+      localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches));
+      localStorage.setItem('daf_action_photos', JSON.stringify(data.actionPhotos));
+      localStorage.setItem('daf_google_photos_albums', JSON.stringify(data.googlePhotosAlbums));
+      localStorage.setItem('daf_master_album_info', JSON.stringify(data.masterAlbumInfo));
+    } catch (e) {
+      console.warn("LocalStorage save warning:", e);
+    }
 
     setPlayers(data.players);
     setMatches(data.matches);
@@ -289,7 +394,9 @@ export default function App() {
     setMasterAlbumInfo(data.masterAlbumInfo);
 
     const cleanPayload = sanitizeGlobalDocPayload(data);
-    setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
+      console.error("Firestore global save error:", err);
+    });
   };
 
   const handleResetToDefaults = () => {

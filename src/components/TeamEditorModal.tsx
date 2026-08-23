@@ -134,6 +134,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [localCoaches, setLocalCoaches] = useState<Coach[]>(coaches);
   const [localTeamInfo, setLocalTeamInfo] = useState<TeamInfo>(teamInfo);
 
+  useEffect(() => {
+    if (standings && standings.length > 0) {
+      setLocalStandings(standings);
+    }
+  }, [standings, isOpen]);
+
   // Photos & Albums state for Media Tab
   const [localPhotos, setLocalPhotos] = useState<ActionPhoto[]>(() => {
     if (actionPhotos) return actionPhotos;
@@ -552,6 +558,28 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     if (editingAlbum?.id === albumId) setEditingAlbum(null);
     showNotification('✓ Removed Google Photos match album link.');
   };
+
+  const handleSaveStandingsTable = (tableToSave: StandingTeam[] = localStandings) => {
+    setLocalStandings(tableToSave);
+    try {
+      localStorage.setItem('daf_standings', JSON.stringify(tableToSave));
+    } catch {}
+    onSaveStandings(tableToSave);
+    if (onSaveAllData) {
+      onSaveAllData({
+        players: localPlayers,
+        matches: localMatches,
+        standings: tableToSave,
+        coaches: localCoaches,
+        teamInfo: localTeamInfo,
+        actionPhotos: localPhotos,
+        googlePhotosAlbums: localAlbums,
+        masterAlbumInfo: localMasterAlbum
+      });
+    }
+    showNotification('✓ Standings table saved to database successfully!');
+  };
+
   // Save all changes
   const handleSaveAll = () => {
     // Auto-save any in-progress player edits
@@ -2752,8 +2780,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         }).map((team, idx) => ({ ...team, rank: idx + 1 }));
 
                         setLocalStandings(sorted);
-                        // onSaveStandings(sorted);
-                        showNotification('✓ Recalculated Points, Goal Difference, PPG, and re-ranked table!');
+                        handleSaveStandingsTable(sorted);
+                        showNotification('✓ Recalculated Points, Goal Difference, PPG, re-ranked, and saved!');
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors cursor-pointer"
                       title="Calculate points (W*3+D) and auto sort rankings"
@@ -2788,8 +2816,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                         };
                         const updated = [...localStandings, newTeam];
                         setLocalStandings(updated);
-                        // onSaveStandings(updated);
-                        showNotification('✓ Added new team to standings table.');
+                        handleSaveStandingsTable(updated);
+                        showNotification('✓ Added new team and saved to database.');
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold shadow-md transition-colors cursor-pointer"
                     >
@@ -2802,8 +2830,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                       onClick={() => {
                         if (window.confirm('Reset standings table to default NorCal U16 ECNL league data?')) {
                           setLocalStandings(INITIAL_STANDINGS);
-                          // onSaveStandings(INITIAL_STANDINGS);
-                          showNotification('✓ Reset standings table to default ECNL league data.');
+                          handleSaveStandingsTable(INITIAL_STANDINGS);
+                          showNotification('✓ Reset standings table to default ECNL league data & saved to database.');
                         }
                       }}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer"
@@ -3114,6 +3142,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     // Update ranks
                                     updated.forEach((t, i) => { t.rank = i + 1; });
                                     setLocalStandings(updated);
+                                    handleSaveStandingsTable(updated);
                                   }}
                                   className="p-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                   title="Move Up"
@@ -3132,6 +3161,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                     // Update ranks
                                     updated.forEach((t, i) => { t.rank = i + 1; });
                                     setLocalStandings(updated);
+                                    handleSaveStandingsTable(updated);
                                   }}
                                   className="p-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                   title="Move Down"
@@ -3148,7 +3178,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                                   }
                                   const updated = localStandings.filter((_, i) => i !== index).map((t, i) => ({ ...t, rank: i + 1 }));
                                   setLocalStandings(updated);
-                                  showNotification(`✓ Removed ${team.teamName} from standings.`);
+                                  handleSaveStandingsTable(updated);
+                                  showNotification(`✓ Removed ${team.teamName} and saved.`);
                                 }}
                                 className="p-1 rounded bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                                 title="Delete Club"
@@ -3171,7 +3202,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      showNotification('✓ Changes applied locally. (Click Save & Close when done)');
+                      handleSaveStandingsTable(localStandings);
                     }}
                     className="px-4 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#0095ce] text-slate-950 font-black uppercase text-xs tracking-wider transition-colors shadow-lg cursor-pointer"
                   >
