@@ -30,35 +30,62 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   const [viewMode, setViewMode] = useState<'compact' | 'cards'>('compact');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+  // Helper for safe date parsing
+  const formatDateSafe = (dateStr?: string, options?: Intl.DateTimeFormatOptions): string => {
+    if (!dateStr) return 'TBD';
+    try {
+      const d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-US', options || {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   // Available unique months from match dates
   const availableMonths = useMemo(() => {
     const months = new Set<string>();
-    matches.forEach((m) => {
-      if (m.date) {
-        const d = new Date(m.date + 'T00:00:00');
-        const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
-        months.add(monthKey);
+    (matches || []).forEach((m) => {
+      if (m?.date) {
+        try {
+          const d = new Date(m.date.includes('T') ? m.date : `${m.date}T00:00:00`);
+          if (!isNaN(d.getTime())) {
+            const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
+            if (monthKey) months.add(monthKey);
+          }
+        } catch {}
       }
     });
     return Array.from(months);
   }, [matches]);
 
   const filteredMatches = useMemo(() => {
-    return matches
+    return (matches || [])
       .filter((m) => {
+        if (!m) return false;
         // Status filter
         if (filter !== 'all' && m.status !== filter) return false;
         // Month filter
         if (selectedMonth !== 'all') {
-          const d = new Date(m.date + 'T00:00:00');
-          const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
-          if (monthKey !== selectedMonth) return false;
+          if (!m.date) return false;
+          try {
+            const d = new Date(m.date.includes('T') ? m.date : `${m.date}T00:00:00`);
+            if (isNaN(d.getTime())) return false;
+            const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
+            if (monthKey !== selectedMonth) return false;
+          } catch {
+            return false;
+          }
         }
         return true;
       })
       .sort((a, b) => {
-        const timeA = new Date(a.date + (a.time ? `T${a.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime();
-        const timeB = new Date(b.date + (b.time ? `T${b.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime();
+        const timeA = a?.date ? new Date(a.date + (a.time ? `T${a.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime() || 0 : 0;
+        const timeB = b?.date ? new Date(b.date + (b.time ? `T${b.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime() || 0 : 0;
         return timeA - timeB;
       });
   }, [matches, filter, selectedMonth]);
@@ -244,14 +271,14 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <span className="font-sans font-bold text-sm sm:text-base text-slate-900 dark:text-white">
-                              {new Date(match.date + 'T00:00:00').toLocaleDateString('en-US', {
+                              {formatDateSafe(match.date, {
                                 weekday: 'short',
                                 month: 'short',
                                 day: 'numeric',
                               })}
                             </span>
                             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                              {match.time}
+                              {match.time || ''}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#00ADEF] mt-0.5">
@@ -386,11 +413,11 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                     <div className="flex items-center gap-1.5 text-xs text-slate-900 dark:text-white font-sans font-bold">
                       <Calendar className="w-3.5 h-3.5 text-blue-400" />
                       <span>
-                        {new Date(match.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        {formatDateSafe(match.date, {
                           weekday: 'short',
                           month: 'short',
                           day: 'numeric',
-                        })} • {match.time}
+                        })} • {match.time || ''}
                       </span>
                     </div>
                     <span className="text-[10px] font-bold text-[#00ADEF] bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-800/60 truncate max-w-[140px]">

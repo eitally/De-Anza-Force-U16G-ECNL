@@ -2,6 +2,7 @@ import { db } from '../lib/firebase';
 import { doc, setDoc, onSnapshot, collection, deleteDoc } from 'firebase/firestore';
 
 const CHUNK_SIZE = 500 * 1024; // 500KB safe chunk size (well under Firestore's 1MB limit)
+const lastSavedPhotoHashMap: Record<string, string> = {};
 
 /**
  * Persists a high-resolution (1-2MB) player photo in Firestore using chunked document storage
@@ -18,8 +19,14 @@ export async function savePlayerPhotoToFirestore(playerId: string, fullDataUrl: 
       localStorage.removeItem(`daf_photo_${playerId}`);
     }
   } catch (e) {
-    console.warn("LocalStorage photo cache quota exceeded:", e);
+    console.warn("LocalStorage photo cache notice:", e);
   }
+
+  // Deduplication check: do not write to Firestore if the photo has not changed
+  if (lastSavedPhotoHashMap[playerId] === fullDataUrl) {
+    return;
+  }
+  lastSavedPhotoHashMap[playerId] = fullDataUrl;
 
   const photoDocRef = doc(db, 'deanza_player_photos', playerId);
 
@@ -27,7 +34,7 @@ export async function savePlayerPhotoToFirestore(playerId: string, fullDataUrl: 
     try {
       await deleteDoc(photoDocRef);
     } catch (e) {
-      console.warn("Error removing player photo doc:", e);
+      console.warn("Notice: Firestore player photo deletion:", e);
     }
     return;
   }
@@ -40,8 +47,8 @@ export async function savePlayerPhotoToFirestore(playerId: string, fullDataUrl: 
         photoUrl: fullDataUrl,
         updatedAt: Date.now()
       }, { merge: true });
-    } catch (err) {
-      console.error("Failed to save player photo URL to Firestore:", err);
+    } catch (err: any) {
+      console.warn("Notice saving player photo URL to Firestore:", err?.message || err);
     }
     return;
   }
@@ -60,8 +67,8 @@ export async function savePlayerPhotoToFirestore(playerId: string, fullDataUrl: 
       totalLength: fullDataUrl.length,
       updatedAt: Date.now()
     });
-  } catch (err) {
-    console.error("Failed to save chunked high-res photo to Firestore:", err);
+  } catch (err: any) {
+    console.warn("Notice saving chunked high-res photo to Firestore:", err?.message || err);
   }
 }
 
@@ -80,28 +87,35 @@ export function getLocalCachedPlayerPhoto(playerId: string): string | null {
  * Subscribes to real-time updates for high-res player photos from Firestore
  */
 export function subscribeToPlayerPhotos(onUpdate: (photosMap: Record<string, string>) => void): () => void {
-  const photosCol = collection(db, 'deanza_player_photos');
-  return onSnapshot(photosCol, (snapshot) => {
-    const photosMap: Record<string, string> = {};
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const playerId = docSnap.id;
-      if (typeof data.photoUrl === 'string' && data.photoUrl) {
-        photosMap[playerId] = data.photoUrl;
-      } else if (Array.isArray(data.chunks) && data.chunks.length > 0) {
-        const full = data.chunks.join('');
-        photosMap[playerId] = full;
-        try {
-          localStorage.setItem(`daf_photo_${playerId}`, full);
-        } catch {
-          // ignore localstorage quota
+  try {
+    const photosCol = collection(db, 'deanza_player_photos');
+    return onSnapshot(photosCol, (snapshot) => {
+      const photosMap: Record<string, string> = {};
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const playerId = docSnap.id;
+        if (typeof data.photoUrl === 'string' && data.photoUrl) {
+          photosMap[playerId] = data.photoUrl;
+          lastSavedPhotoHashMap[playerId] = data.photoUrl;
+        } else if (Array.isArray(data.chunks) && data.chunks.length > 0) {
+          const full = data.chunks.join('');
+          photosMap[playerId] = full;
+          lastSavedPhotoHashMap[playerId] = full;
+          try {
+            localStorage.setItem(`daf_photo_${playerId}`, full);
+          } catch {
+            // ignore localstorage quota
+          }
         }
-      }
+      });
+      onUpdate(photosMap);
+    }, (err) => {
+      console.warn("Realtime player photos listener notice:", err?.message || err);
     });
-    onUpdate(photosMap);
-  }, (err) => {
-    console.error("Realtime player photos listener error:", err);
-  });
+  } catch (err) {
+    console.warn("Failed to attach player photos listener:", err);
+    return () => {};
+  }
 }
 
 /**

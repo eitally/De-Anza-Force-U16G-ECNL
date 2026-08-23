@@ -19,9 +19,27 @@ export interface ComputedRecord {
  * Computes official De Anza Force season record and last 5 match form
  * automatically from the completed fixtures in the match schedule.
  */
-export function computeRecordAndFormFromMatches(matches: Match[]): ComputedRecord {
+export function computeRecordAndFormFromMatches(matches?: Match[] | null): ComputedRecord {
+  if (!Array.isArray(matches)) {
+    return {
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      cleanSheets: 0,
+      played: 0,
+      points: 0,
+      pointsPerGame: 0,
+      form: ['-', '-', '-', '-', '-'],
+      completedMatchesCount: 0,
+    };
+  }
+
   // Filter matches that have been completed or have recorded scores
   const completedMatches = matches.filter((m) => {
+    if (!m) return false;
     if (m.status === 'completed') return true;
     if (m.teamScore !== undefined && m.opponentScore !== undefined && m.status !== 'upcoming') return true;
     if ((m as any).homeScore !== undefined && (m as any).awayScore !== undefined && m.status !== 'upcoming') return true;
@@ -30,8 +48,8 @@ export function computeRecordAndFormFromMatches(matches: Match[]): ComputedRecor
 
   // Sort by date (assuming YYYY-MM-DD or standard parseable dates)
   const sorted = [...completedMatches].sort((a, b) => {
-    const timeA = new Date(a.date).getTime() || 0;
-    const timeB = new Date(b.date).getTime() || 0;
+    const timeA = a?.date ? (new Date(a.date).getTime() || 0) : 0;
+    const timeB = b?.date ? (new Date(b.date).getTime() || 0) : 0;
     return timeA - timeB;
   });
 
@@ -44,6 +62,7 @@ export function computeRecordAndFormFromMatches(matches: Match[]): ComputedRecor
   const matchResults: ('W' | 'D' | 'L')[] = [];
 
   sorted.forEach((m) => {
+    if (!m) return;
     let teamScore = 0;
     let oppScore = 0;
 
@@ -119,9 +138,19 @@ export function syncStandingsAndTeamInfoWithMatches(
 ): { updatedStandings: StandingTeam[]; updatedTeamInfo: TeamInfo; computed: ComputedRecord } {
   const computed = computeRecordAndFormFromMatches(matches);
 
+  if (!Array.isArray(standings)) {
+    return {
+      updatedStandings: [],
+      updatedTeamInfo: teamInfo,
+      computed,
+    };
+  }
+
   // Update Standings table De Anza row
   const updatedStandings = standings.map((team) => {
-    if (team.isCurrentTeam || team.isForce || team.teamName.toLowerCase().includes('de anza')) {
+    if (!team) return team;
+    const name = (team.teamName || '').toLowerCase();
+    if (team.isCurrentTeam || team.isForce || name.includes('de anza') || name.includes('force')) {
       return {
         ...team,
         played: computed.played,
@@ -147,7 +176,9 @@ export function syncStandingsAndTeamInfoWithMatches(
   const updatedTeamInfo: TeamInfo = {
     ...teamInfo,
     seasonRecord: {
-      ...teamInfo.seasonRecord,
+      norcalRank: teamInfo?.seasonRecord?.norcalRank ?? 1,
+      nationalRank: teamInfo?.seasonRecord?.nationalRank ?? 12,
+      ...(teamInfo?.seasonRecord || {}),
       wins: computed.wins,
       losses: computed.losses,
       draws: computed.draws,

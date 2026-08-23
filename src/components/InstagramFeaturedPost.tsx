@@ -62,21 +62,29 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
 
   // Listen for Firebase updates
   useEffect(() => {
-    const unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        if (data.featuredInstagramPost) {
-          setPostData(data.featuredInstagramPost);
-          setIframeKey(Date.now());
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          if (data.featuredInstagramPost) {
+            setPostData(data.featuredInstagramPost);
+            setIframeKey(Date.now());
+          }
         }
-      }
-    });
+      }, (err) => {
+        console.warn("Instagram post listener notice:", err?.message || err);
+      });
+    } catch (err) {
+      console.warn("Failed to listen for Instagram post updates:", err);
+    }
     return () => unsubscribe();
   }, []);
 
 
   // Helper to extract Instagram post ID from URL
   const extractPostId = (url: string): string | null => {
+    if (!url) return null;
     const match = url.match(/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/);
     return match ? match[1] : null;
   };
@@ -92,7 +100,9 @@ export const InstagramFeaturedPost: React.FC<InstagramFeaturedPostProps> = ({
       embedPostId: extracted || editEmbedPostId || postData.embedPostId || 'DB-o1yBSe0n',
     };
     setPostData(updated);
-    setDoc(TEAM_DATA_DOC, { featuredInstagramPost: updated }, { merge: true });
+    setDoc(TEAM_DATA_DOC, { featuredInstagramPost: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Instagram post save Firestore status:", err?.message || err);
+    });
     setIframeKey(Date.now());
     setIsEditing(false);
   };

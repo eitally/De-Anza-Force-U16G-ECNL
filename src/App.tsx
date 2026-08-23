@@ -129,68 +129,66 @@ export default function App() {
 
   // Firebase real-time data sync
   useEffect(() => {
-    const unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        if (data.players) {
-          // Hydrate with local cache if present
-          const hydrated = (data.players as Player[]).map(p => {
-            const cached = getLocalCachedPlayerPhoto(p.id);
-            return cached ? { ...p, photoUrl: cached } : p;
-          });
-          setPlayers(hydrated);
-          try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onSnapshot(TEAM_DATA_DOC, (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          if (data.players) {
+            // Hydrate with local cache if present
+            const hydrated = (data.players as Player[]).map(p => {
+              const cached = getLocalCachedPlayerPhoto(p.id);
+              return cached ? { ...p, photoUrl: cached } : p;
+            });
+            setPlayers(hydrated);
+            try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
+          }
+          if (data.matches) {
+            setMatches(data.matches);
+            try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
+          }
+          if (data.standings) {
+            setStandings(data.standings);
+            try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
+          }
+          if (data.coaches) {
+            setCoaches(data.coaches);
+            try { localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches)); } catch {}
+          }
+          if (data.teamInfo) {
+            setTeamInfo(data.teamInfo);
+            try { localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo)); } catch {}
+          }
+          if (data.actionPhotos) setActionPhotos(data.actionPhotos);
+          if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
+          if (data.masterAlbumInfo) setMasterAlbumInfo(data.masterAlbumInfo);
         }
-        if (data.matches) {
-          setMatches(data.matches);
-          try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
-        }
-        if (data.standings) {
-          setStandings(data.standings);
-          try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
-        }
-        if (data.coaches) {
-          setCoaches(data.coaches);
-          try { localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches)); } catch {}
-        }
-        if (data.teamInfo) {
-          setTeamInfo(data.teamInfo);
-          try { localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo)); } catch {}
-        }
-        if (data.actionPhotos) setActionPhotos(data.actionPhotos);
-        if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
-        if (data.masterAlbumInfo) setMasterAlbumInfo(data.masterAlbumInfo);
-      } else {
-        // If no data, initialize it
-        setDoc(TEAM_DATA_DOC, {
-          players: INITIAL_PLAYERS,
-          matches: INITIAL_MATCHES,
-          standings: INITIAL_STANDINGS,
-          coaches: INITIAL_COACHES,
-          teamInfo: INITIAL_TEAM_INFO,
-          actionPhotos: DEFAULT_ACTION_PHOTOS,
-          googlePhotosAlbums: DEFAULT_GOOGLE_PHOTOS_ALBUMS,
-          masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO
-        });
-      }
-    }, (error) => {
-      console.error("Firestore listener error:", error);
-    });
+      }, (error) => {
+        console.warn("Firestore listener notice:", error?.message || error);
+      });
+    } catch (err) {
+      console.warn("Failed to initialize Firestore listener:", err);
+    }
 
     // Real-time high-res player photos subscriber
-    const unsubPhotos = subscribeToPlayerPhotos((photosMap) => {
-      setPlayers((currentPlayers) => {
-        let changed = false;
-        const merged = currentPlayers.map((p) => {
-          if (photosMap[p.id] && photosMap[p.id] !== p.photoUrl) {
-            changed = true;
-            return { ...p, photoUrl: photosMap[p.id] };
-          }
-          return p;
+    let unsubPhotos = () => {};
+    try {
+      unsubPhotos = subscribeToPlayerPhotos((photosMap) => {
+        setPlayers((currentPlayers) => {
+          let changed = false;
+          const merged = currentPlayers.map((p) => {
+            if (photosMap[p.id] && photosMap[p.id] !== p.photoUrl) {
+              changed = true;
+              return { ...p, photoUrl: photosMap[p.id] };
+            }
+            return p;
+          });
+          return changed ? merged : currentPlayers;
         });
-        return changed ? merged : currentPlayers;
       });
-    });
+    } catch (err) {
+      console.warn("Failed to subscribe to player photos:", err);
+    }
 
     return () => {
       unsubscribe();
@@ -247,7 +245,7 @@ export default function App() {
     // Save sanitized global payload so the global doc remains under Firestore 1MB limit
     const cleanPayload = sanitizeGlobalDocPayload({ players: updated });
     setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
-      console.error("Firestore player save error:", err);
+      console.warn("Notice: Firestore player save status:", err?.message || err);
     });
   };
 
@@ -275,7 +273,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_team_matches', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore matches save status:", err?.message || err);
+    });
     
     // Automatically recalculate and sync De Anza Force standings and team season record from match schedule if completed matches exist
     const computed = computeRecordAndFormFromMatches(updated);
@@ -290,7 +290,9 @@ export default function App() {
       setDoc(TEAM_DATA_DOC, { 
         standings: synced.updatedStandings, 
         teamInfo: synced.updatedTeamInfo 
-      }, { merge: true }).catch(console.error);
+      }, { merge: true }).catch((err) => {
+        console.warn("Notice: Firestore sync standings status:", err?.message || err);
+      });
     }
   };
 
@@ -299,10 +301,10 @@ export default function App() {
     try {
       localStorage.setItem('daf_standings', JSON.stringify(updated));
     } catch (e) {
-      console.warn("LocalStorage standings save error:", e);
+      console.warn("LocalStorage standings save notice:", e);
     }
     setDoc(TEAM_DATA_DOC, { standings: updated }, { merge: true }).catch((err) => {
-      console.error("Firestore standings save error:", err);
+      console.warn("Notice: Firestore standings save status:", err?.message || err);
     });
   };
 
@@ -311,7 +313,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_team_coaches', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { coaches: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore coaches save status:", err?.message || err);
+    });
   };
 
   const handleSaveTeamInfo = (updated: TeamInfo) => {
@@ -319,7 +323,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_team_info', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore teamInfo save status:", err?.message || err);
+    });
   };
 
   const handleSaveActionPhotos = (updated: ActionPhoto[]) => {
@@ -327,7 +333,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_action_photos', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { actionPhotos: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore actionPhotos save status:", err?.message || err);
+    });
   };
 
   const handleSaveGooglePhotosAlbums = (updated: GooglePhotosAlbum[]) => {
@@ -335,7 +343,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_google_photos_albums', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { googlePhotosAlbums: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore albums save status:", err?.message || err);
+    });
   };
 
   const handleSaveMasterAlbumInfo = (updated: MasterAlbumInfo) => {
@@ -343,7 +353,9 @@ export default function App() {
     try {
       localStorage.setItem('daf_master_album_info', JSON.stringify(updated));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true }).catch(console.error);
+    setDoc(TEAM_DATA_DOC, { masterAlbumInfo: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore masterAlbumInfo save status:", err?.message || err);
+    });
   };
 
 
@@ -395,7 +407,7 @@ export default function App() {
 
     const cleanPayload = sanitizeGlobalDocPayload(data);
     setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch((err) => {
-      console.error("Firestore global save error:", err);
+      console.warn("Notice: Firestore global save status:", err?.message || err);
     });
   };
 
@@ -418,6 +430,8 @@ export default function App() {
       actionPhotos: DEFAULT_ACTION_PHOTOS,
       googlePhotosAlbums: DEFAULT_GOOGLE_PHOTOS_ALBUMS,
       masterAlbumInfo: DEFAULT_MASTER_ALBUM_INFO
+    }).catch((err) => {
+      console.warn("Notice: Firestore reset status:", err?.message || err);
     });
   };
 
