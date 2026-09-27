@@ -699,6 +699,9 @@ export default function App() {
         matches={matches}
         standings={standings}
         coaches={coaches}
+        actionPhotos={actionPhotos}
+        googlePhotosAlbums={googlePhotosAlbums}
+        masterAlbumInfo={masterAlbumInfo}
         onSavePlayers={handleSavePlayers}
         onSaveMatches={handleSaveMatches}
         onSaveStandings={handleSaveStandings}
