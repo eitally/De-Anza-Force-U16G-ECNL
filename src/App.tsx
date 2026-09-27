@@ -234,10 +234,15 @@ export default function App() {
   }, []);
 
   // Admin Mode & Dedicated /admin Route Support
+  const checkIsAdminRoute = () => {
+    if (typeof window === 'undefined') return false;
+    const cleanPath = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    return cleanPath === '/admin' || params.get('view') === 'admin' || params.get('admin') === 'true';
+  };
+
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
-    return window.location.pathname === '/admin' || new URLSearchParams(window.location.search).get('view') === 'admin';
-  });
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(checkIsAdminRoute);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return sessionStorage.getItem('daf_team_editor_auth') === 'authenticated';
   });
@@ -249,7 +254,7 @@ export default function App() {
     }
 
     const handlePopState = () => {
-      setIsAdminRoute(window.location.pathname === '/admin' || new URLSearchParams(window.location.search).get('view') === 'admin');
+      setIsAdminRoute(checkIsAdminRoute());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
