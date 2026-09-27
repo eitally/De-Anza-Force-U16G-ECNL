@@ -38,6 +38,7 @@ import { RecruitmentHub } from './components/RecruitmentHub';
 import { CoachingStaff } from './components/CoachingStaff';
 import { TeamEditorModal, EditorTab } from './components/TeamEditorModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import { PrintScoutingPack } from './components/PrintScoutingPack';
 import { ClubCrest } from './components/ClubCrest';
 
@@ -232,13 +233,26 @@ export default function App() {
     };
   }, []);
 
-  // Admin Mode Toggle (Hide triggers from public via URL query parameter)
+  // Admin Mode & Dedicated /admin Route Support
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
+    return window.location.pathname === '/admin' || new URLSearchParams(window.location.search).get('view') === 'admin';
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('daf_team_editor_auth') === 'authenticated';
+  });
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('admin') === 'true') {
       setIsAdminMode(true);
     }
+
+    const handlePopState = () => {
+      setIsAdminRoute(window.location.pathname === '/admin' || new URLSearchParams(window.location.search).get('view') === 'admin');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const handleOpenTeamEditor = (tab: EditorTab = 'players', targetPlayer?: Player | null, targetCoach?: Coach | null) => {
@@ -482,6 +496,57 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (isAdminRoute) {
+    if (!isAuthenticated) {
+      return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+          <AdminLoginModal
+            isOpen={true}
+            onClose={() => {
+              setIsAdminRoute(false);
+              window.history.pushState({}, '', '/');
+            }}
+            onSuccess={() => {
+              setIsAuthenticated(true);
+            }}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <AdminDashboard
+        teamInfo={teamInfo}
+        players={players}
+        matches={matches}
+        standings={standings}
+        coaches={coaches}
+        actionPhotos={actionPhotos}
+        googlePhotosAlbums={googlePhotosAlbums}
+        masterAlbumInfo={masterAlbumInfo}
+        onSavePlayers={handleSavePlayers}
+        onSaveMatches={handleSaveMatches}
+        onSaveStandings={handleSaveStandings}
+        onSaveCoaches={handleSaveCoaches}
+        onSaveTeamInfo={handleSaveTeamInfo}
+        onSaveActionPhotos={handleSaveActionPhotos}
+        onSaveGooglePhotosAlbums={handleSaveGooglePhotosAlbums}
+        onSaveMasterAlbumInfo={handleSaveMasterAlbumInfo}
+        onResetToDefaults={handleResetToDefaults}
+        onExitAdmin={() => {
+          setIsAdminRoute(false);
+          window.history.pushState({}, '', '/');
+        }}
+        onLogout={() => {
+          sessionStorage.removeItem('daf_team_editor_auth');
+          setIsAuthenticated(false);
+          setIsAdminRoute(false);
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#080c14] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white dark:selection:text-white">
       
@@ -620,14 +685,17 @@ export default function App() {
 
               {/* Secure Single Team Editor Access Button */}
               {isAdminMode && (
-                <div className="pt-4">
+                <div className="pt-4 flex items-center gap-2">
                   <button
                     id="footer-team-editor-btn"
-                    onClick={() => handleOpenTeamEditor('players')}
+                    onClick={() => {
+                      setIsAdminRoute(true);
+                      window.history.pushState({}, '', '/admin');
+                    }}
                     className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 hover:border-[#00ADEF] text-xs font-bold transition-all shadow-sm group cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5 text-[#00ADEF] group-hover:scale-110 transition-transform" />
-                    <span>Team Editor</span>
+                    <span>Admin Portal</span>
                   </button>
                 </div>
               )}
