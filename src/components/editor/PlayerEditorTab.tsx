@@ -8,6 +8,7 @@ import {
   CLUB_LOGO_URL, 
   IMGUR_HEADSHOTS 
 } from '../../utils/imageUtils';
+import { uploadPlayerHeadshot, uploadPlayerScoutPdf } from '../../utils/cloudStorage';
 import { 
   Plus, 
   Trash2, 
@@ -24,7 +25,10 @@ import {
   Camera, 
   Mail, 
   GraduationCap,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText,
+  FileUp,
+  Loader2
 } from 'lucide-react';
 
 interface PlayerEditorTabProps {
@@ -65,6 +69,12 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
   const [draftSaves, setDraftSaves] = useState<string>('');
   const [draftMinutes, setDraftMinutes] = useState<string>('');
   const [newAwardInput, setNewAwardInput] = useState('');
+
+  // Cloud upload states
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoProgress, setPhotoProgress] = useState(0);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0);
 
   const startEditing = (player: Player) => {
     setEditingPlayer({ ...player });
@@ -495,44 +505,88 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Player Profile PDF Flyer Document URL</label>
-              <input
-                type="text"
-                value={editingPlayer.profileDocUrl || ''}
-                onChange={e => setEditingPlayer({ ...editingPlayer, profileDocUrl: e.target.value, profilePdfUrl: e.target.value })}
-                placeholder="Eliot Kline Player Profile.pdf"
-                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
-              />
+              <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Player Profile PDF Flyer Document</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editingPlayer.profileDocUrl || ''}
+                  onChange={e => setEditingPlayer({ ...editingPlayer, profileDocUrl: e.target.value, profilePdfUrl: e.target.value })}
+                  placeholder="Eliot Kline Player Profile.pdf or https://..."
+                  className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 font-mono text-xs"
+                />
+                <label className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  {isUploadingPdf ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                      <span>{pdfProgress}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileUp className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Upload PDF</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    disabled={isUploadingPdf}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploadingPdf(true);
+                      setPdfProgress(10);
+                      const res = await uploadPlayerScoutPdf(file, p => setPdfProgress(p));
+                      setIsUploadingPdf(false);
+                      setEditingPlayer({
+                        ...editingPlayer,
+                        profileDocUrl: res.url,
+                        profilePdfUrl: res.url,
+                      });
+                      showNotification(`✓ Attached PDF flyer: ${file.name}`);
+                    }}
+                  />
+                </label>
+              </div>
             </div>
 
             {/* Photo URL & Upload */}
             <div className="sm:col-span-2 md:col-span-3">
-              <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Headshot Photo URL & Direct Upload</label>
+              <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Headshot Photo & Cloud Upload</label>
               <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={editingPlayer.photoUrl}
                   onChange={e => setEditingPlayer({ ...editingPlayer, photoUrl: e.target.value })}
-                  placeholder="https://... or upload file"
+                  placeholder="https://... or upload image"
                   className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500 font-mono text-[11px]"
                 />
-                <label className="px-3 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold text-xs border border-blue-500/30 flex items-center gap-1.5 cursor-pointer shrink-0">
-                  <Camera className="w-3.5 h-3.5" />
-                  <span>Upload</span>
+                <label className="px-3 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-bold text-xs border border-blue-500/30 flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors">
+                  {isUploadingPhoto ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+                      <span>{photoProgress}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Upload Photo</span>
+                    </>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={e => {
+                    disabled={isUploadingPhoto}
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
-                        compressHeadshot(file).then(res => {
-                          setEditingPlayer({ ...editingPlayer, photoUrl: res });
-                        }).catch(err => {
-                          console.error(err);
-                          alert('Failed to compress image.');
-                        });
-                      }
+                      if (!file) return;
+                      setIsUploadingPhoto(true);
+                      setPhotoProgress(10);
+                      const res = await uploadPlayerHeadshot(editingPlayer.id, file, p => setPhotoProgress(p));
+                      setIsUploadingPhoto(false);
+                      setEditingPlayer({ ...editingPlayer, photoUrl: res.url });
+                      showNotification(`✓ Uploaded player headshot: ${file.name}`);
                     }}
                   />
                 </label>
