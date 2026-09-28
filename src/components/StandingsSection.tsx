@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { StandingTeam, TournamentHonor } from '../types';
-import { Trophy, Award, TrendingUp, ShieldCheck, Star, Sliders, ExternalLink } from 'lucide-react';
+import { 
+  Trophy, 
+  Award, 
+  TrendingUp, 
+  ShieldCheck, 
+  Star, 
+  Sliders, 
+  ExternalLink,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
+} from 'lucide-react';
 
 interface StandingsSectionProps {
   standings: StandingTeam[];
@@ -8,11 +19,124 @@ interface StandingsSectionProps {
   onOpenEditor?: () => void;
 }
 
+type StandingsSortField = 
+  | 'rank' 
+  | 'teamName' 
+  | 'played' 
+  | 'won' 
+  | 'lost' 
+  | 'drawn' 
+  | 'goalsFor' 
+  | 'goalsAgainst' 
+  | 'goalDifference' 
+  | 'pointsPerGame' 
+  | 'points';
+
 export const StandingsSection: React.FC<StandingsSectionProps> = ({
   standings,
   tournaments,
   onOpenEditor,
 }) => {
+  // Default sort: Points Per Game (PPG) descending
+  const [sortField, setSortField] = useState<StandingsSortField>('pointsPerGame');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const getEffectivePPG = (t: StandingTeam): number => {
+    if (typeof t.pointsPerGame === 'number' && !isNaN(t.pointsPerGame) && t.pointsPerGame > 0) {
+      return t.pointsPerGame;
+    }
+    const gp = t.played ?? ((t.won || 0) + (t.drawn || 0) + (t.lost || 0));
+    return gp > 0 ? Number(((t.points || 0) / gp).toFixed(2)) : 0;
+  };
+
+  const handleHeaderClick = (field: StandingsSortField) => {
+    if (sortField === field) {
+      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      // For text (teamName) default to asc, for numerical stats default to desc
+      setSortDir(field === 'teamName' ? 'asc' : 'desc');
+    }
+  };
+
+  const sortedStandings = useMemo(() => {
+    return [...standings].sort((a, b) => {
+      let comp = 0;
+      switch (sortField) {
+        case 'pointsPerGame': {
+          const ppgA = getEffectivePPG(a);
+          const ppgB = getEffectivePPG(b);
+          if (ppgA !== ppgB) comp = ppgA - ppgB;
+          else if ((a.points || 0) !== (b.points || 0)) comp = (a.points || 0) - (b.points || 0);
+          else comp = (a.goalDifference || 0) - (b.goalDifference || 0);
+          break;
+        }
+        case 'points':
+          if ((a.points || 0) !== (b.points || 0)) comp = (a.points || 0) - (b.points || 0);
+          else comp = getEffectivePPG(a) - getEffectivePPG(b);
+          break;
+        case 'teamName':
+          comp = (a.teamName || '').localeCompare(b.teamName || '');
+          break;
+        case 'rank':
+          comp = (a.rank || 0) - (b.rank || 0);
+          break;
+        case 'played':
+          comp = (a.played || 0) - (b.played || 0);
+          break;
+        case 'won':
+          comp = (a.won || 0) - (b.won || 0);
+          break;
+        case 'lost':
+          comp = (a.lost || 0) - (b.lost || 0);
+          break;
+        case 'drawn':
+          comp = (a.drawn || 0) - (b.drawn || 0);
+          break;
+        case 'goalsFor':
+          comp = (a.goalsFor || 0) - (b.goalsFor || 0);
+          break;
+        case 'goalsAgainst':
+          comp = (a.goalsAgainst || 0) - (b.goalsAgainst || 0);
+          break;
+        case 'goalDifference':
+          comp = (a.goalDifference || 0) - (b.goalDifference || 0);
+          break;
+        default:
+          comp = getEffectivePPG(a) - getEffectivePPG(b);
+      }
+      return sortDir === 'asc' ? comp : -comp;
+    });
+  }, [standings, sortField, sortDir]);
+
+  const renderSortHeader = (field: StandingsSortField, label: string, className = '') => {
+    const isActive = sortField === field;
+    return (
+      <th 
+        onClick={() => handleHeaderClick(field)}
+        className={`py-3.5 px-2.5 transition-colors cursor-pointer select-none group hover:bg-slate-100 dark:hover:bg-slate-800/80 ${className} ${
+          isActive ? 'text-[#00ADEF] dark:text-[#00ADEF]' : ''
+        }`}
+        title={`Click to sort by ${label} (${isActive && sortDir === 'desc' ? 'ascending' : 'descending'})`}
+      >
+        <div className="inline-flex items-center gap-1">
+          <span>{label}</span>
+          <span className="shrink-0">
+            {isActive ? (
+              sortDir === 'desc' ? (
+                <ArrowDown className="w-3 h-3 text-[#00ADEF]" />
+              ) : (
+                <ArrowUp className="w-3 h-3 text-[#00ADEF]" />
+              )
+            ) : (
+              <ArrowUpDown className="w-2.5 h-2.5 opacity-0 group-hover:opacity-40 transition-opacity" />
+            )}
+          </span>
+        </div>
+      </th>
+    );
+  };
+
   return (
     <section id="standings" className="py-8 sm:py-12 bg-slate-50 dark:bg-[#060911] border-b border-slate-200 dark:border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,7 +148,8 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
               LEAGUE <span className="text-[#00ADEF]">STANDINGS</span> & TROPHIES
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
-              Official 2026-2027 Northern California ECNL table standings and national championship tournament pathways.
+              Official 2026-2027 Northern California ECNL table standings and national championship tournament pathways. 
+              Sorted by Points Per Game (PPG) descending.
             </p>
           </div>
 
@@ -33,7 +158,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
               href="https://theecnl.com/sports/2023/8/8/ECNLG_0808235831.aspx"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-xs font-bold border border-yellow-500/30 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 dark:text-yellow-400 text-xs font-bold border border-yellow-500/30 transition-colors"
               title="Open ECNL Official NorCal Standings"
             >
               <span>ECNL Source (NorCal U16)</span>
@@ -58,30 +183,26 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
           <table className="w-full text-left text-xs sm:text-sm text-slate-600 dark:text-slate-300">
             <thead className="bg-slate-50 dark:bg-[#0b1326] font-sans font-bold text-xs sm:text-sm uppercase tracking-wider text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3.5 px-3 sm:px-4 w-12 text-center">POS</th>
-                <th className="py-3.5 px-3 sm:px-4 min-w-[200px]">TEAMS</th>
-                <th className="py-3.5 px-2.5 text-center">GP</th>
-                <th className="py-3.5 px-2.5 text-center">WINS</th>
-                <th className="py-3.5 px-2.5 text-center">LOSSES</th>
-                <th className="py-3.5 px-2.5 text-center">DRAWS</th>
-                <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GF</th>
-                <th className="py-3.5 px-2.5 text-center hidden md:table-cell">GA</th>
-                <th className="py-3.5 px-2.5 text-center">GD</th>
-                <th className="py-3.5 px-2.5 text-center font-bold text-slate-700 dark:text-slate-200">PPG</th>
-                <th className="py-3.5 px-4 text-center font-black text-slate-900 dark:text-white">PTS</th>
+                {renderSortHeader('rank', 'POS', 'w-16 text-center')}
+                {renderSortHeader('teamName', 'TEAMS', 'min-w-[200px]')}
+                {renderSortHeader('played', 'GP', 'text-center')}
+                {renderSortHeader('won', 'WINS', 'text-center')}
+                {renderSortHeader('lost', 'LOSSES', 'text-center')}
+                {renderSortHeader('drawn', 'DRAWS', 'text-center')}
+                {renderSortHeader('goalsFor', 'GF', 'text-center hidden md:table-cell')}
+                {renderSortHeader('goalsAgainst', 'GA', 'text-center hidden md:table-cell')}
+                {renderSortHeader('goalDifference', 'GD', 'text-center')}
+                {renderSortHeader('pointsPerGame', 'PPG', 'text-center font-black')}
+                {renderSortHeader('points', 'PTS', 'text-center font-black')}
                 <th className="py-3.5 px-3 text-center hidden lg:table-cell">FORM</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
-              {standings.map((team) => {
-                const isDeAnza = team.isCurrentTeam;
+              {sortedStandings.map((team, idx) => {
+                const isDeAnza = team.isCurrentTeam || team.teamName.includes('De Anza');
                 const hasPlayed = team.played > 0;
-                
-                const ppgDisplay = hasPlayed
-                  ? (typeof team.pointsPerGame === 'number'
-                      ? team.pointsPerGame.toFixed(2)
-                      : (team.points / team.played).toFixed(2))
-                  : '';
+                const ppg = getEffectivePPG(team);
+                const displayRank = sortField === 'pointsPerGame' && sortDir === 'desc' ? idx + 1 : (team.rank || idx + 1);
 
                 return (
                   <tr
@@ -96,14 +217,14 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                     <td className="py-3.5 px-3 sm:px-4 text-center">
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-sans font-bold text-xs ${
-                          team.rank === 1
+                          displayRank === 1
                             ? 'bg-yellow-500/20 text-yellow-500 dark:text-yellow-400 border border-yellow-500/40'
-                            : team.rank <= 3
+                            : displayRank <= 3
                             ? 'bg-blue-600/20 text-blue-600 dark:text-blue-300 border border-blue-500/30'
                             : 'text-slate-500 dark:text-slate-400'
                         }`}
                       >
-                        {team.rank}
+                        {displayRank}
                       </span>
                     </td>
 
@@ -121,7 +242,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                           )}
                         </div>
                         <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                          Qualification:{team.qualification || 'n/a'}
+                          Qualification: {team.qualification || (displayRank <= 4 ? 'ECNL National Playoffs Zone' : 'NorCal Conference')}
                         </span>
                       </div>
                     </td>
@@ -162,44 +283,43 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
                         team.goalDifference < 0 ? (
                           <span className="text-red-500 dark:text-red-400">{team.goalDifference}</span>
                         ) : (
-                          <span className="text-slate-900 dark:text-white">{team.goalDifference}</span>
+                          <span className="text-slate-900 dark:text-white">+{team.goalDifference}</span>
                         )
                       ) : ''}
                     </td>
 
                     {/* PPG */}
-                    <td className="py-3.5 px-2.5 text-center font-mono text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      {ppgDisplay}
+                    <td className="py-3.5 px-2.5 text-center font-mono text-xs sm:text-sm font-black text-[#00ADEF]">
+                      {hasPlayed ? ppg.toFixed(2) : '0.00'}
                     </td>
 
                     {/* PTS */}
-                    <td className="py-3.5 px-4 text-center font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                    <td className="py-3.5 px-4 text-center font-sans font-black text-base sm:text-lg text-slate-900 dark:text-white">
                       {team.points}
                     </td>
 
-                    {/* Form Guide */}
+                    {/* FORM */}
                     <td className="py-3.5 px-3 text-center hidden lg:table-cell">
                       <div className="flex items-center justify-center gap-1">
                         {team.form && team.form.length > 0 ? (
-                          team.form.map((res, i) => (
+                          team.form.map((result, i) => (
                             <span
                               key={i}
-                              className={`w-5 h-5 rounded font-black text-[10px] flex items-center justify-center ${
-                                res === 'W'
-                                  ? 'bg-emerald-600 text-white shadow-xs'
-                                  : res === 'D'
-                                  ? 'bg-amber-600 text-white shadow-xs'
-                                  : res === 'L'
-                                  ? 'bg-red-600 text-white shadow-xs'
-                                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 border border-slate-300 dark:border-slate-700'
+                              className={`w-5 h-5 rounded-md text-[10px] font-sans font-bold flex items-center justify-center ${
+                                result === 'W'
+                                  ? 'bg-emerald-600 text-white'
+                                  : result === 'D'
+                                  ? 'bg-amber-600 text-white'
+                                  : result === 'L'
+                                  ? 'bg-red-600 text-white'
+                                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                               }`}
-                              title={res === 'W' ? 'Win' : res === 'D' ? 'Draw' : res === 'L' ? 'Loss' : 'Unplayed'}
                             >
-                              {res}
+                              {result}
                             </span>
                           ))
                         ) : (
-                          <span className="text-slate-400 text-xs">—</span>
+                          <span className="text-slate-500 text-xs">—</span>
                         )}
                       </div>
                     </td>
@@ -208,62 +328,7 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
               })}
             </tbody>
           </table>
-
-          {/* Table Legend Footer */}
-          <div className="p-4 bg-slate-50 dark:bg-[#060a14] border-t border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-yellow-500/20 border border-yellow-500/50" />
-                <span>Champions League #1 Seed</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-blue-600/20 border border-blue-500/40" />
-                <span>ECNL National Playoffs Qualification Zone (Top 3)</span>
-              </div>
-            </div>
-            <div className="italic text-slate-500">
-              * Official NorCal ECNL points system (3 pts for Win, 1 pt for Draw)
-            </div>
-          </div>
         </div>
-
-        {/* Tournament Accolades & Trophies Showcase */}
-        <div className="mt-14">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="w-5 h-5 text-yellow-400" />
-            <h3 className="font-condensed font-black text-2xl uppercase text-slate-900 dark:text-white">
-              Major Tournament Championships & Honors
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {tournaments.map((t) => (
-              <div
-                key={t.id}
-                className="p-4 rounded-2xl bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-[#090e1a] border border-slate-200 dark:border-slate-800 hover:border-yellow-500/40 shadow-xl transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700/50">
-                      {t.placement}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.year}</span>
-                  </div>
-
-                  <h4 className="font-condensed font-black text-lg uppercase text-slate-900 dark:text-white leading-tight">
-                    {t.title}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.division}</p>
-                </div>
-
-                <div className="mt-4 pt-2 border-t border-slate-200 dark:border-slate-800/60 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <span>📍 {t.location}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
     </section>
   );

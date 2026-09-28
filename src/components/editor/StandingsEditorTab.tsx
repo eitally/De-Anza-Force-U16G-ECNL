@@ -8,7 +8,9 @@ import {
   ExternalLink, 
   Link2, 
   Calculator, 
-  ArrowUpDown 
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 
 interface StandingsEditorTabProps {
@@ -19,6 +21,19 @@ interface StandingsEditorTabProps {
   showNotification: (msg: string) => void;
 }
 
+type StandingsSortField = 
+  | 'rank' 
+  | 'teamName' 
+  | 'played' 
+  | 'won' 
+  | 'drawn' 
+  | 'lost' 
+  | 'goalsFor' 
+  | 'goalsAgainst' 
+  | 'goalDifference' 
+  | 'points' 
+  | 'pointsPerGame';
+
 export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
   standings,
   teamInfo,
@@ -26,7 +41,20 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
   onSaveTeamInfo,
   showNotification,
 }) => {
-  const [localStandings, setLocalStandings] = useState<StandingTeam[]>(standings);
+  // Sort by Points Per Game (PPG) descending by default
+  const sortStandingsByPPG = (list: StandingTeam[]) => {
+    return [...list].sort((a, b) => {
+      const ppgA = a.pointsPerGame ?? (a.played > 0 ? a.points / a.played : 0);
+      const ppgB = b.pointsPerGame ?? (b.played > 0 ? b.points / b.played : 0);
+      if (ppgA !== ppgB) return ppgB - ppgA;
+      if (a.points !== b.points) return (b.points || 0) - (a.points || 0);
+      return (b.goalDifference || 0) - (a.goalDifference || 0);
+    }).map((team, idx) => ({ ...team, rank: idx + 1 }));
+  };
+
+  const [localStandings, setLocalStandings] = useState<StandingTeam[]>(() => sortStandingsByPPG(standings));
+  const [sortField, setSortField] = useState<StandingsSortField>('pointsPerGame');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [localRecord, setLocalRecord] = useState(teamInfo.seasonRecord || {
     wins: 0,
     losses: 0,
@@ -80,17 +108,62 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
   };
 
   const handleSortByPoints = () => {
+    handleHeaderSort('pointsPerGame');
+    showNotification('Sorted standings table by points per game (PPG).');
+  };
+
+  const handleHeaderSort = (field: StandingsSortField) => {
+    const nextDir = sortField === field && sortDir === 'desc' ? 'asc' : 'desc';
+    setSortField(field);
+    setSortDir(nextDir);
+
     const sorted = [...localStandings].sort((a, b) => {
-      if ((b.pointsPerGame || 0) !== (a.pointsPerGame || 0)) {
-        return (b.pointsPerGame || 0) - (a.pointsPerGame || 0);
+      let comp = 0;
+      switch (field) {
+        case 'pointsPerGame': {
+          const ppgA = a.pointsPerGame ?? (a.played > 0 ? a.points / a.played : 0);
+          const ppgB = b.pointsPerGame ?? (b.played > 0 ? b.points / b.played : 0);
+          if (ppgA !== ppgB) comp = ppgA - ppgB;
+          else if ((a.points || 0) !== (b.points || 0)) comp = (a.points || 0) - (b.points || 0);
+          else comp = (a.goalDifference || 0) - (b.goalDifference || 0);
+          break;
+        }
+        case 'points':
+          if ((a.points || 0) !== (b.points || 0)) comp = (a.points || 0) - (b.points || 0);
+          else comp = (a.goalDifference || 0) - (b.goalDifference || 0);
+          break;
+        case 'teamName':
+          comp = (a.teamName || '').localeCompare(b.teamName || '');
+          break;
+        case 'played':
+          comp = (a.played || 0) - (b.played || 0);
+          break;
+        case 'won':
+          comp = (a.won || 0) - (b.won || 0);
+          break;
+        case 'drawn':
+          comp = (a.drawn || 0) - (b.drawn || 0);
+          break;
+        case 'lost':
+          comp = (a.lost || 0) - (b.lost || 0);
+          break;
+        case 'goalsFor':
+          comp = (a.goalsFor || 0) - (b.goalsFor || 0);
+          break;
+        case 'goalsAgainst':
+          comp = (a.goalsAgainst || 0) - (b.goalsAgainst || 0);
+          break;
+        case 'goalDifference':
+          comp = (a.goalDifference || 0) - (b.goalDifference || 0);
+          break;
+        default:
+          comp = (a.rank || 0) - (b.rank || 0);
       }
-      if (b.points !== a.points) return b.points - a.points;
-      return b.goalDifference - a.goalDifference;
+      return nextDir === 'asc' ? comp : -comp;
     }).map((team, idx) => ({ ...team, rank: idx + 1 }));
 
     setLocalStandings(sorted);
     setHasChanges(true);
-    showNotification('Sorted standings table by points & goal difference.');
   };
 
   const handleSaveAll = () => {
@@ -271,17 +344,42 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
           <table className="w-full text-xs text-left">
             <thead className="bg-slate-50 dark:bg-slate-950/80 text-slate-500 uppercase font-condensed font-bold border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="p-2.5 text-center w-12">Rank</th>
-                <th className="p-2.5 min-w-[180px]">Team Name</th>
-                <th className="p-2.5 text-center w-14">GP</th>
-                <th className="p-2.5 text-center w-14">W</th>
-                <th className="p-2.5 text-center w-14">D</th>
-                <th className="p-2.5 text-center w-14">L</th>
-                <th className="p-2.5 text-center w-14">GF</th>
-                <th className="p-2.5 text-center w-14">GA</th>
-                <th className="p-2.5 text-center w-14">GD</th>
-                <th className="p-2.5 text-center w-16">PTS</th>
-                <th className="p-2.5 text-center w-16">PPG</th>
+                {[
+                  { field: 'rank' as StandingsSortField, label: 'Rank', cls: 'text-center w-14' },
+                  { field: 'teamName' as StandingsSortField, label: 'Team Name', cls: 'min-w-[180px]' },
+                  { field: 'played' as StandingsSortField, label: 'GP', cls: 'text-center w-14' },
+                  { field: 'won' as StandingsSortField, label: 'W', cls: 'text-center w-14' },
+                  { field: 'drawn' as StandingsSortField, label: 'D', cls: 'text-center w-14' },
+                  { field: 'lost' as StandingsSortField, label: 'L', cls: 'text-center w-14' },
+                  { field: 'goalsFor' as StandingsSortField, label: 'GF', cls: 'text-center w-14' },
+                  { field: 'goalsAgainst' as StandingsSortField, label: 'GA', cls: 'text-center w-14' },
+                  { field: 'goalDifference' as StandingsSortField, label: 'GD', cls: 'text-center w-14' },
+                  { field: 'points' as StandingsSortField, label: 'PTS', cls: 'text-center w-16' },
+                  { field: 'pointsPerGame' as StandingsSortField, label: 'PPG', cls: 'text-center w-16' },
+                ].map(({ field, label, cls }) => {
+                  const isActive = sortField === field;
+                  return (
+                    <th
+                      key={field}
+                      onClick={() => handleHeaderSort(field)}
+                      className={`p-2.5 ${cls} cursor-pointer select-none transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/80 ${
+                        isActive ? 'text-[#00ADEF]' : ''
+                      }`}
+                      title={`Click to sort by ${label}`}
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>{label}</span>
+                        {isActive ? (
+                          sortDir === 'desc' ? (
+                            <ArrowDown className="w-3 h-3 text-[#00ADEF]" />
+                          ) : (
+                            <ArrowUp className="w-3 h-3 text-[#00ADEF]" />
+                          )
+                        ) : null}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
