@@ -126,6 +126,42 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
     document.body.removeChild(link);
   };
 
+  // Export all matches into a single season calendar file (.ics)
+  const handleExportFullSeasonICS = () => {
+    if (!matches || matches.length === 0) return;
+    const events = matches.map(m => [
+      'BEGIN:VEVENT',
+      `UID:daf-match-${m.id}@deanzaforce.org`,
+      `SUMMARY:De Anza Force U16 ${m.isHome ? 'vs' : 'at'} ${m.opponent}`,
+      `DESCRIPTION:De Anza Force U16 ECNL Match\\nCompetition: ${m.competition}\\nKickoff: ${m.time}\\nField: ${m.fieldNumber || 'Main'}\\nKit: ${m.isHome ? 'Royal Blue' : 'Solid Black'}\\nNotes: ${m.gameNotes || ''}`,
+      `LOCATION:${m.venue}, ${m.address}`,
+      `DTSTART:${m.date.replace(/-/g, '')}T180000Z`,
+      `DTEND:${m.date.replace(/-/g, '')}T200000Z`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT'
+    ].join('\r\n')).join('\r\n');
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//De Anza Force U16 ECNL//Full Season Schedule//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:De Anza Force U16G ECNL Schedule',
+      events,
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `DeAnzaForce_U16_FullSeason_Schedule.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <section id="schedule" className="py-8 sm:py-12 bg-white dark:bg-[#080c14] border-b border-slate-200 dark:border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -141,8 +177,18 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
             </p>
           </div>
 
-          {/* Controls: View Switcher & Editor CTA */}
+          {/* Controls: View Switcher & Calendar CTA */}
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportFullSeasonICS}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="Download all season fixtures into your Apple, Google, or Outlook Calendar"
+            >
+              <CalendarPlus className="w-4 h-4 text-blue-500 hover:text-white" />
+              <span>Add Season to Calendar</span>
+            </button>
+
             {/* View Mode Toggle */}
             <div className="flex items-center bg-white dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-800">
               <button

@@ -127,9 +127,18 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {players.map((player) => {
-                  const profileUrl = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || '#';
-                  const qrTarget = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://deanzaforce.org');
-                  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrTarget)}`;
+                  // Ensure QR code always encodes a fully qualified, scannable web URL
+                  const getPlayerLiveUrl = (p: Player) => {
+                    if (p.profilePdfUrl && p.profilePdfUrl.startsWith('http')) return p.profilePdfUrl;
+                    if (p.profileDocUrl && p.profileDocUrl.startsWith('http')) return p.profileDocUrl;
+                    if (p.highlightsUrl && p.highlightsUrl.startsWith('http')) return p.highlightsUrl;
+                    const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://de-anza-force-u16-g-ecnl.vercel.app';
+                    return `${origin}/?player=${p.id}`;
+                  };
+
+                  const qrTarget = getPlayerLiveUrl(player);
+                  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrTarget)}`;
+                  const profileUrl = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || qrTarget;
 
                   return (
                     <React.Fragment key={player.id}>

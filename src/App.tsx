@@ -260,6 +260,18 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Deep-link to player profile modal from QR codes or shared URLs (?player=p1)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const playerId = params.get('player');
+    if (playerId && players.length > 0) {
+      const match = players.find(p => p.id === playerId || String(p.jerseyNumber) === playerId);
+      if (match) {
+        setSelectedPlayer(match);
+      }
+    }
+  }, [players]);
+
   const handleOpenTeamEditor = (tab: EditorTab = 'players', targetPlayer?: Player | null, targetCoach?: Coach | null) => {
     setEditorInitialTab(tab);
     setInitialEditingPlayer(targetPlayer || null);

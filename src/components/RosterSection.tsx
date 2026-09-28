@@ -28,12 +28,19 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
   onOpenTeamPhotoEditor,
 }) => {
   const [selectedPosition, setSelectedPosition] = useState<PositionCategory | 'All'>('All');
-    const [commitmentFilter, setCommitmentFilter] = useState<'All' | 'Committed' | 'Uncommitted'>('All');
+  const [commitmentFilter, setCommitmentFilter] = useState<'All' | 'Committed' | 'Uncommitted'>('All');
+  const [gradYearFilter, setGradYearFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isPhotoLightboxOpen, setIsPhotoLightboxOpen] = useState(false);
 
   const teamPhotoUrl = teamInfo?.teamPhotoUrl;
   const teamPhotoCaption = teamInfo?.teamPhotoCaption || '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
+
+  // Available graduation classes
+  const gradYears = useMemo(() => {
+    const years = Array.from(new Set(players.map((p) => p.gradYear).filter(Boolean))).sort();
+    return years;
+  }, [players]);
 
   // Filter logic (retains natural squad / jersey number order)
   const filteredPlayers = useMemo(() => {
@@ -51,9 +58,14 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         return false;
       }
 
+      // Grad Year filter
+      if (gradYearFilter !== 'All' && String(player.gradYear) !== gradYearFilter) {
+        return false;
+      }
+
       return true;
     }).sort((a, b) => (a.jerseyNumber || 999) - (b.jerseyNumber || 999));
-  }, [players, selectedPosition, commitmentFilter]);
+  }, [players, selectedPosition, commitmentFilter, gradYearFilter]);
 
   // Position counts
   const counts = useMemo(() => {
@@ -201,6 +213,38 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                   Committed
                 </button>
               </div>
+
+              {/* College Recruiting: Grad Year Filter */}
+              {gradYears.length > 1 && (
+                <div className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800 text-xs">
+                  <span className="px-2 text-[10px] font-bold text-slate-400 uppercase hidden sm:inline">
+                    Grad:
+                  </span>
+                  <button
+                    onClick={() => setGradYearFilter('All')}
+                    className={`px-2 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                      gradYearFilter === 'All'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {gradYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => setGradYearFilter(String(year))}
+                      className={`px-2 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                        gradYearFilter === String(year)
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      '{String(year).slice(-2)}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* View Mode Toggle: Grid vs Table */}
               <div className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800">

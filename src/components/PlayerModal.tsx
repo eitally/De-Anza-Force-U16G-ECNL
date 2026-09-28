@@ -20,8 +20,49 @@ import {
   Trash2,
   Instagram,
   Camera,
-  Upload
+  Upload,
+  Play
 } from 'lucide-react';
+
+function getVideoEmbed(url?: string): { type: 'youtube' | 'vimeo' | 'veo' | 'hudl' | 'generic'; embedUrl?: string; directUrl: string } | null {
+  if (!url || !url.trim()) return null;
+  const trimmed = url.trim();
+
+  // YouTube (supports watch?v=, youtu.be/, shorts/, embed/)
+  const ytMatch = trimmed.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/);
+  if (ytMatch && ytMatch[1]) {
+    return {
+      type: 'youtube',
+      embedUrl: `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?rel=0&modestbranding=1`,
+      directUrl: trimmed
+    };
+  }
+
+  // Vimeo
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)(?:$|\/|\?)/);
+  if (vimeoMatch && vimeoMatch[3]) {
+    return {
+      type: 'vimeo',
+      embedUrl: `https://player.vimeo.com/video/${vimeoMatch[3]}`,
+      directUrl: trimmed
+    };
+  }
+
+  // Veo
+  if (trimmed.includes('app.veo.co/matches/')) {
+    const embedVeo = trimmed.replace(/\/$/, '') + '/embed/';
+    return {
+      type: 'veo',
+      embedUrl: embedVeo,
+      directUrl: trimmed
+    };
+  }
+
+  return {
+    type: trimmed.includes('hudl') ? 'hudl' : 'generic',
+    directUrl: trimmed
+  };
+}
 
 interface PlayerModalProps {
   player: Player | null;
@@ -50,6 +91,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
   const [photoSavedNotice, setPhotoSavedNotice] = useState<string | null>(null);
   const recruitingCoach = coaches && coaches.length > 0 ? (coaches.find(c => (c.role || '').toLowerCase().includes('recruiting')) || coaches[0]) : null;
   const safePhotoSrc = getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO);
+  const videoEmbed = getVideoEmbed(player.highlightsUrl);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -306,6 +348,43 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                 </p>
               </div>
 
+              {/* Responsive Embedded Video Preview when available */}
+              {videoEmbed?.embedUrl && (
+                <div className="mb-3 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-black aspect-video relative shadow-md">
+                  <iframe
+                    src={videoEmbed.embedUrl}
+                    title={`${player.name} Highlight Tape`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full border-0"
+                  />
+                </div>
+              )}
+
+              {/* Hudl Reel Card if Hudl link */}
+              {videoEmbed?.type === 'hudl' && (
+                <div className="mb-3 p-3 rounded-xl bg-orange-950/30 border border-orange-500/40 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="p-2 rounded-lg bg-orange-500/20 text-orange-400">
+                      <Play className="w-4 h-4 fill-orange-400" />
+                    </span>
+                    <div>
+                      <div className="text-xs font-bold text-white">Hudl Match Tape</div>
+                      <div className="text-[10px] text-slate-400">Verified collegiate recruitment film</div>
+                    </div>
+                  </div>
+                  <a
+                    href={videoEmbed.directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm shrink-0"
+                  >
+                    <span>Play on Hudl</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center gap-2">
                 {(player.profilePdfUrl || player.profileDocUrl) && (
                   <a
@@ -320,7 +399,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   </a>
                 )}
 
-                {player.highlightsUrl && (
+                {player.highlightsUrl && !videoEmbed?.embedUrl && videoEmbed?.type !== 'hudl' && (
                   <a
                     href={player.highlightsUrl}
                     target="_blank"
@@ -335,7 +414,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
 
                 {player.instagram && (
                   <a
-                    href={player.instagram}
+                    href={player.instagram.startsWith('http') ? player.instagram : `https://instagram.com/${player.instagram.replace(/^@/, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600 via-rose-600 to-amber-500 hover:opacity-90 text-white font-bold text-xs shadow-md transition-opacity"
@@ -345,8 +424,6 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
-
-                
               </div>
             </div>
           </div>
