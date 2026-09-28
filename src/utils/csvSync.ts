@@ -1,6 +1,20 @@
 import Papa from 'papaparse';
 import type { Player, Match, PositionCategory, MatchCompetition, MatchStatus } from '../types';
-import { DEFAULT_PLAYER_PHOTO } from './imageUtils';
+import { DEFAULT_PLAYER_PHOTO, IMGUR_HEADSHOTS } from './imageUtils';
+
+function resolvePlayerPhoto(name: string, photoFromCsv?: string, existingPhoto?: string): string {
+  if (photoFromCsv && (photoFromCsv.startsWith('http://') || photoFromCsv.startsWith('https://') || photoFromCsv.startsWith('data:')) && !photoFromCsv.includes('photos.app.goo.gl')) {
+    return photoFromCsv;
+  }
+  if (existingPhoto && existingPhoto !== DEFAULT_PLAYER_PHOTO && existingPhoto.trim() !== '') {
+    return existingPhoto;
+  }
+  const firstName = (name || '').split(' ')[0].toLowerCase().trim();
+  if (IMGUR_HEADSHOTS[firstName]) {
+    return IMGUR_HEADSHOTS[firstName].url;
+  }
+  return existingPhoto || DEFAULT_PLAYER_PHOTO;
+}
 
 export interface RosterParseResult {
   players: Player[];
@@ -53,29 +67,30 @@ export function detectPositionCategory(pos: string): PositionCategory {
 function normalizeHeaderName(header: string): string {
   const cleaned = header.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  if (['jersey', 'jerseynumber', 'number', 'no', 'num', 'uniform'].includes(cleaned)) return 'jerseyNumber';
-  if (['name', 'player', 'playername', 'fullname', 'athlete'].includes(cleaned)) return 'name';
-  if (['firstname', 'first'].includes(cleaned)) return 'firstName';
-  if (['lastname', 'last'].includes(cleaned)) return 'lastName';
-  if (['position', 'pos', 'primaryposition'].includes(cleaned)) return 'primaryPosition';
-  if (['specificposition', 'role', 'subposition'].includes(cleaned)) return 'specificPosition';
-  if (['height', 'ht'].includes(cleaned)) return 'height';
-  if (['weight', 'wt'].includes(cleaned)) return 'weight';
-  if (['gpa', 'gradepointaverage'].includes(cleaned)) return 'gpa';
-  if (['gradyear', 'grad', 'class', 'graduationyear', 'year'].includes(cleaned)) return 'gradYear';
-  if (['birthyear', 'birth', 'by', 'dob', 'birthday'].includes(cleaned)) return 'birthYear';
-  if (['highschool', 'school', 'hs'].includes(cleaned)) return 'highSchool';
-  if (['email', 'contactemail', 'contactinfo', 'contactinfofortheflyer', 'playeremail'].includes(cleaned)) return 'contactEmail';
-  if (['phone', 'phonenumber', 'cell', 'mobile'].includes(cleaned)) return 'phone';
-  if (['playerprofile', 'profiledocurl', 'profilepdfurl', 'flyer', 'profile', 'pdf', 'profileflyer'].includes(cleaned)) return 'profileDocUrl';
-  if (['hudl', 'hudlurl', 'highlights', 'highlightsurl', 'veo', 'video', 'videourl'].includes(cleaned)) return 'highlightsUrl';
-  if (['commitment', 'commit', 'committedto', 'college', 'commitstatus'].includes(cleaned)) return 'commitment';
-  if (['ncaa', 'ncaaid', 'eligibility'].includes(cleaned)) return 'ncaaId';
-  if (['instagram', 'ig', 'handle'].includes(cleaned)) return 'instagram';
-  if (['foot', 'dominantfoot', 'preferredfoot'].includes(cleaned)) return 'dominantFoot';
-  if (['bio', 'about', 'notes', 'scoutingnotes'].includes(cleaned)) return 'bio';
-  if (['photo', 'photourl', 'image', 'imageurl', 'headshot'].includes(cleaned)) return 'photoUrl';
-  if (['captain', 'iscaptain', 'c'].includes(cleaned)) return 'isCaptain';
+  if (cleaned.includes('jersey') || cleaned.includes('uniform') || ['number', 'no', 'num', 'jerseynumber'].includes(cleaned)) return 'jerseyNumber';
+  if (cleaned.includes('firstname') || cleaned === 'first') return 'firstName';
+  if (cleaned.includes('lastname') || cleaned === 'last') return 'lastName';
+  if ((cleaned.includes('name') || cleaned.includes('athlete')) && !cleaned.includes('school')) return 'name';
+  if (cleaned.includes('specificposition') || cleaned.includes('positiontitle') || cleaned.includes('subposition') || cleaned === 'role') return 'specificPosition';
+  if (cleaned.includes('position')) return 'primaryPosition';
+  if (cleaned.includes('height') || cleaned === 'ht') return 'height';
+  if (cleaned.includes('weight') || cleaned === 'wt') return 'weight';
+  if (cleaned.includes('gpa')) return 'gpa';
+  if (cleaned.includes('grad')) return 'gradYear';
+  if (cleaned.includes('birth') || cleaned === 'dob') return 'birthday';
+  if (cleaned.includes('school') || cleaned === 'hs') return 'highSchool';
+  if (cleaned.includes('email')) return 'contactEmail';
+  if (cleaned.includes('phone') || cleaned === 'cell' || cleaned === 'mobile') return 'phone';
+  if (cleaned.includes('pdf') || cleaned.includes('flyer') || (cleaned.includes('profile') && (cleaned.includes('link') || cleaned.includes('doc')))) return 'profileDocUrl';
+  if (cleaned.includes('video') || cleaned.includes('highlight') || cleaned.includes('hudl') || cleaned.includes('veo')) return 'highlightsUrl';
+  if (cleaned.includes('commit') || cleaned.includes('college')) return 'commitment';
+  if (cleaned.includes('ncaa') || cleaned.includes('eligibility')) return 'ncaaId';
+  if (cleaned.includes('instagram') || cleaned === 'ig' || cleaned.includes('handle')) return 'instagram';
+  if (cleaned.includes('foot')) return 'dominantFoot';
+  if (cleaned.includes('bio')) return 'bio';
+  if (cleaned.includes('photo') || cleaned.includes('headshot') || cleaned.includes('image')) return 'photoUrl';
+  if (cleaned.includes('captain')) return 'isCaptain';
+  if (cleaned.includes('honor') || cleaned.includes('accolade') || cleaned.includes('award')) return 'awards';
 
   return header;
 }
@@ -186,13 +201,14 @@ export function parseRosterCSV(
       weight = `${weight} lbs`;
     }
 
-    // Find existing player if merge mode
+    // Find existing player if merge mode: match by Name first, then fallback to Jersey #
     let existing: Player | undefined;
     if (mode === 'merge') {
-      if (jersey > 0 && existingMapByJersey.has(jersey)) {
+      const cleanName = name.toLowerCase().trim();
+      if (cleanName && existingMapByName.has(cleanName)) {
+        existing = existingMapByName.get(cleanName);
+      } else if (jersey > 0 && existingMapByJersey.has(jersey) && !processedPlayerIds.has(existingMapByJersey.get(jersey)!.id)) {
         existing = existingMapByJersey.get(jersey);
-      } else if (existingMapByName.has(name.toLowerCase())) {
-        existing = existingMapByName.get(name.toLowerCase());
       }
     }
 
@@ -219,13 +235,14 @@ export function parseRosterCSV(
         gpa: gpa || existing.gpa || '4.00',
         contactEmail: rowObj.contactEmail || existing.contactEmail,
         profileDocUrl: rowObj.profileDocUrl || existing.profileDocUrl,
+        profilePdfUrl: rowObj.profileDocUrl || existing.profilePdfUrl || existing.profileDocUrl,
         highlightsUrl: rowObj.highlightsUrl || existing.highlightsUrl,
         commitment: rowObj.commitment || existing.commitment || 'Uncommitted',
         ncaaId: rowObj.ncaaId || existing.ncaaId,
         instagram: rowObj.instagram || existing.instagram,
         isCaptain: rowObj.isCaptain !== undefined ? (rowObj.isCaptain.toLowerCase() === 'true' || rowObj.isCaptain === '1') : existing.isCaptain,
         bio: rowObj.bio || existing.bio,
-        photoUrl: rowObj.photoUrl || existing.photoUrl || DEFAULT_PLAYER_PHOTO,
+        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl, existing.photoUrl),
       };
 
       parsedPlayers.push(mergedPlayer);
@@ -247,11 +264,12 @@ export function parseRosterCSV(
         gpa: gpa || '4.00',
         contactEmail: rowObj.contactEmail || '',
         profileDocUrl: rowObj.profileDocUrl || '',
+        profilePdfUrl: rowObj.profileDocUrl || '',
         highlightsUrl: rowObj.highlightsUrl || '',
         commitment: rowObj.commitment || 'Uncommitted',
         ncaaId: rowObj.ncaaId || '',
         instagram: rowObj.instagram || '',
-        photoUrl: rowObj.photoUrl || DEFAULT_PLAYER_PHOTO,
+        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl),
         bio: rowObj.bio || `${name} is an elite youth soccer athlete competing for De Anza Force U16G ECNL.`,
         awards: ['ECNL NorCal Candidate'],
         stats: {
