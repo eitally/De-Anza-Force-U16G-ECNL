@@ -113,6 +113,7 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
       bio: '',
       commitment: 'Uncommitted',
       awards: ['ECNL NorCal Candidate'],
+      includeInScoutingPack: true,
       stats: {
         appearances: 0,
         starts: 0,
@@ -300,6 +301,34 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
                   Active Captain
                 </span>
               )}
+            </div>
+
+            {/* Scouting Profile Inclusion Toggle */}
+            <div className="sm:col-span-2 md:col-span-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/90 border border-[#00ADEF]/40 flex items-center justify-between shadow-sm">
+              <label className="flex items-center gap-3 cursor-pointer text-slate-700 dark:text-slate-200 font-bold text-xs select-none">
+                <input
+                  type="checkbox"
+                  checked={editingPlayer.includeInScoutingPack !== false}
+                  onChange={e => setEditingPlayer({ ...editingPlayer, includeInScoutingPack: e.target.checked })}
+                  className="w-4 h-4 rounded text-[#00ADEF] bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-[#00ADEF] cursor-pointer"
+                />
+                <div className="flex items-center gap-2">
+                  <FileText className={`w-4 h-4 ${editingPlayer.includeInScoutingPack !== false ? 'text-[#00ADEF]' : 'text-slate-500'}`} />
+                  <span className="text-[#00ADEF] font-condensed font-black text-sm uppercase tracking-wider">
+                    Include in College Scouting Pack &amp; Bifold
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal hidden sm:inline">
+                    — When checked, player profile card is rendered in the printable scouting pack (uncheck for alternates/practice squad)
+                  </span>
+                </div>
+              </label>
+              <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                editingPlayer.includeInScoutingPack !== false 
+                  ? 'bg-[#00ADEF] text-slate-950' 
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}>
+                {editingPlayer.includeInScoutingPack !== false ? 'Included in Pack' : 'Excluded from Pack'}
+              </span>
             </div>
 
             {/* Basic Info */}
@@ -938,6 +967,26 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextVal = player.includeInScoutingPack === false ? true : false;
+                      const updated = players.map(p => p.id === player.id ? { ...p, includeInScoutingPack: nextVal } : p);
+                      onSavePlayers(updated);
+                      showNotification(`✓ #${player.jerseyNumber} ${player.name} ${nextVal ? 'included in' : 'excluded from'} Scouting Pack`);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      player.includeInScoutingPack !== false
+                        ? 'bg-[#00ADEF]/15 text-[#00ADEF] border border-[#00ADEF]/40 hover:bg-[#00ADEF]/25'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-300 dark:border-slate-700 hover:text-slate-600 dark:hover:text-slate-200'
+                    }`}
+                    title={player.includeInScoutingPack !== false ? 'Included in College Scouting Pack (click to exclude)' : 'Excluded from College Scouting Pack (click to include)'}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline font-condensed uppercase tracking-wider text-[11px]">
+                      {player.includeInScoutingPack !== false ? 'Scout Pack' : 'Excluded'}
+                    </span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => startEditing(player)}

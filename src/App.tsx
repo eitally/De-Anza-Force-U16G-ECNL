@@ -651,7 +651,6 @@ export default function App() {
           teamInfo={teamInfo}
           onSelectPlayer={(p) => setSelectedPlayer(p)}
           onOpenTeamPhotoEditor={isAdminMode ? () => handleOpenTeamEditor('team') : undefined}
-          onTogglePlayerScouting={handleTogglePlayerScouting}
         />
 
         {/* Match Schedule & Results */}

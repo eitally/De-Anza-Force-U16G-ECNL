@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player, TeamInfo, Coach } from '../types';
 import { ClubCrest } from './ClubCrest';
-import { Printer, X, LayoutGrid, Table, ArrowRight, Edit3, Check } from 'lucide-react';
+import { Printer, X, ArrowRight, Edit3, Check } from 'lucide-react';
 
 interface PrintScoutingPackProps {
   isOpen: boolean;
@@ -20,7 +20,6 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   coaches,
   onTogglePlayerScouting,
 }) => {
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [activePage, setActivePage] = useState<'all' | 'p1' | 'p2' | 'p3'>('all');
   const [tournamentTitle, setTournamentTitle] = useState('SCOUTING ROSTER');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -248,81 +247,53 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
             </div>
           </div>
 
-          {/* Center: Controls & Title customizer */}
+          {/* Center: Page View Filter & Title customizer */}
           <div className="flex items-center gap-2">
-            {/* View Mode Toggle */}
+            {/* Page View Filter */}
             <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 text-xs">
               <button
-                onClick={() => setViewMode('cards')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                  viewMode === 'cards'
+                onClick={() => setActivePage('all')}
+                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  activePage === 'all'
                     ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>Card Layout</span>
+                All Pages
               </button>
               <button
-                onClick={() => setViewMode('table')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                  viewMode === 'table'
+                onClick={() => setActivePage('p1')}
+                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  activePage === 'p1'
                     ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Table className="w-3.5 h-3.5" />
-                <span>Notes Table</span>
+                Page 1 (Inside Spread)
               </button>
+              <button
+                onClick={() => setActivePage('p2')}
+                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  activePage === 'p2'
+                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Page 2 (Outside Cover)
+              </button>
+              {page3Players.length > 0 && (
+                <button
+                  onClick={() => setActivePage('p3')}
+                  className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                    activePage === 'p3'
+                      ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Page 3 ({page3Players.length})
+                </button>
+              )}
             </div>
-
-            {/* Page View Filter */}
-            {viewMode === 'cards' && (
-              <div className="hidden sm:inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 text-xs">
-                <button
-                  onClick={() => setActivePage('all')}
-                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                    activePage === 'all'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  All (2 Pages)
-                </button>
-                <button
-                  onClick={() => setActivePage('p1')}
-                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                    activePage === 'p1'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Page 1 (All Players)
-                </button>
-                <button
-                  onClick={() => setActivePage('p2')}
-                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                    activePage === 'p2'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Page 2 (Cover & Staff)
-                </button>
-                {page3Players.length > 0 && (
-                  <button
-                    onClick={() => setActivePage('p3')}
-                    className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
-                      activePage === 'p3'
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    Page 3 ({page3Players.length})
-                  </button>
-                )}
-              </div>
-            )}
 
             {/* Generic Title Editor */}
             <div className="hidden lg:flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
@@ -377,9 +348,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
         {/* Printable Document Body */}
         <div className="p-4 sm:p-6 overflow-y-auto print:overflow-visible print:p-0 flex-1">
-
-          {viewMode === 'cards' ? (
-            <div className="flex flex-col gap-8 print:gap-0">
+          <div className="flex flex-col gap-8 print:gap-0">
               
               {/* ========================================================= */}
               {/* PAGE 1: INSIDE BIFOLD SPREAD (LEFT SPREAD | FOLD GAP | RIGHT SPREAD) */}
@@ -700,106 +669,6 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               )}
 
             </div>
-          ) : (
-            /* ========================================================= */
-            /* ALTERNATE VIEW: DETAILED SCOUTING TABLE WITH NOTES        */
-            /* ========================================================= */
-            <div className="bg-white p-6 rounded-xl border border-slate-300">
-              
-              {/* Table Header */}
-              <div className="border-b-2 border-slate-950 pb-3 mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-14 shrink-0 bg-white p-1 border border-slate-300 rounded-lg flex items-center justify-center">
-                    <ClubCrest size="sm" showText={false} />
-                  </div>
-                  <div>
-                    <h2 className="font-condensed font-black text-2xl uppercase tracking-tight text-slate-950">
-                      De Anza Force U16G ECNL - 2010/2011 • {tournamentTitle}
-                    </h2>
-                    <p className="text-xs font-bold text-slate-600">
-                      Girls ECNL Northern California • Head Coach: {paulBravo.name} ({paulBravo.phone})
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right text-xs">
-                  <div className="font-black text-slate-900 uppercase">Season Record: {teamInfo.seasonRecord.wins}-{teamInfo.seasonRecord.losses}-{teamInfo.seasonRecord.draws}</div>
-                  <div className="text-slate-500 text-[11px]">Printed: {new Date().toLocaleDateString()}</div>
-                </div>
-              </div>
-
-              {/* Roster Table */}
-              <div className="border border-slate-300 rounded-lg overflow-hidden">
-                <table className="w-full text-left text-xs text-slate-900 border-collapse">
-                  <thead className="bg-slate-100 font-condensed font-black uppercase text-slate-800 text-xs">
-                    <tr>
-                      <th className="py-2 px-2 text-center w-8">#</th>
-                      <th className="py-2 px-2.5 min-w-[140px]">Player Name</th>
-                      <th className="py-2 px-2">Position</th>
-                      <th className="py-2 px-2">Grad</th>
-                      <th className="py-2 px-2">Height</th>
-                      <th className="py-2 px-2.5 min-w-[170px]">Contact Email</th>
-                      <th className="py-2 px-2 text-center">GPA</th>
-                      <th className="py-2 px-2 text-center w-16">Profile QR</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {sortedPlayers.map((player) => {
-                      const qrTarget = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || 
-                        (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://deanzaforce.org');
-                      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrTarget)}`;
-
-                      return (
-                        <React.Fragment key={player.id}>
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="py-1.5 px-2 text-center font-black bg-slate-50 font-condensed text-sm">
-                              #{player.jerseyNumber}
-                            </td>
-                            <td className="py-1.5 px-2.5 font-bold text-slate-950">
-                              {player.name}
-                            </td>
-                            <td className="py-1.5 px-2 font-semibold text-[#00ADEF]">
-                              {getPlayerPosition(player)}
-                            </td>
-                            <td className="py-1.5 px-2 font-medium">
-                              {player.gradYear || 2029}
-                            </td>
-                            <td className="py-1.5 px-2">
-                              {player.height || '5\'6"'}
-                            </td>
-                            <td className="py-1.5 px-2.5 font-mono text-[11px] text-slate-800">
-                              {player.contactEmail}
-                            </td>
-                            <td className="py-1.5 px-2 text-center font-bold text-emerald-700">
-                              {player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' ? player.gpa : 'NA'}
-                            </td>
-                            <td rowSpan={2} className="py-1 px-2 text-center align-middle border-l border-slate-300 bg-slate-50">
-                              <img
-                                src={qrCodeUrl}
-                                alt={player.name}
-                                className="w-10 h-10 mx-auto border border-slate-300 rounded bg-white p-0.5"
-                                loading="lazy"
-                              />
-                            </td>
-                          </tr>
-                          <tr className="bg-slate-50/50 border-b-2 border-slate-300">
-                            <td colSpan={7} className="py-1.5 px-2.5 text-[10px] text-slate-500">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold uppercase tracking-wider text-slate-400 shrink-0">
-                                  Notes:
-                                </span>
-                                <div className="flex-1 border-b border-dotted border-slate-400 h-2"></div>
-                              </div>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
-          )}
 
         </div>
       </div>
