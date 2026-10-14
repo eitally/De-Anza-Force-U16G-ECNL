@@ -19,12 +19,14 @@ interface PlayerCardProps {
   player: Player;
   onSelectPlayer: (player: Player) => void;
   onEditPlayer?: (player: Player) => void;
+  onTogglePlayerScouting?: (playerId: string, include: boolean) => void;
 }
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({
   player,
   onSelectPlayer,
   onEditPlayer,
+  onTogglePlayerScouting,
 }) => {
   const getPositionBadgeStyle = (pos: string) => {
     switch (pos) {
@@ -77,7 +79,33 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               <span>CAPTAIN</span>
             </span>
           )}
+
+          {player.includeInScoutingPack === false && !onTogglePlayerScouting && (
+            <span className="px-2 py-1 rounded-lg bg-slate-900/90 text-amber-300 text-[9px] font-black uppercase tracking-wider shadow-lg border border-amber-500/40">
+              ALTERNATE
+            </span>
+          )}
         </div>
+
+        {/* Scouting Status Checkbox Toggle (Top Right) */}
+        {onTogglePlayerScouting && (
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            className="absolute top-2.5 right-2.5 z-20"
+          >
+            <label className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/85 hover:bg-slate-950 backdrop-blur-md border border-white/20 text-[10px] font-bold text-white cursor-pointer transition-all shadow-md select-none group/toggle" title="Check to list in College Scouting Pack, uncheck if alternate">
+              <input
+                type="checkbox"
+                checked={player.includeInScoutingPack !== false}
+                onChange={(e) => onTogglePlayerScouting(player.id, e.target.checked)}
+                className="w-3.5 h-3.5 rounded text-[#00ADEF] focus:ring-[#00ADEF] border-slate-500 cursor-pointer"
+              />
+              <span className={player.includeInScoutingPack !== false ? 'text-[#00ADEF]' : 'text-amber-400'}>
+                {player.includeInScoutingPack !== false ? 'Scouted' : 'Alternate'}
+              </span>
+            </label>
+          </div>
+        )}
 
         {/* Position Overlay (Bottom of Image) */}
         <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between">

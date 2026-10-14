@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Player, TeamInfo, Coach } from '../types';
 import { ClubCrest } from './ClubCrest';
-import { Printer, X, Download, Mail, Phone, GraduationCap, Shield, ExternalLink, QrCode } from 'lucide-react';
+import { Printer, X, LayoutGrid, Table, ArrowRight, Edit3, Check } from 'lucide-react';
 
 interface PrintScoutingPackProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface PrintScoutingPackProps {
   teamInfo: TeamInfo;
   players: Player[];
   coaches: Coach[];
+  onTogglePlayerScouting?: (playerId: string, include: boolean) => void;
 }
 
 export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
@@ -17,237 +18,788 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   teamInfo,
   players,
   coaches,
+  onTogglePlayerScouting,
 }) => {
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [activePage, setActivePage] = useState<'all' | 'p1' | 'p2' | 'p3'>('all');
+  const [tournamentTitle, setTournamentTitle] = useState('SCOUTING ROSTER');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+
   if (!isOpen) return null;
 
-  const recruitingCoach = (coaches && coaches.length > 0) ? (coaches.find((c) => (c.role || '').toLowerCase().includes('recruiting')) || coaches[0]) : null;
-  const headCoach = (coaches && coaches.length > 0) ? (coaches.find((c) => (c.role || '').toLowerCase().includes('head coach')) || coaches[0]) : null;
+  // Filter out any retired players just in case
+  const activePlayers = players.filter(p => {
+    const n = (p.name || '').toLowerCase();
+    return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
+  });
+
+  // Find Paul Bravo and Yuta Tanaka
+  const paulBravo = coaches?.find(c => c.name.toLowerCase().includes('bravo')) || {
+    name: 'Paul Bravo',
+    role: 'Head Coach',
+    email: 'paulgbravo9@gmail.com',
+    phone: '(720) 475-6991',
+    photoUrl: 'https://i.imgur.com/c0qeiY4.png'
+  };
+
+  const yutaTanaka = coaches?.find(c => c.name.toLowerCase().includes('yuta') || c.name.toLowerCase().includes('tanaka')) || {
+    name: 'Yuta Tanaka',
+    role: 'Strength & Agility Coach',
+    email: 'yuta.tanaka@gmail.com',
+    phone: '(650) 619-3670',
+    photoUrl: 'https://i.imgur.com/iNiPnJD.jpeg'
+  };
+
+  // Helper to format position using the specific player position listed in the roster (e.g. "Attacking Midfielder (#10)")
+  const getPlayerPosition = (player: Player) => {
+    if (player.specificPosition && player.specificPosition.trim() !== '') {
+      return player.specificPosition.trim();
+    }
+    if (player.primaryPosition && player.primaryPosition.trim() !== '') {
+      return player.primaryPosition.trim();
+    }
+    return 'Player';
+  };
+
+  const isGoalkeeper = (p: Player) => {
+    const pri = (p.primaryPosition || '').toLowerCase();
+    const spec = (p.specificPosition || '').toLowerCase();
+    return pri.includes('goal') || pri.includes('gk') || spec.includes('goalkeeper') || spec.includes('keeper') || spec.includes('(gk)');
+  };
+
+  // Put all goalkeepers first in the list, regardless of their jersey number, then sort by jersey number
+  const sortedPlayers = [...activePlayers].sort((a, b) => {
+    const aGK = isGoalkeeper(a);
+    const bGK = isGoalkeeper(b);
+    if (aGK && !bGK) return -1;
+    if (!aGK && bGK) return 1;
+    const aNum = Number(a.jerseyNumber) || 999;
+    const bNum = Number(b.jerseyNumber) || 999;
+    if (aNum !== bNum) return aNum - bNum;
+    return a.name.localeCompare(b.name);
+  });
+
+  // Page 1 gets all active scouted players (excluding alternates where includeInScoutingPack === false)
+  const activeScoutingPlayers = sortedPlayers.filter(p => p.includeInScoutingPack !== false);
+  const page1Players = activeScoutingPlayers;
+  // Bifold Inside Spread: Split squad evenly into Left Spread and Right Spread
+  const halfCount = Math.ceil(page1Players.length / 2);
+  const leftSpreadPlayers = page1Players.slice(0, halfCount);
+  const rightSpreadPlayers = page1Players.slice(halfCount);
+  const maxSpreadCount = Math.max(leftSpreadPlayers.length, rightSpreadPlayers.length);
+  const gridRowCount = maxSpreadCount > 12 ? 5 : 4;
+
+  // Page 2 is program cover & staff/notes
+  const page2Players: Player[] = [];
+  // Page 3 is not needed as all squad members fit on Page 1
+  const page3Players: Player[] = [];
+
+  const websiteUrl = 'https://www.deanzaforce2011g.com/';
+  const teamBrochureQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(websiteUrl)}`;
+  const currentYear = new Date().getFullYear();
 
   const handlePrint = () => {
     window.print();
   };
 
-  return (
-    <div onClick={onClose}
-    className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto bg-black/90 backdrop-blur-md print-scouting-pack">
+  // Single Player Card matching bifold specifications
+  const renderPlayerCard = (player: Player) => {
+    const profileUrl = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || '#';
+    const qrTarget = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || 
+      (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://www.deanzaforce2011g.com/');
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;
+    const position = getPlayerPosition(player);
+    const gpaDisplay = player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' && player.gpa.toLowerCase() !== 'n/a' ? player.gpa : 'NA';
+    const heightDisplay = player.height && player.height.trim() !== '' ? player.height : '5\'6"';
+
+    // Ava Golshan does not have a headshot currently (must never display Eliot Kline's photo)
+    const isAvaGolshan = player.id === 'p_ava_golshan' || (player.name || '').toLowerCase().includes('ava golshan');
+    const isEliotKline = player.id === 'p1' || (player.name || '').toLowerCase().includes('eliot');
+
+    // Ensure Eliot Kline always has her verified photo; Ava Golshan has no headshot
+    let playerPhoto = player.photoUrl;
+    if (isAvaGolshan) {
+      playerPhoto = '';
+    } else if (isEliotKline) {
+      playerPhoto = (player.photoUrl && !player.photoUrl.includes('logo.png') && !player.photoUrl.includes('c0qeiY4'))
+        ? player.photoUrl
+        : 'https://i.imgur.com/BgA9tkV.jpeg';
+    }
+
+    const hasHeadshot = !isAvaGolshan && Boolean(
+      playerPhoto && 
+      playerPhoto.trim() !== '' && 
+      !playerPhoto.includes('c0qeiY4') && 
+      !playerPhoto.includes('daf-crest') &&
+      !playerPhoto.includes('logo.png')
+    );
+
+    return (
       <div 
-        className="relative w-full max-w-6xl rounded-2xl bg-white text-slate-900 shadow-2xl overflow-hidden my-auto max-h-[96vh] flex flex-col print:max-h-none print:shadow-none print:rounded-none"
+        key={player.id}
+        className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 transition-all hover:border-slate-300 print:shadow-none print:border-slate-300 h-full min-h-0"
+      >
+        {/* Top Header Row: #Jersey Number on left + QR code on right */}
+        <div className="flex items-start justify-between z-10 shrink-0">
+          <span className="font-sans font-black text-lg sm:text-xl print:text-base text-slate-950 leading-none select-none tracking-tight">
+            #{player.jerseyNumber}
+          </span>
+          
+          <a
+            href={profileUrl !== '#' ? profileUrl : undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Scan or click to view ${player.name}'s profile flyer`}
+            className="shrink-0 group/qr"
+          >
+            <img
+              src={qrCodeUrl}
+              alt={`QR code for ${player.name}`}
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 print:w-7.5 print:h-7.5 border border-slate-300 rounded bg-white p-0.5 shadow-xs group-hover/qr:scale-105 transition-transform"
+              loading="lazy"
+            />
+          </a>
+        </div>
+
+        {/* Center: Large Centered Headshot (NO frame, fade to white at bottom) */}
+        <div className="relative -mt-3 sm:-mt-3.5 flex items-center justify-center my-auto">
+          {hasHeadshot ? (
+            <div className="relative w-22 h-22 sm:w-24 sm:h-24 print:w-[86px] print:h-[86px] flex items-center justify-center overflow-hidden">
+              <img
+                src={playerPhoto}
+                alt={player.name}
+                className="w-full h-full object-cover object-top select-none pointer-events-none"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  if (target.parentElement) {
+                    target.parentElement.className = 'w-16 h-16 flex items-center justify-center p-0.5';
+                  }
+                }}
+              />
+              {/* Soft fade to white at bottom */}
+              <div className="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
+            </div>
+          ) : (
+            /* Clean De Anza Force Logo (NO frame, centered) */
+            <div className="w-18 h-18 sm:w-20 sm:h-20 print:w-16 print:h-16 flex items-center justify-center p-0.5">
+              <img 
+                src="/logo.png" 
+                alt="De Anza Force" 
+                className="w-full h-full object-contain pointer-events-none select-none border-0 shadow-none" 
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Section: Text Moved Down */}
+        <div className="text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
+          <h4 className="font-sans font-black text-[11px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate px-0.5" title={player.name}>
+            {player.name}
+          </h4>
+          <div className="font-bold text-[8.5px] print:text-[7.5px] uppercase tracking-tight text-[#00ADEF] leading-tight truncate mt-0.5" title={position}>
+            {position}
+          </div>
+          <div className="text-[7.5px] print:text-[7px] text-slate-700 font-semibold leading-tight mt-0.5 flex items-center justify-center gap-1 truncate">
+            <span>Ht: {heightDisplay}</span>
+            <span>•</span>
+            <span>GPA: {gpaDisplay}</span>
+            <span>•</span>
+            <span>'{String(player.gradYear || 2029).slice(-2)}</span>
+          </div>
+          <div className="pt-0.5 min-w-0">
+            <a
+              href={`mailto:${player.contactEmail}`}
+              className="text-[7.5px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline text-center"
+              title={player.contactEmail}
+            >
+              {player.contactEmail || 'info@deanzaforce.org'}
+            </a>
+            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md print-scouting-pack"
+    >
+      <div 
+        className="relative w-full max-w-[1240px] rounded-2xl bg-slate-100 text-slate-900 shadow-2xl overflow-hidden my-auto max-h-[96vh] flex flex-col print:max-h-none print:shadow-none print:rounded-none print:bg-white print:overflow-visible print:w-full print:max-w-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Control Bar (Hidden on print) */}
-        <div className="no-print p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex items-center justify-between gap-4 shrink-0 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-blue-400" />
-            <span className="font-condensed font-black text-lg uppercase tracking-wider">
-              Official College Coach Scouting Roster
-            </span>
+        <div className="no-print p-3 sm:p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-wrap items-center justify-between gap-3 shrink-0 border-b border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#00ADEF]/15 flex items-center justify-center text-[#00ADEF]">
+              <ClubCrest size="sm" showText={false} />
+            </div>
+            <div>
+              <span className="font-condensed font-black text-base sm:text-lg uppercase tracking-wider block leading-tight">
+                Official College Coach Scouting Pack
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                2-Page Landscape Format • ECNL Showcase & College Recruitment Standard
+              </span>
+            </div>
           </div>
 
+          {/* Center: Controls & Title customizer */}
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 text-xs">
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  viewMode === 'cards'
+                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Card Layout</span>
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Table className="w-3.5 h-3.5" />
+                <span>Notes Table</span>
+              </button>
+            </div>
+
+            {/* Page View Filter */}
+            {viewMode === 'cards' && (
+              <div className="hidden sm:inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 text-xs">
+                <button
+                  onClick={() => setActivePage('all')}
+                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                    activePage === 'all'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  All (2 Pages)
+                </button>
+                <button
+                  onClick={() => setActivePage('p1')}
+                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                    activePage === 'p1'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Page 1 (All Players)
+                </button>
+                <button
+                  onClick={() => setActivePage('p2')}
+                  className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                    activePage === 'p2'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Page 2 (Cover & Staff)
+                </button>
+                {page3Players.length > 0 && (
+                  <button
+                    onClick={() => setActivePage('p3')}
+                    className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                      activePage === 'p3'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Page 3 ({page3Players.length})
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Generic Title Editor */}
+            <div className="hidden lg:flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+              <span className="text-[11px] text-slate-400">Roster Title:</span>
+              {isEditingTitle ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={tournamentTitle}
+                    onChange={(e) => setTournamentTitle(e.target.value.toUpperCase())}
+                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 dark:text-white uppercase focus:outline-none focus:border-[#00ADEF]"
+                    placeholder="TEAM ROSTER"
+                  />
+                  <button
+                    onClick={() => setIsEditingTitle(false)}
+                    className="p-1 hover:text-[#00ADEF]"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div 
+                  onClick={() => setIsEditingTitle(true)}
+                  className="font-bold text-slate-800 dark:text-slate-200 cursor-pointer hover:text-[#00ADEF] flex items-center gap-1"
+                  title="Click to customize roster or tournament title"
+                >
+                  <span>{tournamentTitle}</span>
+                  <Edit3 className="w-3 h-3 text-slate-400" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Action Buttons */}
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#0098d3] text-slate-950 font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Print / Save as PDF</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Printable Document Body */}
-        <div className="p-6 sm:p-8 overflow-y-auto print:overflow-visible print:p-0">
-          
-          {/* Header Section with De Anza Force Logo at Top Left */}
-          <div className="border-b-2 border-slate-900 pb-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              {/* De Anza Force Logo at top left with crisp white background */}
-              <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-xl bg-white p-1.5 border border-slate-300 shadow-sm flex items-center justify-center">
-                <ClubCrest size="sm" showText={false} />
-              </div>
+        <div className="p-4 sm:p-6 overflow-y-auto print:overflow-visible print:p-0 flex-1">
+
+          {viewMode === 'cards' ? (
+            <div className="flex flex-col gap-8 print:gap-0">
               
-              <div>
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-700">
-                  <span>{teamInfo.clubName}</span>
-                  <span>•</span>
-                  <span>{teamInfo.league}</span>
+              {/* ========================================================= */}
+              {/* PAGE 1: INSIDE BIFOLD SPREAD (LEFT SPREAD | FOLD GAP | RIGHT SPREAD) */}
+              {/* ========================================================= */}
+              {(activePage === 'all' || activePage === 'p1') && (
+                <div 
+                  className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+                >
+                  {/* Compact Header for Page 1 */}
+                  <div className="border-b-2 border-slate-950 pb-1.5 mb-1.5 flex items-center justify-between print:pb-1 print:mb-1 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-8 print:w-6 print:h-7 shrink-0">
+                        <img src="/logo.png" alt="De Anza Force" className="w-full h-full object-contain pointer-events-none select-none" />
+                      </div>
+                      <div>
+                        <h3 className="font-condensed font-black text-base sm:text-lg print:text-sm uppercase tracking-tight text-slate-950 leading-none">
+                          DE ANZA FORCE U16G ECNL - 2010/2011 • {tournamentTitle}
+                        </h3>
+                        <p className="text-[9.5px] print:text-[8px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
+                          College Showcase &amp; Scouting Roster • Head Coach: {paulBravo.name} ({paulBravo.phone})
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <a
+                        href="https://deanzaforce2011g.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-condensed font-black text-xs sm:text-sm print:text-xs text-[#00ADEF] hover:underline uppercase tracking-tight block leading-none"
+                      >
+                        https://deanzaforce2011g.com
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Bifold 2-Page Inside Spread with Center Folding Gap */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 print:grid-cols-2 print:gap-6 flex-1 relative">
+                    
+                    {/* Visual Center Fold Crease Guideline (print-friendly) */}
+                    <div className="hidden print:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 border-r border-dashed border-slate-300 pointer-events-none" />
+
+                    {/* INSIDE LEFT PANEL (First Half of Squad) */}
+                    <div className="flex flex-col justify-between md:pr-1.5 print:pr-1 h-full">
+                      <div 
+                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1"
+                        style={{ gridTemplateRows: `repeat(${gridRowCount}, minmax(0, 1fr))` }}
+                      >
+                        {leftSpreadPlayers.map((player) => renderPlayerCard(player))}
+                      </div>
+                    </div>
+
+                    {/* INSIDE RIGHT PANEL (Second Half of Squad) */}
+                    <div className="flex flex-col justify-between md:pl-1.5 print:pl-1 h-full">
+                      <div 
+                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1"
+                        style={{ gridTemplateRows: `repeat(${gridRowCount}, minmax(0, 1fr))` }}
+                      >
+                        {rightSpreadPlayers.map((player) => renderPlayerCard(player))}
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
-                <h1 className="font-condensed font-black text-2xl sm:text-3xl uppercase text-slate-950 tracking-tight leading-none mt-1">
-                  {teamInfo.teamName}
-                </h1>
-                <p className="text-xs font-bold text-slate-700 mt-1">
-                  Age Group: {teamInfo.ageGroup} • Region: Bay Area, CA
-                </p>
-              </div>
-            </div>
+              )}
 
-            <div className="text-left sm:text-right text-xs">
-              <div className="font-black text-slate-900 uppercase">Season Record: {teamInfo.seasonRecord.wins}-{teamInfo.seasonRecord.losses}-{teamInfo.seasonRecord.draws}</div>
-              <div className="text-slate-600">NorCal Rank: #{teamInfo.seasonRecord.norcalRank} • National Rank: #{teamInfo.seasonRecord.nationalRank}</div>
-              <div className="text-[10px] text-slate-500 mt-1">Document Generated: {new Date().toLocaleDateString()}</div>
-            </div>
-          </div>
+              {/* ========================================================= */}
+              {/* PAGE 2: OUTSIDE BIFOLD SPREAD (BACK COVER & FRONT COVER)  */}
+              {/* ========================================================= */}
+              {(activePage === 'all' || activePage === 'p2') && (
+                <div 
+                  className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+                >
+                  {/* Bifold 2-Panel Spread matching Page 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 print:grid-cols-2 print:gap-6 flex-1 relative">
+                    
+                    {/* Visual Center Fold Crease Guideline (print-friendly) */}
+                    <div className="hidden print:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 border-r border-dashed border-slate-300 pointer-events-none" />
 
-          {/* Coaching Staff Contact Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-2.5 rounded-lg bg-slate-100 border border-slate-300 text-xs mb-4">
-            <div>
-              <div className="font-bold text-slate-900">{headCoach?.name}</div>
-              <div className="text-[10px] text-slate-600">{headCoach?.role}</div>
-              <div className="text-[11px] text-blue-800 font-semibold">{headCoach?.email}</div>
-            </div>
+                    {/* OUTSIDE LEFT PANEL: De Anza Force Card, Paul Bravo, Yuta Tanaka, & Scout Notes */}
+                    <div className="flex flex-col justify-between md:pr-1.5 print:pr-1">
+                      
+                      {/* Top Row: 3 Compact Shrunk Boxes (Team Profile + 2 Coaches) */}
+                      {/* Top Row: 3 Compact Shrunk Boxes (Team Profile + 2 Coaches - NO PHOTOS) */}
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 print:gap-1.5 shrink-0">
+                        
+                        {/* 1. Team Profile Box (Matching compact height) */}
+                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
+                          <div className="flex items-center justify-between">
+                            <span className="font-condensed font-black text-[9px] print:text-[8.5px] text-slate-950 uppercase tracking-wider truncate">
+                              DE ANZA FORCE
+                            </span>
+                            <span className="text-[6.5px] print:text-[6px] font-bold text-[#00ADEF] uppercase tracking-wider shrink-0">
+                              NORCAL ECNL
+                            </span>
+                          </div>
 
-            <div>
-              <div className="font-bold text-slate-900">{recruitingCoach?.name}</div>
-              <div className="text-[10px] text-slate-600">{recruitingCoach?.role}</div>
-              <div className="text-[11px] text-blue-800 font-semibold">{recruitingCoach?.email}</div>
-            </div>
+                          <div className="flex items-center gap-1.5 my-auto py-0.5">
+                            <div className="w-6 h-7 print:w-5.5 print:h-6.5 shrink-0 flex items-center justify-center">
+                              <img src="/logo.png" alt="De Anza Force" className="w-full h-full object-contain pointer-events-none select-none" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-condensed font-black text-[9px] print:text-[8px] uppercase text-slate-950 leading-tight truncate">
+                                U16G ECNL - 2010/2011
+                              </h5>
+                              <p className="text-[6.5px] print:text-[6px] text-slate-600 font-semibold leading-tight mt-0.5 truncate">
+                                Silicon Valley, CA
+                              </p>
+                            </div>
+                          </div>
 
-            <div className="col-span-2 sm:col-span-1">
-              <div className="font-bold text-slate-900">Home Facility</div>
-              <div className="text-[10px] text-slate-600">{teamInfo.homeFacility}</div>
-              <div className="text-[10px] text-slate-600">{teamInfo.facilityAddress}</div>
-            </div>
-          </div>
-
-          {/* Roster Table with Compact Row Padding, Larger High-Legibility Fonts & Spanning QR Codes */}
-          <div className="border border-slate-300 rounded-lg overflow-hidden">
-            <table className="w-full text-left text-xs sm:text-[12.5px] text-slate-900 border-collapse">
-              <thead className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-condensed font-black uppercase tracking-wider text-xs sm:text-[12px]">
-                <tr>
-                  <th className="py-2 px-2 text-center w-8">#</th>
-                  <th className="py-2 px-2.5 min-w-[145px]">Player Name</th>
-                  <th className="py-2 px-2">Pos</th>
-                  <th className="py-2 px-2">Grad</th>
-                  <th className="py-2 px-2">Ht / Wt / Foot</th>
-                  <th className="py-2 px-2.5 min-w-[170px]">Player Email</th>
-                  <th className="py-2 px-2 text-center">GPA</th>
-                  <th className="py-2 px-2">NCAA ID</th>
-                  <th className="py-2 px-2">Commitment</th>
-                  <th className="py-2 px-2 text-center w-20">Profile QR</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {players.map((player) => {
-                  // Ensure QR code always encodes a fully qualified, scannable web URL
-                  const getPlayerLiveUrl = (p: Player) => {
-                    if (p.profilePdfUrl && p.profilePdfUrl.startsWith('http')) return p.profilePdfUrl;
-                    if (p.profileDocUrl && p.profileDocUrl.startsWith('http')) return p.profileDocUrl;
-                    if (p.highlightsUrl && p.highlightsUrl.startsWith('http')) return p.highlightsUrl;
-                    const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://de-anza-force-u16-g-ecnl.vercel.app';
-                    return `${origin}/?player=${p.id}`;
-                  };
-
-                  const qrTarget = getPlayerLiveUrl(player);
-                  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrTarget)}`;
-                  const profileUrl = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || qrTarget;
-
-                  return (
-                    <React.Fragment key={player.id}>
-                      {/* Primary Info Row with Tight Padding & Larger Crisp Font */}
-                      <tr className="hover:bg-slate-50/80 transition-colors print-break-inside-avoid">
-                        <td className="py-1.5 px-2 text-center font-bold text-slate-900 bg-slate-100 font-condensed text-sm">
-                          #{player.jerseyNumber}
-                        </td>
-                        <td className="py-1.5 px-2.5 font-bold text-[13px] sm:text-[13.5px]">
-                          {profileUrl !== '#' ? (
+                          <div className="pt-0.5 border-t border-slate-100 flex items-center justify-between min-w-0">
                             <a
-                              href={profileUrl}
+                              href="https://deanzaforce2011g.com"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-900 hover:text-blue-600 underline font-bold transition-colors inline-flex items-center gap-1"
-                              title="Click to open downloadable profile PDF"
+                              className="text-[6.5px] print:text-[6px] text-sky-800 hover:text-sky-600 font-semibold truncate hover:underline"
                             >
-                              <span>{player.name}</span>
-                              {player.isCaptain && <span className="text-[10px] text-amber-600 no-underline">(C)</span>}
+                              deanzaforce2011g.com
                             </a>
-                          ) : (
-                            <span className="text-slate-950">
-                              {player.name} {player.isCaptain && <span className="text-[10px] text-amber-600">(C)</span>}
+                            <div className="h-0.5 bg-[#00ADEF] w-10 rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* 2. Coach Box: Paul Bravo (NO PHOTO - Compact Info Card) */}
+                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[7.5px] print:text-[7px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                              HEAD COACH • ECNL DIR
                             </span>
-                          )}
-                        </td>
-                        <td className="py-1.5 px-2 font-semibold text-blue-900 whitespace-nowrap text-xs">
-                          {player.specificPosition}
-                        </td>
-                        <td className="py-1.5 px-2 text-slate-800 font-medium whitespace-nowrap">
-                          {player.gradYear}
-                        </td>
-                        <td className="py-1.5 px-2 text-slate-800 whitespace-nowrap text-xs">
-                          {player.height} {player.weight ? `• ${player.weight}` : ''} • {player.dominantFoot ? player.dominantFoot[0] : 'R'}
-                        </td>
-                        {/* Fully legible, unobscured email with increased font */}
-                        <td className="py-1.5 px-2.5 text-slate-900 font-mono text-[11px] break-all leading-tight">
-                          {player.contactEmail ? (
-                            <a href={`mailto:${player.contactEmail}`} className="hover:underline text-slate-950 font-medium">
-                              {player.contactEmail}
+                            <span className="text-[6.5px] print:text-[6px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                              STAFF
+                            </span>
+                          </div>
+
+                          <div className="my-auto py-0.5 min-w-0">
+                            <h4 className="font-sans font-black text-[10.5px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                              {paulBravo.name}
+                            </h4>
+                            <div className="text-[7.5px] print:text-[7px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                              {paulBravo.phone || '(720) 475-6991'}
+                            </div>
+                          </div>
+
+                          <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                            <a
+                              href={`mailto:${paulBravo.email || 'paulgbravo9@gmail.com'}`}
+                              className="text-[7px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                              title={paulBravo.email}
+                            >
+                              {paulBravo.email || 'paulgbravo9@gmail.com'}
                             </a>
-                          ) : (
-                            <span className="text-slate-500 dark:text-slate-400 italic">Via Coaching Staff</span>
-                          )}
-                        </td>
-                        <td className="py-1.5 px-2 font-black text-emerald-800 text-center text-xs">
-                          {player.gpa}
-                        </td>
-                        <td className="py-1.5 px-2 font-mono text-[11px] text-slate-700 whitespace-nowrap">
-                          {player.ncaaId || '—'}
-                        </td>
-                        <td className="py-1.5 px-2 font-semibold text-xs whitespace-nowrap">
-                          {player.commitment !== 'Uncommitted' ? (
-                            <span className="text-emerald-700 font-bold">★ {player.commitment}</span>
-                          ) : (
-                            <span className="text-slate-600">Uncommitted</span>
-                          )}
-                        </td>
-                        {/* Spanning QR Code linked to Player Profile PDF */}
-                        <td rowSpan={2} className="py-1 px-2 text-center align-middle border-l border-slate-300 bg-slate-50 print:bg-transparent w-20">
+                            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* 3. Coach Box: Yuta Tanaka (NO PHOTO - Compact Info Card) */}
+                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[7.5px] print:text-[7px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                              STRENGTH &amp; AGILITY COACH
+                            </span>
+                            <span className="text-[6.5px] print:text-[6px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                              STAFF
+                            </span>
+                          </div>
+
+                          <div className="my-auto py-0.5 min-w-0">
+                            <h4 className="font-sans font-black text-[10.5px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                              {yutaTanaka.name}
+                            </h4>
+                            <div className="text-[7.5px] print:text-[7px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                              {yutaTanaka.phone || '(650) 619-3670'}
+                            </div>
+                          </div>
+
+                          <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                            <a
+                              href={`mailto:${yutaTanaka.email || 'yuta.tanaka@gmail.com'}`}
+                              className="text-[7px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                              title={yutaTanaka.email}
+                            >
+                              {yutaTanaka.email || 'yuta.tanaka@gmail.com'}
+                            </a>
+                            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* Dedicated Lined Scout Notes Section (Uses all available space on Page 2) */}
+                      <div className="mt-2.5 pt-1.5 flex-1 flex flex-col min-h-0">
+                        {/* Cyan Top Line */}
+                        <div className="h-0.5 bg-[#00ADEF] w-full mb-1 shrink-0"></div>
+                        
+                        <div className="flex items-center justify-between mb-1 shrink-0">
+                          <span className="font-condensed font-black text-sm tracking-wider uppercase text-slate-950">
+                            NOTES
+                          </span>
+                        </div>
+
+                        {/* Ruled Notebook Lines that stretch to use all available height */}
+                        <div className="flex-1 flex flex-col justify-between py-1 min-h-[460px] print:min-h-[500px]">
+                          {Array.from({ length: 26 }).map((_, i) => (
+                            <div key={i} className="border-b border-slate-300/90 w-full h-0"></div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* OUTSIDE RIGHT PANEL: Cover with SCOUTING ROSTER & Digital Team Website QR */}
+                    <div className="flex flex-col justify-between md:pl-1.5 print:pl-1">
+                      
+                      {/* Upper Center: Big Crest with Speed Racing Stripes */}
+                      <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-6">
+                        
+                        {/* Crest with Left & Right 3 Horizontal Stripes */}
+                        <div className="w-full flex items-center justify-center gap-3 sm:gap-4 max-w-lg mb-4">
+                          {/* 3 Black Stripes Left */}
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                          </div>
+
+                          {/* Force Shield Crest */}
+                          <div className="w-24 h-28 sm:w-28 sm:h-32 shrink-0">
+                            <ClubCrest size="xl" showText={false} className="w-full h-full" />
+                          </div>
+
+                          {/* 3 Black Stripes Right */}
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                            <div className="h-2 bg-slate-950 rounded-sm"></div>
+                          </div>
+                        </div>
+
+                        {/* Titles */}
+                        <h1 className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl uppercase text-slate-950 tracking-tight text-center leading-none">
+                          DE ANZA FORCE
+                        </h1>
+
+                        <div className="font-condensed font-black text-3xl sm:text-4xl lg:text-5xl text-[#00ADEF] tracking-tight text-center leading-none my-1 select-none">
+                          U16G ECNL - 2010/2011
+                        </div>
+
+                        <h2 className="font-condensed font-black text-2xl sm:text-3xl lg:text-4xl uppercase tracking-wider text-slate-950 text-center leading-tight mt-1">
+                          SCOUTING ROSTER
+                        </h2>
+
+                        <div className="font-condensed font-black text-xl sm:text-2xl text-slate-950 tracking-wider text-center mt-1">
+                          {currentYear}
+                        </div>
+                      </div>
+
+                      {/* Lower Section: Team Website Self-Referential QR Code */}
+                      <div className="mt-auto pt-3 border-t border-slate-200">
+                        <div className="flex flex-col items-center justify-center p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
                           <a
-                            href={profileUrl !== '#' ? profileUrl : undefined}
+                            href="https://www.deanzaforce2011g.com/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-col items-center justify-center group"
-                            title={`Scan or click to view ${player.name}'s profile PDF`}
+                            className="group flex flex-col items-center gap-1.5"
+                            title="Scan or click to open the official Team Website (https://www.deanzaforce2011g.com/)"
                           >
                             <img
-                              src={qrCodeUrl}
-                              alt={`QR Code for ${player.name}`}
-                              className="w-12 h-12 border border-slate-300 rounded bg-white p-0.5 shadow-xs group-hover:scale-105 transition-transform"
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent('https://www.deanzaforce2011g.com/')}`}
+                              alt="Team Website QR Code"
+                              className="w-16 h-16 sm:w-18 sm:h-18 border-2 border-slate-900 rounded bg-white p-1 shadow-xs group-hover:scale-105 transition-transform"
                               loading="lazy"
                             />
-                            <span className="text-[7.5px] font-bold text-slate-600 uppercase tracking-tighter mt-0.5 leading-none group-hover:text-blue-700">
-                              PDF Flyer
+                            <span className="font-condensed font-black text-xs sm:text-sm tracking-wide text-slate-950 font-mono group-hover:text-[#00ADEF] transition-colors">
+                              https://www.deanzaforce2011g.com/
                             </span>
                           </a>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
 
-                      {/* Dedicated Notes Sub-Row for College Evaluators */}
-                      <tr className="bg-slate-50/60 border-b-2 border-slate-300 print-break-inside-avoid">
-                        <td colSpan={9} className="py-1.5 px-2.5 text-[10.5px] text-slate-600 border-t border-dashed border-slate-200">
-                          <div className="flex items-center gap-2 mb-2.5">
-                            <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0 text-[9.5px]">
-                              Scout Notes:
-                            </span>
-                            <div className="flex-1 border-b border-dotted border-slate-400 h-2"></div>
-                          </div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0 text-[9.5px] invisible">
-                              Scout Notes:
-                            </span>
-                            <div className="flex-1 border-b border-dotted border-slate-400 h-2"></div>
-                          </div>
-                        </td>
-                      </tr>
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    </div>
 
-          {/* Footer Note */}
-          <div className="mt-4 pt-3 border-t border-slate-300 text-[10px] text-slate-500 flex flex-wrap justify-between items-center gap-2">
-            <span>De Anza Force U16 ECNL • Official Team College Scouting Roster • Region: Bay Area, CA</span>
-            <span>Player video reels and full PDF showcase flyers accessible via QR codes above.</span>
-          </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* PAGE 3: SQUAD RESERVES & EXTENDED ROSTER (IF > 19 PLAYERS) */}
+              {/* ========================================================= */}
+              {page3Players.length > 0 && (activePage === 'all' || activePage === 'p3') && (
+                <div 
+                  className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-4 sm:p-5 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-2 print-page-break min-h-[680px]"
+                >
+                  <div className="border-b-2 border-slate-900 pb-2 mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-9 shrink-0">
+                        <ClubCrest size="sm" showText={false} />
+                      </div>
+                      <div>
+                        <h3 className="font-condensed font-black text-lg uppercase tracking-tight text-slate-950">
+                          De Anza Force U16G ECNL - 2010/2011 • {tournamentTitle}
+                        </h3>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                          Squad Reserves &amp; Extended Player Roster ({page3Players.length} Players)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Page 3 of 3
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 sm:gap-3 flex-1">
+                    {page3Players.map((player) => renderPlayerCard(player))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          ) : (
+            /* ========================================================= */
+            /* ALTERNATE VIEW: DETAILED SCOUTING TABLE WITH NOTES        */
+            /* ========================================================= */
+            <div className="bg-white p-6 rounded-xl border border-slate-300">
+              
+              {/* Table Header */}
+              <div className="border-b-2 border-slate-950 pb-3 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-14 shrink-0 bg-white p-1 border border-slate-300 rounded-lg flex items-center justify-center">
+                    <ClubCrest size="sm" showText={false} />
+                  </div>
+                  <div>
+                    <h2 className="font-condensed font-black text-2xl uppercase tracking-tight text-slate-950">
+                      De Anza Force U16G ECNL - 2010/2011 • {tournamentTitle}
+                    </h2>
+                    <p className="text-xs font-bold text-slate-600">
+                      Girls ECNL Northern California • Head Coach: {paulBravo.name} ({paulBravo.phone})
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right text-xs">
+                  <div className="font-black text-slate-900 uppercase">Season Record: {teamInfo.seasonRecord.wins}-{teamInfo.seasonRecord.losses}-{teamInfo.seasonRecord.draws}</div>
+                  <div className="text-slate-500 text-[11px]">Printed: {new Date().toLocaleDateString()}</div>
+                </div>
+              </div>
+
+              {/* Roster Table */}
+              <div className="border border-slate-300 rounded-lg overflow-hidden">
+                <table className="w-full text-left text-xs text-slate-900 border-collapse">
+                  <thead className="bg-slate-100 font-condensed font-black uppercase text-slate-800 text-xs">
+                    <tr>
+                      <th className="py-2 px-2 text-center w-8">#</th>
+                      <th className="py-2 px-2.5 min-w-[140px]">Player Name</th>
+                      <th className="py-2 px-2">Position</th>
+                      <th className="py-2 px-2">Grad</th>
+                      <th className="py-2 px-2">Height</th>
+                      <th className="py-2 px-2.5 min-w-[170px]">Contact Email</th>
+                      <th className="py-2 px-2 text-center">GPA</th>
+                      <th className="py-2 px-2 text-center w-16">Profile QR</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {sortedPlayers.map((player) => {
+                      const qrTarget = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || 
+                        (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://deanzaforce.org');
+                      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrTarget)}`;
+
+                      return (
+                        <React.Fragment key={player.id}>
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="py-1.5 px-2 text-center font-black bg-slate-50 font-condensed text-sm">
+                              #{player.jerseyNumber}
+                            </td>
+                            <td className="py-1.5 px-2.5 font-bold text-slate-950">
+                              {player.name}
+                            </td>
+                            <td className="py-1.5 px-2 font-semibold text-[#00ADEF]">
+                              {getPlayerPosition(player)}
+                            </td>
+                            <td className="py-1.5 px-2 font-medium">
+                              {player.gradYear || 2029}
+                            </td>
+                            <td className="py-1.5 px-2">
+                              {player.height || '5\'6"'}
+                            </td>
+                            <td className="py-1.5 px-2.5 font-mono text-[11px] text-slate-800">
+                              {player.contactEmail}
+                            </td>
+                            <td className="py-1.5 px-2 text-center font-bold text-emerald-700">
+                              {player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' ? player.gpa : 'NA'}
+                            </td>
+                            <td rowSpan={2} className="py-1 px-2 text-center align-middle border-l border-slate-300 bg-slate-50">
+                              <img
+                                src={qrCodeUrl}
+                                alt={player.name}
+                                className="w-10 h-10 mx-auto border border-slate-300 rounded bg-white p-0.5"
+                                loading="lazy"
+                              />
+                            </td>
+                          </tr>
+                          <tr className="bg-slate-50/50 border-b-2 border-slate-300">
+                            <td colSpan={7} className="py-1.5 px-2.5 text-[10px] text-slate-500">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                                  Notes:
+                                </span>
+                                <div className="flex-1 border-b border-dotted border-slate-400 h-2"></div>
+                              </div>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          )}
 
         </div>
       </div>

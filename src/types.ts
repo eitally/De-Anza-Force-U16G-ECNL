@@ -36,9 +36,13 @@ export interface Player {
   profilePdfUrl?: string; // Downloadable player profile PDF link
   instagram?: string;
   contactEmail?: string;
+  phone?: string;
+  birthDate?: string;
   awards: string[];
   stats: PlayerStats;
   isCaptain?: boolean;
+  includeInScoutingPack?: boolean; // When true or undefined, included in College Scouting Pack. If false (e.g. alternates), excluded from scouting print.
+  isAlternate?: boolean; // Set if player is a practice squad alternate
   hometown?: string;
 }
 

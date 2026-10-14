@@ -76,8 +76,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'De Anza Force 2011G ECNL',
-          text: 'Check out the official team & recruiting hub for De Anza Force 2011G ECNL.',
+          title: 'De Anza Force U16G ECNL - 2010/2011',
+          text: 'Check out the official team & recruiting hub for De Anza Force U16G ECNL - 2010/2011.',
           url: window.location.href,
         });
       } catch (error) {

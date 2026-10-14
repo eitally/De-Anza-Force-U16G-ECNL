@@ -3,9 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>De Anza Force 2011G ECNL | Official Team & College Recruiting Hub</title>
-    <meta name="description" content="Official website for De Anza Force 2011G ECNL (U16 Girls Soccer). Access full squad roster, college recruiting profiles, NorCal match schedule, Veo livestreams, standings, and printable scouting packs." />
-    <meta name="keywords" content="De Anza Force, De Anza Force 2011G, 2011G ECNL, Girls ECNL, NorCal Soccer, College Soccer Recruiting, ECNL Roster, Youth Soccer Cupertino, Northern California ECNL" />
+    <script>
+      // Shield window from third-party extension crashes (e.g. Image Duke, translation plugins)
+      window.addEventListener('error', function(event) {
+        var fn = event.filename || '';
+        var msg = (event.message || '') + (event.error && event.error.stack ? event.error.stack : '');
+        if (
+          fn.indexOf('chrome-extension://') !== -1 ||
+          fn.indexOf('moz-extension://') !== -1 ||
+          msg.indexOf('chrome-extension://') !== -1 ||
+          msg.indexOf('moz-extension://') !== -1 ||
+          msg.indexOf("Cannot read properties of undefined (reading 'to')") !== -1
+        ) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          return true;
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event.reason ? (event.reason.stack || event.reason.message || '') : '';
+        if (
+          reason.indexOf('chrome-extension://') !== -1 ||
+          reason.indexOf('moz-extension://') !== -1 ||
+          reason.indexOf("Cannot read properties of undefined (reading 'to')") !== -1
+        ) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      }, true);
+    </script>
+    <title>De Anza Force U16G ECNL - 2010/2011 | Official Team & College Recruiting Hub</title>
+    <meta name="description" content="Official website for De Anza Force U16G ECNL - 2010/2011. Access full squad roster, college recruiting profiles, NorCal match schedule, Veo livestreams, standings, and printable scouting packs." />
+    <meta name="keywords" content="De Anza Force, De Anza Force U16G ECNL, U16G ECNL - 2010/2011, Girls ECNL, NorCal Soccer, College Soccer Recruiting, ECNL Roster, Youth Soccer Cupertino, Northern California ECNL" />
     <meta name="author" content="De Anza Force Soccer Club" />
     <meta name="theme-color" content="#080c14" />
     <link rel="icon" type="image/png" href="https://i.imgur.com/c0qeiY4.png" />
@@ -18,22 +47,22 @@
     
     <!-- Open Graph / Facebook / iMessage -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="De Anza Force 2011G ECNL" />
-    <meta property="og:title" content="De Anza Force 2011G ECNL | Official Team & College Recruiting Hub" />
+    <meta property="og:site_name" content="De Anza Force U16G ECNL - 2010/2011" />
+    <meta property="og:title" content="De Anza Force U16G ECNL - 2010/2011 | Official Team & College Recruiting Hub" />
     <meta property="og:description" content="Official team website: squad roster, collegiate recruiting athletic profiles, NorCal conference match schedule, and Veo livestream links." />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="De Anza Force 2011G ECNL | Official Team & Recruiting Hub" />
-    <meta name="twitter:description" content="Official squad roster, college recruitment profiles, match schedule & livestreams for De Anza Force 2011G ECNL." />
+    <meta name="twitter:title" content="De Anza Force U16G ECNL - 2010/2011 | Official Team & Recruiting Hub" />
+    <meta name="twitter:description" content="Official squad roster, college recruitment profiles, match schedule & livestreams for De Anza Force U16G ECNL - 2010/2011." />
 
     <!-- Schema.org SportsTeam Structured Data for Search Engines & Recruiters -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SportsTeam",
-        "name": "De Anza Force 2011G ECNL",
+        "name": "De Anza Force U16G ECNL - 2010/2011",
         "sport": "Soccer",
         "gender": "Female",
         "description": "Elite U16 girls soccer academy team competing in the ECNL Northern California Conference.",

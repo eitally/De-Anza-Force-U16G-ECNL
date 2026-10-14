@@ -67,7 +67,27 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((p: Player) => (p.id === 'p1' && (!p.photoUrl || p.photoUrl.includes('mnc56aF')) ? { ...p, photoUrl: ELIOT_KLINE_PHOTO } : p));
+          const cleaned = parsed.filter((p: Player) => {
+            const n = (p.name || '').toLowerCase();
+            return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
+          });
+          return cleaned.map((p: Player) => {
+            const isAva = p.id === 'p_ava_golshan' || (p.name || '').toLowerCase().includes('ava golshan');
+            const isEliot = p.id === 'p1' || (p.name || '').toLowerCase().includes('eliot');
+            const defaultP = INITIAL_PLAYERS.find(dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase()));
+            let photoUrl = p.photoUrl || defaultP?.photoUrl || '';
+            if (isAva) {
+              photoUrl = '';
+            } else if (isEliot) {
+              photoUrl = ELIOT_KLINE_PHOTO;
+            }
+            return {
+              ...defaultP,
+              ...p,
+              specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
+              photoUrl
+            };
+          });
         }
       }
     } catch {}
@@ -147,14 +167,39 @@ export default function App() {
         if (doc.exists()) {
           const data = doc.data();
           if (data.players) {
-            // Hydrate with local cache if present
-            const hydrated = (data.players as Player[]).map(p => {
-              const cached = getLocalCachedPlayerPhoto(p.id);
-              if (p.id === 'p1' && (!p.photoUrl || p.photoUrl.includes('mnc56aF'))) {
-                return { ...p, photoUrl: ELIOT_KLINE_PHOTO };
-              }
-              return cached ? { ...p, photoUrl: cached } : p;
-            });
+            // Hydrate with local cache and filter out any removed players
+            const rawFirestore = (data.players as Player[])
+              .filter(p => {
+                const n = (p.name || '').toLowerCase();
+                return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
+              });
+            const currentNames = rawFirestore.map(p => (p.name || '').trim().toLowerCase());
+            const missingInitial = INITIAL_PLAYERS.filter(
+              ip => !currentNames.includes((ip.name || '').trim().toLowerCase())
+            );
+            const combinedPlayers = missingInitial.length > 0 ? [...rawFirestore, ...missingInitial] : rawFirestore;
+            const hydrated = combinedPlayers.map(p => {
+                const isAva = p.id === 'p_ava_golshan' || (p.name || '').toLowerCase().includes('ava golshan');
+                const isEliot = p.id === 'p1' || (p.name || '').toLowerCase().includes('eliot');
+                const defaultP = INITIAL_PLAYERS.find(dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase()));
+                const cached = getLocalCachedPlayerPhoto(p.id);
+                let photoUrl = p.photoUrl;
+                if (isAva) {
+                  photoUrl = '';
+                } else if (isEliot) {
+                  photoUrl = ELIOT_KLINE_PHOTO;
+                } else if (cached) {
+                  photoUrl = cached;
+                } else if (!photoUrl && defaultP?.photoUrl) {
+                  photoUrl = defaultP.photoUrl;
+                }
+                return {
+                  ...defaultP,
+                  ...p,
+                  photoUrl,
+                  specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
+                };
+              });
             setPlayers(hydrated);
             try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
           }
@@ -509,6 +554,18 @@ export default function App() {
   // Find next upcoming match
   const nextMatch = matches.find((m) => m.status === 'upcoming') || matches[0];
 
+  // Toggle whether a player is included on the College Scouting Profile Pack
+  const handleTogglePlayerScouting = (playerId: string, include: boolean) => {
+    const updated = players.map(p => p.id === playerId ? { ...p, includeInScoutingPack: include } : p);
+    setPlayers(updated);
+    try {
+      localStorage.setItem('daf_team_players', JSON.stringify(updated));
+    } catch {}
+    setDoc(TEAM_DATA_DOC, { players: updated }, { merge: true }).catch((err) => {
+      console.warn("Notice: Firestore player scout flag sync:", err);
+    });
+  };
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -594,6 +651,7 @@ export default function App() {
           teamInfo={teamInfo}
           onSelectPlayer={(p) => setSelectedPlayer(p)}
           onOpenTeamPhotoEditor={isAdminMode ? () => handleOpenTeamEditor('team') : undefined}
+          onTogglePlayerScouting={handleTogglePlayerScouting}
         />
 
         {/* Match Schedule & Results */}
@@ -700,6 +758,29 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Team Website QR Code */}
+              <div className="pt-3">
+                <a
+                  href="https://www.deanzaforce2011g.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-[#00ADEF] transition-all group"
+                  title="Scan or click for Team Website"
+                >
+                  <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fwww.deanzaforce2011g.com%2F"
+                    alt="Team Website QR Code"
+                    className="w-12 h-12 border border-slate-200 dark:border-slate-700 rounded bg-white p-0.5"
+                    loading="lazy"
+                  />
+                  <div>
+                    <span className="font-condensed font-black text-xs tracking-wider text-slate-950 dark:text-white block group-hover:text-[#00ADEF] transition-colors font-mono">
+                      https://www.deanzaforce2011g.com/
+                    </span>
+                  </div>
+                </a>
+              </div>
+
               {/* Secure Single Team Editor Access Button */}
               {isAdminMode && (
                 <div className="pt-4 flex items-center gap-2">
@@ -753,6 +834,7 @@ export default function App() {
             onEditPlayer={(player) => handleOpenTeamEditor('players', player)}
             onDeletePlayer={handleDeletePlayer}
             onUpdatePlayerPhoto={handleUpdatePlayerPhoto}
+            onTogglePlayerScouting={handleTogglePlayerScouting}
             isAdminMode={true}
           />
         )}
@@ -811,6 +893,7 @@ export default function App() {
         teamInfo={teamInfo}
         players={players}
         coaches={coaches}
+        onTogglePlayerScouting={handleTogglePlayerScouting}
       />
 
     </div>

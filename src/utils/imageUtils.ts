@@ -1,8 +1,8 @@
 import type React from 'react';
 
-// De Anza Force Official Club Logo (from Imgur album https://imgur.com/a/hmNIg8Y and local vector)
-export const CLUB_LOGO_URL = 'https://i.imgur.com/c0qeiY4.png';
-export const CLUB_LOGO_SVG = '/daf-logo.svg';
+// De Anza Force Official Club Logo (attached graphic)
+export const CLUB_LOGO_URL = '/logo.png';
+export const CLUB_LOGO_SVG = '/logo.png';
 
 // Default player photo is the official Club Crest / Logo when no matching first-name headshot exists
 export const DEFAULT_PLAYER_PHOTO = CLUB_LOGO_URL;
@@ -26,7 +26,7 @@ export const IMGUR_HEADSHOTS: Record<string, { filename: string; url: string; fi
   },
   eliot: {
     filename: 'eliot.jpg',
-    url: 'https://i.imgur.com/mnc56aF.jpeg',
+    url: 'https://i.imgur.com/BgA9tkV.jpeg',
     firstName: 'Eliot',
   },
   elise: {

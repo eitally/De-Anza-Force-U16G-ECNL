@@ -76,6 +76,7 @@ interface PlayerModalProps {
   onEditPlayer?: (player: Player) => void;
   onDeletePlayer?: (playerId: string, playerName: string) => void;
   onUpdatePlayerPhoto?: (playerId: string, photoUrl: string) => void;
+  onTogglePlayerScouting?: (playerId: string, include: boolean) => void;
   isAdminMode?: boolean;
 }
 
@@ -87,6 +88,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
   onEditPlayer,
   onDeletePlayer,
   onUpdatePlayerPhoto,
+  onTogglePlayerScouting,
   isAdminMode = false,
 }) => {
   if (!player) return null;
@@ -193,7 +195,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-800">
-                    {player.primaryPosition}
+                    {player.specificPosition || player.primaryPosition}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                     Class of {player.gradYear} • {player.ageGroup || 'U16 ECNL'}
@@ -593,7 +595,19 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              {onTogglePlayerScouting && (
+                <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={player.includeInScoutingPack !== false}
+                    onChange={(e) => onTogglePlayerScouting(player.id, e.target.checked)}
+                    className="w-4 h-4 rounded text-[#00ADEF] focus:ring-[#00ADEF] border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
+                  <span>Scouting Profile: {player.includeInScoutingPack !== false ? 'Included' : 'Excluded (Alternate)'}</span>
+                </label>
+              )}
+
               {onDeletePlayer && (
                 <button
                   type="button"
