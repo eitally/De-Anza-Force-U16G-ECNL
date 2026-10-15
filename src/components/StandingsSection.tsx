@@ -199,7 +199,10 @@ export const StandingsSection: React.FC<StandingsSectionProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80">
               {sortedStandings.map((team, idx) => {
-                const isDeAnza = team.isCurrentTeam || team.teamName.includes('De Anza');
+                const isDeAnza =
+                  team.isCurrentTeam ||
+                  team.isForce ||
+                  /de\s*anza|force/i.test(team.teamName);
                 const hasPlayed = team.played > 0;
                 const ppg = getEffectivePPG(team);
                 const displayRank = sortField === 'pointsPerGame' && sortDir === 'desc' ? idx + 1 : (team.rank || idx + 1);

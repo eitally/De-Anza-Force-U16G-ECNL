@@ -2,6 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import type { Match, StandingTeam, TeamInfo } from '../../types';
 import { syncStandingsAndTeamInfoWithMatches } from '../../utils/recordUtils';
 import {
+  fetchStandingsFromGoogleSheet,
+  getSunday9pmPacificWindow,
+  buildUpdatedTeamInfoFromStandings,
+} from '../../utils/standingsCron';
+import {
   RefreshCw,
   CheckCircle2,
   ExternalLink,
@@ -12,6 +17,8 @@ import {
   ArrowRight,
   Clock,
   ClipboardPaste,
+  Link2,
+  Save,
 } from 'lucide-react';
 
 const ECNL_STANDINGS_URL = 'https://theecnl.com/sports/2023/8/8/ECNLG_0808235831.aspx';
@@ -48,15 +55,70 @@ export const EcnlSyncModal: React.FC<EcnlSyncModalProps> = ({
   const [syncNotes, setSyncNotes] = useState<string | null>(null);
   const [lastSyncedSource, setLastSyncedSource] = useState<string | null>(null);
   const [autoCheckWeekly, setAutoCheckWeekly] = useState<boolean>(teamInfo.ecnlAutoCheckEnabled !== false);
+  const [standingsSheetUrl, setStandingsSheetUrl] = useState<string>(teamInfo.standingsGoogleSheetUrl || '');
+  const [standingsCronEnabled, setStandingsCronEnabled] = useState<boolean>(teamInfo.standingsCronEnabled ?? true);
+
+  const { nextSundayFormatted } = getSunday9pmPacificWindow();
 
   useEffect(() => {
     if (isOpen) {
       setPreviewMatches(matches.map(m => ({ ...m })));
       setPreviewStandings(standings.map(s => ({ ...s })));
       setAutoCheckWeekly(teamInfo.ecnlAutoCheckEnabled !== false);
-      handleRunSync('');
+      setStandingsSheetUrl(teamInfo.standingsGoogleSheetUrl || '');
+      setStandingsCronEnabled(teamInfo.standingsCronEnabled ?? true);
+      if (teamInfo.standingsGoogleSheetUrl) {
+        handleSyncFromGoogleSheet(teamInfo.standingsGoogleSheetUrl);
+      } else {
+        handleRunSync('');
+      }
     }
   }, [isOpen]);
+
+  const handleSyncFromGoogleSheet = async (urlOverride?: string) => {
+    const targetUrl = (urlOverride ?? standingsSheetUrl).trim();
+    if (!targetUrl) return;
+    setIsSyncing(true);
+    setSyncNotes(null);
+    try {
+      const parsed = await fetchStandingsFromGoogleSheet(targetUrl);
+      if (parsed.standings.length > 0) {
+        setPreviewStandings(parsed.standings);
+        setLastSyncedSource('google-sheet-appscript');
+        setSyncNotes(
+          `Loaded ${parsed.standings.length} teams from AppScript Google Sheet${
+            parsed.forceTeam
+              ? ` • De Anza Force Ranked #${parsed.forceTeam.rank} (${parsed.forceTeam.won}W-${parsed.forceTeam.lost}L-${parsed.forceTeam.drawn}D, ${parsed.forceTeam.pointsPerGame.toFixed(2)} PPG)`
+              : ''
+          }. Review below and click Approve & Publish.`
+        );
+      } else {
+        setSyncNotes(parsed.errors.join(' | ') || 'Could not parse standings rows from Google Sheet.');
+      }
+    } catch (err: any) {
+      setSyncNotes(err?.message || 'Failed to fetch League Table Google Sheet.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSaveSheetUrlForCron = () => {
+    const cleanUrl = standingsSheetUrl.trim();
+    onSaveTeamInfo({
+      ...teamInfo,
+      standingsGoogleSheetUrl: cleanUrl,
+      standingsCronEnabled,
+    });
+    fetch('/api/ecnl/configure-cron', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        standingsGoogleSheetUrl: cleanUrl,
+        standingsCronEnabled,
+      }),
+    }).catch(() => {});
+    showNotification('Saved AppScript Google Sheet URL for Sunday 9:00 PM PT auto-sync.');
+  };
 
   const handleRunSync = async (textToParse: string = rawPasteText) => {
     setIsSyncing(true);
@@ -159,22 +221,36 @@ export const EcnlSyncModal: React.FC<EcnlSyncModalProps> = ({
   }, [previewMatches]);
 
   const handleApproveAndPublish = () => {
-    const synced = syncStandingsAndTeamInfoWithMatches(previewMatches, previewStandings, {
-      ...teamInfo,
-      lastEcnlSyncAt: new Date().toISOString(),
-      ecnlAutoCheckEnabled: autoCheckWeekly,
-    });
+    const cleanSheetUrl = standingsSheetUrl.trim() || teamInfo.standingsGoogleSheetUrl;
+    const updatedInfoFromTable = buildUpdatedTeamInfoFromStandings(
+      previewStandings,
+      {
+        ...teamInfo,
+        standingsGoogleSheetUrl: cleanSheetUrl,
+        standingsCronEnabled,
+        lastEcnlSyncAt: new Date().toISOString(),
+        ecnlAutoCheckEnabled: autoCheckWeekly,
+      },
+      cleanSheetUrl
+    );
 
     onSaveMatches(previewMatches);
-    onSaveStandings(synced.updatedStandings);
-    onSaveTeamInfo({
-      ...synced.updatedTeamInfo,
-      lastEcnlSyncAt: new Date().toISOString(),
-      ecnlAutoCheckEnabled: autoCheckWeekly,
-    });
+    onSaveStandings(previewStandings);
+    onSaveTeamInfo(updatedInfoFromTable);
+
+    if (cleanSheetUrl) {
+      fetch('/api/ecnl/configure-cron', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          standingsGoogleSheetUrl: cleanSheetUrl,
+          standingsCronEnabled,
+        }),
+      }).catch(() => {});
+    }
 
     showNotification(
-      `Published ECNL NorCal GU16 updates (${synced.computed.wins}W-${synced.computed.losses}L-${synced.computed.draws}D, Rank #${synced.updatedTeamInfo.seasonRecord.norcalRank})`
+      `Published ECNL NorCal GU16 updates (${updatedInfoFromTable.seasonRecord.wins}W-${updatedInfoFromTable.seasonRecord.losses}L-${updatedInfoFromTable.seasonRecord.draws}D, Rank #${updatedInfoFromTable.seasonRecord.norcalRank})`
     );
     onClose();
   };
@@ -235,6 +311,46 @@ export const EcnlSyncModal: React.FC<EcnlSyncModalProps> = ({
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        </div>
+
+        {/* AppScript Google Sheet League Table Sync & Sunday 9pm PT Cron Bar */}
+        <div className="px-5 py-3 bg-emerald-950/25 border-b border-emerald-500/30 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Link2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-bold text-emerald-300 shrink-0">AppScript Google Sheet:</span>
+            <input
+              type="url"
+              value={standingsSheetUrl}
+              onChange={e => setStandingsSheetUrl(e.target.value)}
+              placeholder="Paste your League Table Google Sheet URL (https://docs.google.com/spreadsheets/d/...)"
+              className="flex-1 min-w-[200px] px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:border-emerald-400 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleSaveSheetUrlForCron}
+              disabled={!standingsSheetUrl.trim()}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 font-bold text-xs inline-flex items-center gap-1 cursor-pointer shrink-0"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Save</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSyncFromGoogleSheet()}
+              disabled={!standingsSheetUrl.trim() || isSyncing}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>Sync Sheet</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-slate-300 shrink-0">
+            <Clock className="w-3.5 h-3.5 text-emerald-400" />
+            <span>
+              Cron: <strong className="text-emerald-300">Sundays @ 9:00 PM PT</strong> ({nextSundayFormatted})
+            </span>
           </div>
         </div>
 

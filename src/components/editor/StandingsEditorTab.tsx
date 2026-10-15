@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { StandingTeam, TeamInfo } from '../../types';
 import { INITIAL_STANDINGS } from '../../data/defaultData';
+import {
+  fetchStandingsFromGoogleSheet,
+  getSunday9pmPacificWindow,
+  buildUpdatedTeamInfoFromStandings,
+} from '../../utils/standingsCron';
 import { 
   Trophy, 
   Save, 
@@ -11,7 +16,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 
 interface StandingsEditorTabProps {
@@ -58,6 +64,87 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
   const [localStandings, setLocalStandings] = useState<StandingTeam[]>(() => sortStandingsByPPG(standings));
   const [sortField, setSortField] = useState<StandingsSortField>('pointsPerGame');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [standingsSheetUrl, setStandingsSheetUrl] = useState<string>(teamInfo.standingsGoogleSheetUrl || '');
+  const [standingsCronEnabled, setStandingsCronEnabled] = useState<boolean>(teamInfo.standingsCronEnabled ?? true);
+  const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
+
+  const { nextSundayFormatted } = getSunday9pmPacificWindow();
+
+  useEffect(() => {
+    if (teamInfo.standingsGoogleSheetUrl && !standingsSheetUrl) {
+      setStandingsSheetUrl(teamInfo.standingsGoogleSheetUrl);
+    }
+    if (teamInfo.standingsCronEnabled !== undefined) {
+      setStandingsCronEnabled(teamInfo.standingsCronEnabled);
+    }
+  }, [teamInfo.standingsGoogleSheetUrl, teamInfo.standingsCronEnabled]);
+
+  const handleSyncSheetNow = async () => {
+    if (!standingsSheetUrl.trim()) return;
+    setIsSyncingSheet(true);
+    try {
+      const parsed = await fetchStandingsFromGoogleSheet(standingsSheetUrl.trim());
+      if (parsed.standings.length === 0) {
+        showNotification(parsed.errors.join(' | ') || 'Could not parse League Table rows from Google Sheet.');
+        return;
+      }
+      setLocalStandings(parsed.standings);
+      onSaveStandings(parsed.standings);
+
+      const updatedInfo = buildUpdatedTeamInfoFromStandings(
+        parsed.standings,
+        {
+          ...teamInfo,
+          standingsCronEnabled,
+        },
+        standingsSheetUrl.trim()
+      );
+      setLocalRecord(updatedInfo.seasonRecord);
+      onSaveTeamInfo(updatedInfo);
+      setHasChanges(false);
+
+      fetch('/api/ecnl/configure-cron', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          standingsGoogleSheetUrl: standingsSheetUrl.trim(),
+          standingsCronEnabled,
+        }),
+      }).catch(() => {});
+
+      showNotification(
+        `Synced ${parsed.standings.length} teams from Google Sheet${
+          parsed.forceTeam
+            ? ` — Force #${parsed.forceTeam.rank} (${parsed.forceTeam.won}-${parsed.forceTeam.lost}-${parsed.forceTeam.drawn})`
+            : ''
+        }!`
+      );
+    } catch (err: any) {
+      showNotification(`Sheet sync error: ${err?.message || 'Failed to load Google Sheet'}`);
+    } finally {
+      setIsSyncingSheet(false);
+    }
+  };
+
+  const handleSaveSheetCronSettings = (nextCron?: boolean) => {
+    const cronVal = nextCron !== undefined ? nextCron : standingsCronEnabled;
+    if (nextCron !== undefined) setStandingsCronEnabled(nextCron);
+    onSaveTeamInfo({
+      ...teamInfo,
+      seasonRecord: localRecord,
+      standingsGoogleSheetUrl: standingsSheetUrl.trim(),
+      standingsCronEnabled: cronVal,
+    });
+    fetch('/api/ecnl/configure-cron', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        standingsGoogleSheetUrl: standingsSheetUrl.trim(),
+        standingsCronEnabled: cronVal,
+      }),
+    }).catch(() => {});
+    showNotification('Saved AppScript Google Sheet URL & Sunday 9:00 PM PT cron schedule.');
+  };
   const [localRecord, setLocalRecord] = useState(teamInfo.seasonRecord || {
     wins: 0,
     losses: 0,
@@ -233,6 +320,67 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
             <Save className="w-3.5 h-3.5" />
             <span>{hasChanges ? 'Save Changes *' : 'Save Standings & Record'}</span>
           </button>
+        </div>
+      </div>
+
+      {/* AppScript Google Sheet Sync & Weekly Sunday 9pm PT Cron Card */}
+      <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-3 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white">
+              AppScript Google Sheet League Table Sync
+            </h4>
+            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[10px]">
+              Cron: Sundays @ 9:00 PM PT
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap">
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+              Next run: <strong className="text-slate-800 dark:text-slate-200">{nextSundayFormatted}</strong>
+            </span>
+            <label className="inline-flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={standingsCronEnabled}
+                onChange={e => handleSaveSheetCronSettings(e.target.checked)}
+                className="w-3.5 h-3.5 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+              />
+              <span>Auto-Sync Weekly</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="url"
+            value={standingsSheetUrl}
+            onChange={e => setStandingsSheetUrl(e.target.value)}
+            placeholder="Paste your AppScript League Table Google Sheet URL (https://docs.google.com/spreadsheets/d/...)"
+            className="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+          />
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handleSaveSheetCronSettings()}
+              disabled={!standingsSheetUrl.trim()}
+              className="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-800 dark:text-slate-200 font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Save URL</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSyncSheetNow}
+              disabled={!standingsSheetUrl.trim() || isSyncingSheet}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingSheet ? 'animate-spin' : ''}`} />
+              <span>{isSyncingSheet ? 'Syncing Sheet...' : 'Sync from Google Sheet'}</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -26,6 +26,15 @@ import {
   DEFAULT_MASTER_ALBUM_INFO
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
+import { enrichPlayersWithVerifiedSheet } from './utils/standingsCron';
+import {
+  ECNL_DATA_API_URL,
+  fetchLiveEcnlDataFromApi,
+  mapEcnlApiStandings,
+  mapEcnlApiSchedule,
+  selectNextFixtureMatch,
+  buildTeamInfoFromLiveEcnl,
+} from './utils/ecnlApi';
 import { DEFAULT_INSTAGRAM_POST, InstagramPostData } from './components/InstagramFeaturedPost';
 
 import { Navbar } from './components/Navbar';
@@ -87,27 +96,9 @@ export default function App() {
     return INITIAL_PLAYERS;
   });
 
-  const [matches, setMatches] = useState<Match[]>(() => {
-    try {
-      const saved = localStorage.getItem('daf_team_matches');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return INITIAL_MATCHES;
-  });
-
-  const [standings, setStandings] = useState<StandingTeam[]>(() => {
-    try {
-      const saved = localStorage.getItem('daf_standings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return INITIAL_STANDINGS;
-  });
+  // Use hardcoded data as the initial fallback state while the live Google Apps Script fetch completes
+  const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
+  const [standings, setStandings] = useState<StandingTeam[]>(INITIAL_STANDINGS);
 
   const [coaches, setCoaches] = useState<Coach[]>(() => {
     try {
@@ -120,16 +111,7 @@ export default function App() {
     return INITIAL_COACHES;
   });
 
-  const [teamInfo, setTeamInfo] = useState<TeamInfo>(() => {
-    try {
-      const saved = localStorage.getItem('daf_team_info');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.teamName) return parsed;
-      }
-    } catch {}
-    return INITIAL_TEAM_INFO;
-  });
+  const [teamInfo, setTeamInfo] = useState<TeamInfo>(INITIAL_TEAM_INFO);
 
   // Media States
   const [actionPhotos, setActionPhotos] = useState<ActionPhoto[]>(DEFAULT_ACTION_PHOTOS);
@@ -179,41 +161,27 @@ export default function App() {
                 specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
               };
             });
-            hydrated.sort((a, b) => (a.jerseyNumber || 0) - (b.jerseyNumber || 0));
-            setPlayers(hydrated);
-            try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
-          }
-          if (data.matches) {
-            setMatches(data.matches);
-            try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
-          }
-          if (data.standings) {
-            const isOutdated =
-              !Array.isArray(data.standings) ||
-              data.standings.length < 10 ||
-              data.standings[0]?.pointsPerGame === undefined;
-
-            if (isOutdated) {
-              setStandings(INITIAL_STANDINGS);
-              try { localStorage.setItem('daf_standings', JSON.stringify(INITIAL_STANDINGS)); } catch {}
-              setDoc(TEAM_DATA_DOC, { standings: INITIAL_STANDINGS }, { merge: true }).catch((err) => {
-                console.warn("Firestore standings sync notice:", err);
-              });
-            } else {
-              setStandings(data.standings);
-              try { localStorage.setItem('daf_standings', JSON.stringify(data.standings)); } catch {}
+            const { players: enriched, changed: rosterEnriched } = enrichPlayersWithVerifiedSheet(hydrated);
+            enriched.sort((a, b) => (a.jerseyNumber || 0) - (b.jerseyNumber || 0));
+            setPlayers(enriched);
+            try { localStorage.setItem('daf_team_players', JSON.stringify(enriched)); } catch {}
+            if (rosterEnriched) {
+              const cleanPayload = sanitizeGlobalDocPayload({ players: enriched });
+              setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch(() => {});
             }
-          } else {
-            // No standings in Firestore yet, seed with INITIAL_STANDINGS
-            setDoc(TEAM_DATA_DOC, { standings: INITIAL_STANDINGS }, { merge: true }).catch(() => {});
           }
           if (data.coaches) {
             setCoaches(data.coaches);
             try { localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches)); } catch {}
           }
           if (data.teamInfo) {
-            setTeamInfo(data.teamInfo);
-            try { localStorage.setItem('daf_team_info', JSON.stringify(data.teamInfo)); } catch {}
+            setTeamInfo((prev) => ({
+              ...data.teamInfo,
+              // Preserve live seasonRecord & recentForm populated by the Google Apps Script API
+              seasonRecord: prev.seasonRecord || data.teamInfo.seasonRecord,
+              recentForm: prev.recentForm || data.teamInfo.recentForm,
+              recentFormStat: prev.recentFormStat || data.teamInfo.recentFormStat,
+            }));
           }
           if (data.actionPhotos) setActionPhotos(data.actionPhotos);
           if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
@@ -253,6 +221,65 @@ export default function App() {
     return () => {
       unsubscribe();
       unsubPhotos();
+    };
+  }, []);
+
+  // Fetch live ECNL Northern California U16 standings & schedule from Google Apps Script Web App API once on page load
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLiveEcnlData = async () => {
+      try {
+        const payload = await fetchLiveEcnlDataFromApi(ECNL_DATA_API_URL);
+        if (!isMounted || !payload) return;
+
+        const hasLiveStandings = Array.isArray(payload.standings) && payload.standings.length > 0;
+        const hasLiveSchedule = Array.isArray(payload.schedule) && payload.schedule.length > 0;
+        if (!hasLiveStandings && !hasLiveSchedule) return;
+
+        const liveStandings = hasLiveStandings
+          ? mapEcnlApiStandings(payload.standings, INITIAL_STANDINGS)
+          : INITIAL_STANDINGS;
+
+        const liveMatches = hasLiveSchedule
+          ? mapEcnlApiSchedule(payload.schedule, INITIAL_MATCHES)
+          : INITIAL_MATCHES;
+
+        if (hasLiveStandings) {
+          setStandings(liveStandings);
+          try {
+            localStorage.setItem('daf_standings', JSON.stringify(liveStandings));
+          } catch {}
+        }
+
+        if (hasLiveSchedule) {
+          setMatches(liveMatches);
+          try {
+            localStorage.setItem('daf_team_matches', JSON.stringify(liveMatches));
+          } catch {}
+        }
+
+        setTeamInfo((prevInfo) => {
+          const updatedInfo = buildTeamInfoFromLiveEcnl(
+            prevInfo,
+            liveStandings,
+            liveMatches,
+            payload.updatedAt
+          );
+          try {
+            localStorage.setItem('daf_team_info', JSON.stringify(updatedInfo));
+          } catch {}
+          return updatedInfo;
+        });
+      } catch (err) {
+        console.warn('Live ECNL Apps Script fetch notice (using initial fallback data):', err);
+      }
+    };
+
+    loadLiveEcnlData();
+
+    return () => {
+      isMounted = false;
     };
   }, []);
 
@@ -529,8 +556,8 @@ export default function App() {
     });
   };
 
-  // Find next upcoming match
-  const nextMatch = matches.find((m) => m.status === 'upcoming') || matches[0];
+  // Find next upcoming match for Next Fixture Spotlight
+  const nextMatch = selectNextFixtureMatch(matches);
 
   // Toggle whether a player is included on the College Scouting Profile Pack
   const handleTogglePlayerScouting = (playerId: string, include: boolean) => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Match, MatchStatus } from '../types';
 import { 
   Calendar, 
@@ -33,12 +33,30 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   const [viewMode, setViewMode] = useState<'compact' | 'cards'>('compact');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+  // If live data replaces matches and none are 'upcoming', automatically switch filter to 'all'
+  useEffect(() => {
+    if (filter === 'upcoming' && matches.length > 0 && !matches.some((m) => m?.status === 'upcoming')) {
+      setFilter('all');
+    }
+  }, [matches, filter]);
+
+  const parseDateObj = (dateStr?: string): Date | null => {
+    if (!dateStr) return null;
+    const trimmed = dateStr.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      const d = new Date(`${trimmed}T00:00:00`);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    const d = new Date(trimmed);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   // Helper for safe date parsing
   const formatDateSafe = (dateStr?: string, options?: Intl.DateTimeFormatOptions): string => {
     if (!dateStr) return 'TBD';
+    const d = parseDateObj(dateStr);
+    if (!d) return dateStr;
     try {
-      const d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
-      if (isNaN(d.getTime())) return dateStr;
       return d.toLocaleDateString('en-US', options || {
         weekday: 'short',
         month: 'short',
@@ -53,14 +71,10 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   const availableMonths = useMemo(() => {
     const months = new Set<string>();
     (matches || []).forEach((m) => {
-      if (m?.date) {
-        try {
-          const d = new Date(m.date.includes('T') ? m.date : `${m.date}T00:00:00`);
-          if (!isNaN(d.getTime())) {
-            const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
-            if (monthKey) months.add(monthKey);
-          }
-        } catch {}
+      const d = parseDateObj(m?.date);
+      if (d) {
+        const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
+        if (monthKey) months.add(monthKey);
       }
     });
     return Array.from(months);
@@ -74,21 +88,16 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
         if (filter !== 'all' && m.status !== filter) return false;
         // Month filter
         if (selectedMonth !== 'all') {
-          if (!m.date) return false;
-          try {
-            const d = new Date(m.date.includes('T') ? m.date : `${m.date}T00:00:00`);
-            if (isNaN(d.getTime())) return false;
-            const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
-            if (monthKey !== selectedMonth) return false;
-          } catch {
-            return false;
-          }
+          const d = parseDateObj(m.date);
+          if (!d) return false;
+          const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
+          if (monthKey !== selectedMonth) return false;
         }
         return true;
       })
       .sort((a, b) => {
-        const timeA = a?.date ? new Date(a.date + (a.time ? `T${a.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime() || 0 : 0;
-        const timeB = b?.date ? new Date(b.date + (b.time ? `T${b.time.replace(/[^0-9:]/g, '')}` : 'T00:00:00')).getTime() || 0 : 0;
+        const timeA = parseDateObj(a?.date)?.getTime() || 0;
+        const timeB = parseDateObj(b?.date)?.getTime() || 0;
         return timeA - timeB;
       });
   }, [matches, filter, selectedMonth]);
@@ -398,7 +407,16 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                           <a href={match.mapUrl} target="_blank" rel="noopener noreferrer" className="truncate text-xs font-semibold hover:text-blue-400 hover:underline">{match.venue}</a>
                         </div>
                         <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
-                          <span className="text-blue-400 font-semibold">Kit: {match.isHome ? 'Blue / Red Accents' : 'Black'}</span>
+                          <span className="text-blue-400 font-semibold">
+                            Kit:{' '}
+                            {match.isHome
+                              ? match.homeKitColor && match.homeKitColor !== 'White-Solid'
+                                ? match.homeKitColor
+                                : 'Blue / Red Accents'
+                              : match.awayKitColor && match.awayKitColor !== 'Black-Solid'
+                              ? match.awayKitColor
+                              : 'Black'}
+                          </span>
                           {match.fieldNumber && <span>Field: {match.fieldNumber}</span>}
                         </div>
                       </div>
@@ -512,7 +530,16 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-blue-400 font-semibold">Kit: {match.isHome ? 'Blue / Red Accents' : 'Black'}</span>
+                    <span className="text-[10px] text-blue-400 font-semibold">
+                      Kit:{' '}
+                      {match.isHome
+                        ? match.homeKitColor && match.homeKitColor !== 'White-Solid'
+                          ? match.homeKitColor
+                          : 'Blue / Red Accents'
+                        : match.awayKitColor && match.awayKitColor !== 'Black-Solid'
+                        ? match.awayKitColor
+                        : 'Black'}
+                    </span>
                     <div className="flex items-center gap-1.5">
                       {match.videoLiveStreamUrl && (
                         <a

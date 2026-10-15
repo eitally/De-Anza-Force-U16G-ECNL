@@ -301,9 +301,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <ImportExportTab
               players={players}
               matches={matches}
+              standings={standings}
               teamInfo={teamInfo}
               onSavePlayers={onSavePlayers}
               onSaveMatches={onSaveMatches}
+              onSaveStandings={onSaveStandings}
               onSaveTeamInfo={onSaveTeamInfo}
               onResetToDefaults={onResetToDefaults}
               showNotification={showNotification}

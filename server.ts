@@ -513,6 +513,125 @@ If any updated scores or standings are present in the snippet below, extract the
     }
   });
 
+  // Server-side state for weekly Sunday 9:00 PM Pacific Google Sheet Standings Cron
+  let savedStandingsSheetUrl = '';
+  let standingsCronEnabled = true;
+  let lastServerCronSyncAt = '';
+  let lastServerCronCsvText = '';
+  let lastTriggeredSundayKey = '';
+
+  function toGoogleSheetCsvExportUrl(rawUrl: string): string {
+    const trimmed = (rawUrl || '').trim();
+    if (!trimmed.includes('docs.google.com/spreadsheets')) return trimmed;
+    const idMatch = trimmed.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!idMatch || !idMatch[1]) return trimmed;
+    const sheetId = idMatch[1];
+    const gidMatch = trimmed.match(/[#&?]gid=([0-9]+)/);
+    const gid = gidMatch && gidMatch[1] ? gidMatch[1] : '0';
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  }
+
+  async function fetchGoogleSheetCsvServerSide(sheetUrl: string): Promise<string> {
+    const exportUrl = toGoogleSheetCsvExportUrl(sheetUrl);
+    const response = await fetch(exportUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; DeAnzaForceECNLSync/1.0)',
+        Accept: 'text/csv,text/plain,*/*',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Google Sheet fetch returned HTTP ${response.status}`);
+    }
+    const text = await response.text();
+    if (text.trim().startsWith('<!DOCTYPE html>') || text.includes('<html')) {
+      throw new Error(
+        'Google Sheet returned an HTML sign-in page instead of CSV. Set Google Sheet access to "Anyone with the link can view".'
+      );
+    }
+    return text;
+  }
+
+  // Proxy route to fetch Google Sheet CSV (Standings, Roster, or Schedule) without browser CORS issues
+  app.post('/api/ecnl/sync-sheet', async (req, res) => {
+    try {
+      const sheetUrl = (req.body?.sheetUrl || savedStandingsSheetUrl || '').trim();
+      if (!sheetUrl) {
+        res.status(400).json({ ok: false, error: 'Missing Google Sheet URL' });
+        return;
+      }
+      const csvText = await fetchGoogleSheetCsvServerSide(sheetUrl);
+      if (req.body?.saveForCron) {
+        savedStandingsSheetUrl = sheetUrl;
+      }
+      const syncedAt = new Date().toISOString();
+      lastServerCronCsvText = csvText;
+      lastServerCronSyncAt = syncedAt;
+      res.json({
+        ok: true,
+        csvText,
+        syncedAt,
+        sheetUrl,
+      });
+    } catch (err: any) {
+      res.status(500).json({
+        ok: false,
+        error: err?.message || 'Failed to fetch Google Sheet CSV',
+      });
+    }
+  });
+
+  app.post('/api/ecnl/configure-cron', (req, res) => {
+    if (typeof req.body?.standingsGoogleSheetUrl === 'string') {
+      savedStandingsSheetUrl = req.body.standingsGoogleSheetUrl.trim();
+    }
+    if (typeof req.body?.standingsCronEnabled === 'boolean') {
+      standingsCronEnabled = req.body.standingsCronEnabled;
+    }
+    res.json({
+      ok: true,
+      standingsGoogleSheetUrl: savedStandingsSheetUrl,
+      standingsCronEnabled,
+      lastServerCronSyncAt,
+      schedule: '0 21 * * 0 (Every Sunday at 9:00 PM America/Los_Angeles)',
+    });
+  });
+
+  app.get('/api/ecnl/cron-status', (_req, res) => {
+    res.json({
+      ok: true,
+      standingsGoogleSheetUrl: savedStandingsSheetUrl,
+      standingsCronEnabled,
+      lastServerCronSyncAt,
+      hasCachedCsv: Boolean(lastServerCronCsvText),
+      csvText: lastServerCronCsvText || undefined,
+      schedule: '0 21 * * 0 (Every Sunday at 9:00 PM America/Los_Angeles)',
+    });
+  });
+
+  const ECNL_DATA_API_URL =
+    'https://script.google.com/macros/s/AKfycbz1R3shf0s2xmuXxf1QqiKCAHqXl-dX7biOwj8gi8dUmNYlKlUK82QWSLY8r4ugR6TGbw/exec';
+
+  // Server-side proxy fallback for the Google Apps Script Web App API
+  app.get('/api/ecnl/live-data', async (_req, res) => {
+    try {
+      const response = await fetch(ECNL_DATA_API_URL, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Apps Script API returned HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (err: any) {
+      res.status(500).json({
+        error: err?.message || 'Failed to fetch live ECNL data from Google Apps Script API',
+      });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

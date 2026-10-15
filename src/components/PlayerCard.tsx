@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player } from '../types';
 import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
-import { getValidDocumentUrl } from '../utils/urlUtils';
+import { getValidDocumentUrl, getValidVideoUrl, getValidInstagramUrl } from '../utils/urlUtils';
 import { 
   GraduationCap, 
   Video, 
@@ -46,6 +46,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   const safePhotoSrc = getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO);
   const validPdfUrl = getValidDocumentUrl(player);
+  const validVideoUrl = getValidVideoUrl(player.highlightsUrl);
+  const validIgUrl = getValidInstagramUrl(player.instagram);
 
   return (
     <div
@@ -143,29 +145,29 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                   <span>PDF</span>
                 </a>
               )}
-              {player.highlightsUrl && (
-                <span 
-                  className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800" 
+              {validVideoUrl && (
+                <a
+                  href={validVideoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
                   title="Highlight Video Available"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(player.highlightsUrl, '_blank');
-                  }}
                 >
                   <Video className="w-4 h-4" />
-                </span>
+                </a>
               )}
-              {player.instagram && (
-                <span 
-                  className="text-pink-500 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800" 
+              {validIgUrl && (
+                <a
+                  href={validIgUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-pink-500 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
                   title="Instagram Profile"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(player.instagram, '_blank');
-                  }}
                 >
                   <Instagram className="w-4 h-4" />
-                </span>
+                </a>
               )}
             </div>
           </div>

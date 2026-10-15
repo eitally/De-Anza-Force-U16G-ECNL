@@ -164,6 +164,9 @@ export interface TeamInfo {
   recentFormStat?: string;
   rosterGoogleSheetUrl?: string;
   scheduleGoogleSheetUrl?: string;
+  standingsGoogleSheetUrl?: string;
+  standingsCronEnabled?: boolean;
+  lastStandingsSheetSyncAt?: string;
   lastEcnlSyncAt?: string;
   ecnlAutoCheckEnabled?: boolean;
 }
