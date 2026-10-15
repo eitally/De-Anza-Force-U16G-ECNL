@@ -57,9 +57,6 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Ensure Eliot Kline's updated profile photo is primed
-  const ELIOT_KLINE_PHOTO = "https://i.imgur.com/BgA9tkV.jpeg";
-
   // Load data from localStorage or initialize with default sample data
   const [players, setPlayers] = useState<Player[]>(() => {
     try {
@@ -72,20 +69,16 @@ export default function App() {
             return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
           });
           return cleaned.map((p: Player) => {
-            const isAva = p.id === 'p_ava_golshan' || (p.name || '').toLowerCase().includes('ava golshan');
-            const isEliot = p.id === 'p1' || (p.name || '').toLowerCase().includes('eliot');
-            const defaultP = INITIAL_PLAYERS.find(dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase()));
-            let photoUrl = p.photoUrl || defaultP?.photoUrl || '';
-            if (isAva) {
-              photoUrl = '';
-            } else if (isEliot) {
-              photoUrl = ELIOT_KLINE_PHOTO;
-            }
+            const defaultP = INITIAL_PLAYERS.find(
+              dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
+            );
+            const cached = getLocalCachedPlayerPhoto(p.id);
+            const photoUrl = p.photoUrl || cached || defaultP?.photoUrl || '';
             return {
               ...defaultP,
               ...p,
               specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
-              photoUrl
+              photoUrl,
             };
           });
         }
@@ -167,39 +160,26 @@ export default function App() {
         if (doc.exists()) {
           const data = doc.data();
           if (data.players) {
-            // Hydrate with local cache and filter out any removed players
+            // Hydrate directly from Firestore as the single source of truth
             const rawFirestore = (data.players as Player[])
               .filter(p => {
                 const n = (p.name || '').toLowerCase();
                 return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
               });
-            const currentNames = rawFirestore.map(p => (p.name || '').trim().toLowerCase());
-            const missingInitial = INITIAL_PLAYERS.filter(
-              ip => !currentNames.includes((ip.name || '').trim().toLowerCase())
-            );
-            const combinedPlayers = missingInitial.length > 0 ? [...rawFirestore, ...missingInitial] : rawFirestore;
-            const hydrated = combinedPlayers.map(p => {
-                const isAva = p.id === 'p_ava_golshan' || (p.name || '').toLowerCase().includes('ava golshan');
-                const isEliot = p.id === 'p1' || (p.name || '').toLowerCase().includes('eliot');
-                const defaultP = INITIAL_PLAYERS.find(dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase()));
-                const cached = getLocalCachedPlayerPhoto(p.id);
-                let photoUrl = p.photoUrl;
-                if (isAva) {
-                  photoUrl = '';
-                } else if (isEliot) {
-                  photoUrl = ELIOT_KLINE_PHOTO;
-                } else if (cached) {
-                  photoUrl = cached;
-                } else if (!photoUrl && defaultP?.photoUrl) {
-                  photoUrl = defaultP.photoUrl;
-                }
-                return {
-                  ...defaultP,
-                  ...p,
-                  photoUrl,
-                  specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
-                };
-              });
+            const hydrated = rawFirestore.map(p => {
+              const defaultP = INITIAL_PLAYERS.find(
+                dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
+              );
+              const cached = getLocalCachedPlayerPhoto(p.id);
+              const photoUrl = p.photoUrl || cached || defaultP?.photoUrl || '';
+              return {
+                ...defaultP,
+                ...p,
+                photoUrl,
+                specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
+              };
+            });
+            hydrated.sort((a, b) => (a.jerseyNumber || 0) - (b.jerseyNumber || 0));
             setPlayers(hydrated);
             try { localStorage.setItem('daf_team_players', JSON.stringify(hydrated)); } catch {}
           }
@@ -208,16 +188,14 @@ export default function App() {
             try { localStorage.setItem('daf_team_matches', JSON.stringify(data.matches)); } catch {}
           }
           if (data.standings) {
-            // Check if existing Firestore standings are outdated (pre-migration)
-            const isOutdated = !Array.isArray(data.standings) ||
-              data.standings.length < 12 ||
-              data.standings[0]?.teamName !== 'MVLA ECNL G2010/11' ||
+            const isOutdated =
+              !Array.isArray(data.standings) ||
+              data.standings.length < 10 ||
               data.standings[0]?.pointsPerGame === undefined;
 
             if (isOutdated) {
               setStandings(INITIAL_STANDINGS);
               try { localStorage.setItem('daf_standings', JSON.stringify(INITIAL_STANDINGS)); } catch {}
-              // Self-heal/update Firestore so all users get the latest standings
               setDoc(TEAM_DATA_DOC, { standings: INITIAL_STANDINGS }, { merge: true }).catch((err) => {
                 console.warn("Firestore standings sync notice:", err);
               });

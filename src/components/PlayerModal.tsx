@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Player, TeamInfo, Coach } from '../types';
 import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, compressHeadshot } from '../utils/imageUtils';
+import { getValidDocumentUrl } from '../utils/urlUtils';
 import { 
   X, 
   GraduationCap, 
@@ -113,7 +114,8 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
       })
       .catch((err) => {
         console.error("Photo compression failed:", err);
-        alert("Failed to process photo file. Please try a smaller image.");
+        setPhotoSavedNotice('Failed to process photo file. Please try a smaller image.');
+        setTimeout(() => setPhotoSavedNotice(null), 4000);
       });
   };
 
@@ -557,14 +559,14 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                 </div>
 
                 {/* Profile Flyer PDF Button */}
-                {(player.profilePdfUrl || player.profileDocUrl) && (
+                {getValidDocumentUrl(player) && (
                   <div className="pt-2 flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
                     <div>
                       <div className="text-xs font-bold text-slate-900 dark:text-white">Official Player Profile Flyer (PDF)</div>
                       <div className="text-[11px] text-slate-500">Download printable scout flyer with full verified transcript summary</div>
                     </div>
                     <a
-                      href={player.profilePdfUrl || player.profileDocUrl}
+                      href={getValidDocumentUrl(player)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shrink-0"

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Player, PositionCategory, TeamInfo } from '../types';
 import { PlayerCard } from './PlayerCard';
 import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
+import { getValidDocumentUrl } from '../utils/urlUtils';
 import { 
   Users, 
   LayoutGrid, 
@@ -11,7 +12,9 @@ import {
   X,
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Search,
+  FileDown
 } from 'lucide-react';
 
 interface RosterSectionProps {
@@ -30,6 +33,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
   const [selectedPosition, setSelectedPosition] = useState<PositionCategory | 'All'>('All');
   const [commitmentFilter, setCommitmentFilter] = useState<'All' | 'Committed' | 'Uncommitted'>('All');
   const [gradYearFilter, setGradYearFilter] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isPhotoLightboxOpen, setIsPhotoLightboxOpen] = useState(false);
 
@@ -44,6 +48,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
 
   // Filter logic (retains natural squad / jersey number order)
   const filteredPlayers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return players.filter((player) => {
       // Position filter
       if (selectedPosition !== 'All' && player.primaryPosition !== selectedPosition) {
@@ -63,9 +68,21 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
         return false;
       }
 
+      // Search query filter
+      if (q) {
+        const matchesName = (player.name || '').toLowerCase().includes(q);
+        const matchesJersey = String(player.jerseyNumber ?? '').includes(q);
+        const matchesPos = (player.specificPosition || '').toLowerCase().includes(q);
+        const matchesSchool = (player.highSchool || '').toLowerCase().includes(q);
+        const matchesCommit = (player.commitment || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesJersey && !matchesPos && !matchesSchool && !matchesCommit) {
+          return false;
+        }
+      }
+
       return true;
     }).sort((a, b) => (a.jerseyNumber || 999) - (b.jerseyNumber || 999));
-  }, [players, selectedPosition, commitmentFilter, gradYearFilter]);
+  }, [players, selectedPosition, commitmentFilter, gradYearFilter, searchQuery]);
 
   // Position counts
   const counts = useMemo(() => {
@@ -178,8 +195,19 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               ))}
             </div>
 
-            {/* View Mode & Commitment Quick Filters */}
+            {/* View Mode, Search & Commitment Quick Filters */}
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              {/* Live Search Input */}
+              <div className="relative w-full sm:w-52">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search name, #, school..."
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:border-[#00ADEF] focus:outline-none"
+                />
+              </div>
               {/* Commitment Filter */}
               <div className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-1 border border-slate-200 dark:border-slate-800 text-xs">
                 <button
@@ -382,6 +410,19 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {getValidDocumentUrl(player) && (
+                          <a
+                            href={getValidDocumentUrl(player)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 text-slate-700 dark:text-slate-300 hover:text-white font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors inline-flex items-center gap-1"
+                            title="Download Player Profile PDF"
+                          >
+                            <FileDown className="w-3.5 h-3.5" />
+                            <span>PDF</span>
+                          </a>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -414,7 +455,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
               onClick={() => {
                 setSelectedPosition('All');
                 setCommitmentFilter('All');
-                              }}
+                setGradYearFilter('All');
+                setSearchQuery('');
+              }}
               className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs cursor-pointer"
             >
               Reset All Filters

@@ -10,7 +10,8 @@ import {
   Calculator, 
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  RefreshCw
 } from 'lucide-react';
 
 interface StandingsEditorTabProps {
@@ -19,6 +20,7 @@ interface StandingsEditorTabProps {
   onSaveStandings: (standings: StandingTeam[]) => void;
   onSaveTeamInfo: (info: TeamInfo) => void;
   showNotification: (msg: string) => void;
+  onOpenEcnlSyncModal?: () => void;
 }
 
 type StandingsSortField = 
@@ -40,6 +42,7 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
   onSaveStandings,
   onSaveTeamInfo,
   showNotification,
+  onOpenEcnlSyncModal,
 }) => {
   // Sort by Points Per Game (PPG) descending by default
   const sortStandingsByPPG = (list: StandingTeam[]) => {
@@ -196,6 +199,17 @@ export const StandingsEditorTab: React.FC<StandingsEditorTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {onOpenEcnlSyncModal && (
+            <button
+              type="button"
+              onClick={onOpenEcnlSyncModal}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#00ADEF]/90 text-slate-950 font-condensed font-black text-xs uppercase tracking-wider cursor-pointer transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Sync ECNL Scores &amp; Table</span>
+            </button>
+          )}
+
           <a
             href="https://theecnl.com/sports/2023/8/8/ECNLG_0808235831.aspx"
             target="_blank"

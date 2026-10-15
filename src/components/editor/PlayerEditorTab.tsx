@@ -57,6 +57,57 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // List vs Inline Spreadsheet Bulk Grid Mode
+  const [editorMode, setEditorMode] = useState<'list' | 'grid'>('list');
+  const [gridDrafts, setGridDrafts] = useState<Record<string, Player>>({});
+  const [dirtyPlayerIds, setDirtyPlayerIds] = useState<Set<string>>(new Set());
+
+  const enterGridMode = () => {
+    const map: Record<string, Player> = {};
+    players.forEach(p => {
+      map[p.id] = { ...p };
+    });
+    setGridDrafts(map);
+    setDirtyPlayerIds(new Set());
+    setEditorMode('grid');
+  };
+
+  const handleGridCellChange = (playerId: string, field: keyof Player, value: any) => {
+    setGridDrafts(prev => {
+      const base = prev[playerId] || players.find(p => p.id === playerId);
+      if (!base) return prev;
+      return {
+        ...prev,
+        [playerId]: {
+          ...base,
+          [field]: value,
+        },
+      };
+    });
+    setDirtyPlayerIds(prev => {
+      const next = new Set(prev);
+      next.add(playerId);
+      return next;
+    });
+  };
+
+  const handleSaveBulkGrid = () => {
+    const updated = players.map(p => (gridDrafts[p.id] ? { ...gridDrafts[p.id] } : p));
+    onSavePlayers(updated);
+    showNotification(`Saved bulk spreadsheet updates for ${dirtyPlayerIds.size} player(s).`);
+    setDirtyPlayerIds(new Set());
+  };
+
+  const handleDiscardBulkGrid = () => {
+    const map: Record<string, Player> = {};
+    players.forEach(p => {
+      map[p.id] = { ...p };
+    });
+    setGridDrafts(map);
+    setDirtyPlayerIds(new Set());
+    showNotification('Discarded unsaved grid edits.');
+  };
+
   // Draft string inputs for numbers so typing/backspacing doesn't snap to 0
   const [draftJersey, setDraftJersey] = useState<string>('');
   const [draftGradYear, setDraftGradYear] = useState<string>('');
@@ -254,7 +305,7 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
       })
       .catch(err => {
         console.error(err);
-        alert('Failed to process image file.');
+        showNotification('Failed to process image file.');
       });
   };
 
@@ -836,23 +887,54 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* View Switcher: Card List vs Inline Spreadsheet Grid */}
+              <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setEditorMode('list')}
+                  className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                    editorMode === 'list'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Card List
+                </button>
+                <button
+                  type="button"
+                  onClick={enterGridMode}
+                  className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    editorMode === 'grid'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>Bulk Spreadsheet Grid</span>
+                  {dirtyPlayerIds.size > 0 && (
+                    <span className="px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 text-[10px] font-black">
+                      {dirtyPlayerIds.size}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               {onOpenSyncTab && (
                 <button
                   type="button"
                   onClick={onOpenSyncTab}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap"
                   title="Sync roster from CSV or Google Sheets"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" />
-                  <span>Sync Spreadsheet</span>
+                  <span>Google Sheet Sync</span>
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={startCreating}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-900/30 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-900/30 cursor-pointer whitespace-nowrap"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Player</span>
@@ -895,7 +977,202 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
             </div>
           </div>
 
-          {/* Player Cards / List */}
+          {editorMode === 'grid' ? (
+            /* INLINE SPREADSHEET BULK GRID EDITOR */
+            <div className="space-y-3">
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <FileSpreadsheet className="w-4 h-4 text-[#00ADEF] shrink-0" />
+                  <span>
+                    Inline Bulk Grid Editor — Edit any cell below and click <strong>Save All Grid Changes</strong> to update Firestore in one click.
+                  </span>
+                  {dirtyPlayerIds.size > 0 && (
+                    <span className="text-emerald-400 font-mono font-bold">
+                      ({dirtyPlayerIds.size} player{dirtyPlayerIds.size === 1 ? '' : 's'} modified)
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleDiscardBulkGrid}
+                    disabled={dirtyPlayerIds.size === 0}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 font-bold cursor-pointer transition-colors"
+                  >
+                    Discard Edits
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveBulkGrid}
+                    disabled={dirtyPlayerIds.size === 0}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-condensed font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Save All Grid Changes ({dirtyPlayerIds.size})</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/90 max-h-[600px]">
+                <table className="w-full text-left border-collapse text-xs tabular-nums">
+                  <thead className="bg-slate-900 text-slate-400 uppercase text-[10px] font-condensed tracking-wider sticky top-0 z-10 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-2 w-14 text-center">#</th>
+                      <th className="py-2.5 px-2 min-w-[150px]">Player Name</th>
+                      <th className="py-2.5 px-2 min-w-[115px]">Category</th>
+                      <th className="py-2.5 px-2 min-w-[155px]">Specific Position</th>
+                      <th className="py-2.5 px-2 w-20 text-center">Grad</th>
+                      <th className="py-2.5 px-2 w-20 text-center">Height</th>
+                      <th className="py-2.5 px-2 w-24 text-center">Weight</th>
+                      <th className="py-2.5 px-2 w-20 text-center">GPA</th>
+                      <th className="py-2.5 px-2 min-w-[145px]">High School</th>
+                      <th className="py-2.5 px-2 min-w-[165px]">Contact Email</th>
+                      <th className="py-2.5 px-2 min-w-[130px]">Commitment</th>
+                      <th className="py-2.5 px-2 min-w-[160px]">Profile PDF / URL</th>
+                      <th className="py-2.5 px-2 w-20 text-center">Scout Pack</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {filteredAndSortedPlayers.map(origPlayer => {
+                      const p = gridDrafts[origPlayer.id] || origPlayer;
+                      const isDirty = dirtyPlayerIds.has(origPlayer.id);
+
+                      return (
+                        <tr
+                          key={origPlayer.id}
+                          className={isDirty ? 'bg-emerald-950/20' : 'hover:bg-slate-900/50'}
+                        >
+                          <td className="p-1.5">
+                            <input
+                              type="number"
+                              value={p.jerseyNumber ?? 0}
+                              onChange={e =>
+                                handleGridCellChange(origPlayer.id, 'jerseyNumber', parseInt(e.target.value, 10) || 0)
+                              }
+                              className="w-12 py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-center font-mono font-bold text-[#00ADEF] focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.name || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'name', e.target.value)}
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] font-semibold text-white focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <select
+                              value={p.primaryPosition}
+                              onChange={e =>
+                                handleGridCellChange(origPlayer.id, 'primaryPosition', e.target.value as PositionCategory)
+                              }
+                              className="w-full py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-slate-200 focus:outline-none"
+                            >
+                              <option value="Forward">Forward</option>
+                              <option value="Midfielder">Midfielder</option>
+                              <option value="Defender">Defender</option>
+                              <option value="Goalkeeper">Goalkeeper</option>
+                            </select>
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.specificPosition || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'specificPosition', e.target.value)}
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="number"
+                              value={p.gradYear || 2028}
+                              onChange={e =>
+                                handleGridCellChange(origPlayer.id, 'gradYear', parseInt(e.target.value, 10) || 2028)
+                              }
+                              className="w-full py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-center font-mono text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.height || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'height', e.target.value)}
+                              className="w-full py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-center font-mono text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.weight || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'weight', e.target.value)}
+                              className="w-full py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-center font-mono text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.gpa || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'gpa', e.target.value)}
+                              className="w-full py-1 px-1.5 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-center font-mono font-bold text-emerald-400 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.highSchool || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'highSchool', e.target.value)}
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="email"
+                              value={p.contactEmail || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'contactEmail', e.target.value)}
+                              placeholder="email@..."
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] font-mono text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.commitment || ''}
+                              onChange={e => handleGridCellChange(origPlayer.id, 'commitment', e.target.value)}
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] text-slate-200 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5">
+                            <input
+                              type="text"
+                              value={p.profilePdfUrl || p.profileDocUrl || ''}
+                              onChange={e => {
+                                handleGridCellChange(origPlayer.id, 'profileDocUrl', e.target.value);
+                                handleGridCellChange(origPlayer.id, 'profilePdfUrl', e.target.value);
+                              }}
+                              placeholder="https://..."
+                              className="w-full py-1 px-2 rounded bg-slate-900 border border-slate-800 focus:border-[#00ADEF] font-mono text-slate-300 focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="checkbox"
+                              checked={p.includeInScoutingPack !== false}
+                              onChange={e =>
+                                handleGridCellChange(origPlayer.id, 'includeInScoutingPack', e.target.checked)
+                              }
+                              className="w-4 h-4 rounded text-[#00ADEF] bg-slate-900 border-slate-700 cursor-pointer"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+          /* Player Cards / List */
           <div className="grid grid-cols-1 gap-2.5">
             {filteredAndSortedPlayers.map(player => (
               <div
@@ -1007,6 +1284,7 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
               </div>
             ))}
           </div>
+          )}
         </>
       )}
 

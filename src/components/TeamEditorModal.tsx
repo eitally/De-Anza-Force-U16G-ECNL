@@ -16,6 +16,7 @@ import { StandingsEditorTab } from './editor/StandingsEditorTab';
 import { TeamInfoEditorTab } from './editor/TeamInfoEditorTab';
 import { MediaEditorTab } from './editor/MediaEditorTab';
 import { ImportExportTab } from './editor/ImportExportTab';
+import { EcnlSyncModal } from './editor/EcnlSyncModal';
 import { syncStandingsAndTeamInfoWithMatches } from '../utils/recordUtils';
 import { 
   X, 
@@ -86,6 +87,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<EditorTab>(initialTab);
   const [notification, setNotification] = useState<string | null>(null);
+  const [isEcnlSyncOpen, setIsEcnlSyncOpen] = useState(false);
 
   useEffect(() => {
     if (initialTab) {
@@ -223,6 +225,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               showNotification={showNotification}
               onAutoSyncRecordAndForm={handleAutoSyncRecordAndForm}
               onOpenSyncTab={() => setActiveTab('import_export')}
+              onOpenEcnlSyncModal={() => setIsEcnlSyncOpen(true)}
             />
           )}
 
@@ -233,6 +236,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               onSaveStandings={onSaveStandings}
               onSaveTeamInfo={onSaveTeamInfo}
               showNotification={showNotification}
+              onOpenEcnlSyncModal={() => setIsEcnlSyncOpen(true)}
             />
           )}
 
@@ -256,8 +260,10 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             <ImportExportTab
               players={players}
               matches={matches}
+              teamInfo={teamInfo}
               onSavePlayers={onSavePlayers}
               onSaveMatches={onSaveMatches}
+              onSaveTeamInfo={onSaveTeamInfo}
               onResetToDefaults={onResetToDefaults}
               showNotification={showNotification}
             />
@@ -282,6 +288,18 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             Close Suite
           </button>
         </div>
+
+        <EcnlSyncModal
+          isOpen={isEcnlSyncOpen}
+          onClose={() => setIsEcnlSyncOpen(false)}
+          matches={matches}
+          standings={standings}
+          teamInfo={teamInfo}
+          onSaveMatches={onSaveMatches}
+          onSaveStandings={onSaveStandings}
+          onSaveTeamInfo={onSaveTeamInfo}
+          showNotification={showNotification}
+        />
       </div>
     </div>
   );

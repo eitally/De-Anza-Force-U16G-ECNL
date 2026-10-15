@@ -162,6 +162,10 @@ export interface TeamInfo {
   teamPhotoCaption?: string;
   recentForm?: ('W' | 'D' | 'L' | '-')[];
   recentFormStat?: string;
+  rosterGoogleSheetUrl?: string;
+  scheduleGoogleSheetUrl?: string;
+  lastEcnlSyncAt?: string;
+  ecnlAutoCheckEnabled?: boolean;
 }
 
 export interface ActionPhoto {

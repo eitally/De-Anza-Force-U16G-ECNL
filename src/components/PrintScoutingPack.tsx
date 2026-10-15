@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Player, TeamInfo, Coach } from '../types';
 import { ClubCrest } from './ClubCrest';
+import { getValidDocumentUrl } from '../utils/urlUtils';
 import { Printer, X, ArrowRight, Edit3, Check } from 'lucide-react';
 
 interface PrintScoutingPackProps {
@@ -103,32 +104,22 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
   // Single Player Card matching bifold specifications
   const renderPlayerCard = (player: Player) => {
-    const profileUrl = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || '#';
-    const qrTarget = player.profilePdfUrl || player.profileDocUrl || player.highlightsUrl || 
+    const validDocUrl = getValidDocumentUrl(player);
+    const profileUrl = validDocUrl || player.highlightsUrl || '#';
+    const qrTarget =
+      validDocUrl ||
+      player.highlightsUrl ||
       (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://www.deanzaforce2011g.com/');
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;
     const position = getPlayerPosition(player);
     const gpaDisplay = player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' && player.gpa.toLowerCase() !== 'n/a' ? player.gpa : 'NA';
     const heightDisplay = player.height && player.height.trim() !== '' ? player.height : '5\'6"';
 
-    // Ava Golshan does not have a headshot currently (must never display Eliot Kline's photo)
-    const isAvaGolshan = player.id === 'p_ava_golshan' || (player.name || '').toLowerCase().includes('ava golshan');
-    const isEliotKline = player.id === 'p1' || (player.name || '').toLowerCase().includes('eliot');
-
-    // Ensure Eliot Kline always has her verified photo; Ava Golshan has no headshot
-    let playerPhoto = player.photoUrl;
-    if (isAvaGolshan) {
-      playerPhoto = '';
-    } else if (isEliotKline) {
-      playerPhoto = (player.photoUrl && !player.photoUrl.includes('logo.png') && !player.photoUrl.includes('c0qeiY4'))
-        ? player.photoUrl
-        : 'https://i.imgur.com/BgA9tkV.jpeg';
-    }
-
-    const hasHeadshot = !isAvaGolshan && Boolean(
-      playerPhoto && 
-      playerPhoto.trim() !== '' && 
-      !playerPhoto.includes('c0qeiY4') && 
+    const playerPhoto = player.photoUrl || '';
+    const hasHeadshot = Boolean(
+      playerPhoto &&
+      playerPhoto.trim() !== '' &&
+      !playerPhoto.includes('c0qeiY4') &&
       !playerPhoto.includes('daf-crest') &&
       !playerPhoto.includes('logo.png')
     );

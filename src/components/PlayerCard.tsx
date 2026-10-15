@@ -1,6 +1,7 @@
 import React from 'react';
 import { Player } from '../types';
 import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
+import { getValidDocumentUrl } from '../utils/urlUtils';
 import { 
   GraduationCap, 
   Video, 
@@ -44,6 +45,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   };
 
   const safePhotoSrc = getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO);
+  const validPdfUrl = getValidDocumentUrl(player);
 
   return (
     <div
@@ -128,9 +130,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               {player.name}
             </h3>
             <div className="flex items-center gap-1.5 shrink-0">
-              {(player.profilePdfUrl || player.profileDocUrl) && (
+              {validPdfUrl && (
                 <a
-                  href={player.profilePdfUrl || player.profileDocUrl}
+                  href={validPdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}

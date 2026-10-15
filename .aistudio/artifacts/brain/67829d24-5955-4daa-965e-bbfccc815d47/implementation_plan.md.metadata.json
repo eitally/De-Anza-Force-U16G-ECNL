@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan for codebase audit, usability refinement, and executing user decisions on Scouting Profile inclusion, Print Scouting Pack bifold view, and Action Carousel removal.",
-  "updatedAt": "2026-10-14T18:27:16.199174870Z",
+  "summary": "Implementation plan for ECNL Northern California GU16 weekly score & league table automation, persistent Google Sheet diff sync, inline Admin spreadsheet grid editor, URL validation for player PDF badges, and Firestore single source of truth.",
+  "updatedAt": "2026-10-14T23:12:58.177861656Z",
   "requestFeedback": true,
   "userFacing": true
 }

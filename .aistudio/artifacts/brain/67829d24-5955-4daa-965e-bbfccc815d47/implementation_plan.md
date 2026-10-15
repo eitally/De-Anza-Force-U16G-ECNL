@@ -1,110 +1,98 @@
-# Codebase Audit, Usability Review & Streamlining Plan
+# Player Roster Sync & ECNL GU16 League Automation Plan
 
-Comprehensive audit and implementation plan to resolve TypeScript type errors, incorporate confirmed usability changes (Admin Scouting Pack toggle, streamlined Bifold print modal, Hero carousel removal), and ensure all features function smoothly.
+This plan upgrades the De Anza Force U16G ECNL portal with a single-source-of-truth player synchronization system (persistent Google Sheet live diff sync + inline Admin spreadsheet grid editor) and an automated ECNL Northern California GU16 weekly match score and 12-team league standings engine with a review preview.
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following decisions were confirmed based on your clarifying answers and will be implemented upon your approval:
+> The following decisions were confirmed from your clarifying answers and govern this implementation:
 
-- **Confirmed Decision 1 (Scouting Profile Inclusion)**: Scouting profile inclusion status (`includeInScoutingPack`) will be managed directly in the **Admin Player Editor** (`PlayerEditorTab.tsx`) as an individual player attribute with a toggle and quick-switch in the roster table, rather than cluttering the public roster UI.
-- **Confirmed Decision 2 (Print Scouting Pack Modal)**: Streamline the Print modal to **Bifold Cards only**, completely removing the secondary Table view and mode switcher tabs while preserving print page navigation (All Pages, Inside Spread Page 1, Outside Cover Page 2).
-- **Confirmed Decision 3 (Hero & Action Photos Gallery)**: Remove the photo carousel from `Hero.tsx` to keep the focus strictly on the team identity, roster, and match schedule.
-- **Codebase Health & TypeScript Resolution**: Fix the TypeScript error in `App.tsx` where `onTogglePlayerScouting` was passed to `RosterSectionProps`.
-- **GitHub Status Clarification**: The application is managed within the AI Studio development environment. Git repository status will be cleanly reported with instructions to export or connect to GitHub.
+- **Confirmed Decision 1 (ECNL GU16 Weekly Automation & Review Preview)**: Automatically check for weekly ECNL Northern California GU16 match scores and league table updates (when an admin opens the portal and the last check is >7 days old) and provide a **1-Click "Sync ECNL Scores & Table"** button with a visual review preview before saving to Firestore.
+- **Confirmed Decision 2 (Player Details Sync Workflows)**:
+  1. **Saved Google Sheet URL with 1-Click Diff Sync & Duplicate-Column Fix**: Persist the team's Google Sheet URL in `TeamInfo`, map `"Contact Info for the Flyer"` to `contactEmail`, give precedence to rightmost updated `Height`, `Weight`, and `GPA` columns over earlier blank/outdated columns, and show a field-by-field diff preview before applying.
+  2. **Inline Spreadsheet Grid Editor in Admin**: Add an Excel-style bulk editing table inside the Admin Roster tab for rapid multi-player edits (jersey, position, height, weight, GPA, grad year, email, video link, and scouting pack inclusion) with 1-click save.
+- **Confirmed Decision 3 (Non-URL PDF Label Handling)**: Validate `profilePdfUrl` and `profileDocUrl` on Player Cards so text labels (e.g., `"Eliot Kline Player Profile"`) hide the external PDF badge on the card and open the interactive Player Profile Modal instead of a broken link.
+- **Confirmed Decision 4 (Firestore Source of Truth & Clean Notifications)**:
+  1. Remove hardcoded photo and player overrides in `App.tsx` so Firestore is the true single source of truth.
+  2. Replace blocking browser `window.alert()` calls with clean, non-blocking in-app toast notifications.
 
 ---
 
 ### 1. Overview & Core Concept
 
-- **What It Does**: Refines the De Anza Force U16G ECNL team application into a focused, recruitment-ready platform. It ensures reliable data persistence via Firebase Firestore, provides an admin suite for team and player management, and delivers an athletic bifold scouting pack ready for college showcases.
-- **Target Audience / Persona**: College coaches and scouts, team players and parents, and the team administrator / head coach.
-- **Key Value**: Eliminates visual clutter, aligns the print layout for physical bifold production, removes broken/untyped props, and keeps public attention on player profiles and the competitive schedule.
+- **What It Does**: Eliminates manual double-entry for the coaching and management staff by connecting player profiles to a saved Google Sheet / inline bulk grid editor and automating weekly ECNL Northern California GU16 match score and 12-team conference standings updates.
+- **Target Audience / Persona**: Team Administrators / Head Coach (managing weekly updates in seconds) and College Scouts / Families (viewing accurate player profiles, match results, and conference standings).
+- **Key Value**: Guarantees player details stay accurately in sync across every view, and keeps both De Anza Force's schedule and the entire 12-team ECNL NorCal GU16 league table current.
 
 ---
 
-### 2. User Experience & Usability Review
+### 2. User Experience & Visual Design
 
-#### Usability Review Findings & Reconsidered Features
-1. **Action Photo Carousel**: 
-   - *Issue*: Stretches vertical space in the Hero, competes visually with next match information, and requires constant media curation.
-   - *Recommendation (Confirmed)*: Remove carousel. Shift focus directly to the club identity, team bio, next upcoming match card, and immediate links to the roster and scouting pack.
-2. **Scouting Pack View Switcher (Cards vs. Table)**:
-   - *Issue*: The Table view duplicates information already present in the main roster view and breaks the bifold booklet printing format.
-   - *Recommendation (Confirmed)*: Remove Table view; standardize the modal strictly on the high-fidelity Bifold Cards layout.
-3. **Scouting Inclusion Control**:
-   - *Issue*: Placing scout inclusion toggles in the public roster creates confusion for scouts and spectators.
-   - *Recommendation (Confirmed)*: Restrict inclusion controls to the password-protected Admin Dashboard within the player edit modal and roster table.
-4. **First Page Grid Balance & Coach Photos**:
-   - *Status*: Page 1 inside spread now features equal 3-column rows dynamically calculated based on squad count (`repeat(gridRowCount, minmax(0, 1fr))`). Coach photos on Page 2 have been replaced with compact typography cards (name, role, phone, email) to preserve physical print legibility.
+- **Key User Flows**:
+  1. **Weekly ECNL NorCal GU16 Auto-Check & 1-Click Sync**:
+     - When opening the Admin Suite (or Standings/Schedule editor tabs), if more than 7 days have passed since `lastEcnlSyncAt`—or when clicking **"Sync ECNL NorCal GU16"**—the backend queries the ECNL Northern California GU16 schedule (`ECNLG_0808235238.aspx`) and standings (`ECNLG_0808235831.aspx`) data, supported by server-side Gemini structured extraction and a **"Smart Paste ECNL Page"** option if external firewall rules block automated requests.
+     - A **Sync Review Preview Modal** displays newly completed De Anza Force match scores (`teamScore - opponentScore`) and a side-by-side comparison of rank, GP, W-L-D, GF, GA, GD, PTS, and PPG changes across all 12 NorCal GU16 clubs.
+     - Clicking **"Approve & Publish Updates"** atomically updates the Schedule, Standings, and Hero Season Record / Recent Form in Firestore.
+  2. **1-Click Saved Google Sheet Roster Sync with Field Diffs**:
+     - The Admin Spreadsheet Sync tab stores your Google Sheet URL in Firestore.
+     - Clicking **"Fetch & Compare Live Sheet"** parses the sheet and highlights exact field-level changes per player (e.g., `GPA: 3.90 → 4.05`, `Height: 5'6" → 5'7"`) before saving.
+  3. **Inline Admin Spreadsheet Grid Mode**:
+     - Inside the Admin Roster tab, a **"Card List / Bulk Grid"** toggle switches the player list into a high-density editable table where any cell can be modified inline and saved in one click.
+- **Visual Identity & Theme**:
+  - *Aesthetic Direction*: High-contrast athletic command center combining broadcast-style sports telemetry with clean SaaS data density.
+  - *Color Palette & Mood*: Deep pitch-slate surfaces (`#080c14`, `#0b1220`), Force Cyan (`#00ADEF`) primary interactive accents, Crimson (`#DC2626`) live/alert badges, and Emerald (`#10B981`) diff highlights for newly synced scores and updated player attributes.
+  - *Typography & Hierarchy*: Condensed athletic display headers (`font-condensed font-black uppercase`) paired with `tabular-nums` monospace alignment for standings metrics and diff previews.
+  - *Component Styling & Layout*: 12-column responsive layout with sticky table headers, subtle `1px` slate borders (`border-slate-800/80`), and zero layout shift when switching between list and bulk-edit grid views.
+- **Interactive Feedback & Motion**:
+  - Non-blocking toast banners for all sync, upload, and validation events.
+  - Pulsing badge indicator when weekly ECNL updates or unsaved inline grid edits are pending review.
 
 ---
 
 ### 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Player Editor Scouting Pack Attribute**
-  - *Chosen Approach*: Add `includeInScoutingPack` toggle in the Player Edit modal and a quick-toggle badge in the admin player list. Default to `true`.
-  - *Why*: Allows the coach or team manager to easily exclude alternate or injured players from the official print scouting booklet without deleting the player from the master roster.
-- **Decision 2: Hero Layout Rebalancing without Carousel**
-  - *Chosen Approach*: Rebalance the Hero section into a clean, athletic showcase featuring club crest, team title, championship/league badges, and a prominent Next Match & Quick Action card.
-  - *Why*: Directs scouts immediately to upcoming matches and the scouting booklet within the top fold.
-- **Decision 3: Type Safety & Build Verification**
-  - *Chosen Approach*: Remove unused props from `App.tsx` and ensure `npm run lint` (`tsc --noEmit`) passes cleanly with zero warnings or errors.
+- **Decision 1: Hybrid ECNL Sync Architecture (Direct Fetch + AI Structured Extraction + Smart Paste)**
+  - *Chosen Approach*: Route ECNL synchronization through an Express backend endpoint (`/api/ecnl/sync`) that fetches ECNL / Total Global Sports data (`orgId=9`, `orgSeasonId=80`, Northern California GU16) and uses server-side `@google/genai` structured JSON extraction (`responseSchema`) to normalize both match scores and the 12-team standings table, paired with a Smart Paste text/HTML input in the review modal.
+  - *Why*: Combines automated server-side retrieval + AI search/extraction + instant copy-paste fallback so weekly updates work reliably even if ECNL's widget provider throttles cloud IPs.
+- **Decision 2: Rightmost Column Precedence & Fuzzy Header Mapping in CSV Parser**
+  - *Chosen Approach*: Update the CSV/Sheet parser so non-empty values in rightmost duplicate columns (`Height`, `Weight`, `GPA`) override earlier columns, and `"Contact Info for the Flyer"` maps to `contactEmail`.
+  - *Why*: Matches the exact column layout of the team's master Google Sheet without requiring manual sheet restructuring.
+- **Decision 3: Strict URL Validation for Recruiting Document Links**
+  - *Chosen Approach*: Validate that `profilePdfUrl` / `profileDocUrl` begins with `http://`, `https://`, `data:application/pdf`, or a valid `.pdf` path before rendering the external PDF badge on Player Cards.
+  - *Why*: Prevents broken navigation when spreadsheet cells contain descriptive text notes like `"Eliot Kline Player Profile"`, routing card clicks cleanly to the Player Profile Modal.
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+### 4. Technical Architecture & Data Strategy *(Technical Reference)*
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       Firebase Firestore                    │
-│   (players collection, teamInfo, matches, standings, posts) │
-└──────────────┬───────────────────────────────┬──────────────┘
-               │                               │
-       Real-time Sync                   Admin Mutations
-               │                               │
-┌──────────────▼───────────────────────────────▼──────────────┐
-│                          App.tsx                            │
-│  - State hydration & merge fallback                         │
-│  - Admin authentication & modal orchestration               │
-└──────┬──────────────────────┬──────────────────────┬────────┘
-       │                      │                      │
-┌──────▼──────┐       ┌───────▼──────┐       ┌───────▼────────┐
-│   Navbar    │       │     Hero     │       │ RosterSection  │
-│  Navigation │       │ (Clean Roster│       │  Player Cards  │
-│  & Actions  │       │   Focus)     │       │  & Filtering   │
-└─────────────┘       └──────────────┘       └───────┬────────┘
-                                                     │
-       ┌─────────────────────────────────────────────┘
-       │
-┌──────▼──────────────────────┐       ┌──────────────────────┐
-│     PlayerModal (Public)    │       │ PrintScoutingPack    │
-│  Player bio, stats, links   │       │ - Bifold Cards only  │
-└─────────────────────────────┘       │ - Balanced Grid      │
-                                      │ - Page 1 & 2 spreads │
-┌─────────────────────────────┐       └──────────────────────┘
-│    TeamEditorModal (Admin)  │
-│  - PlayerEditorTab:         │
-│    * includeInScoutingPack  │
-│    * Headshot & PDF Upload  │
-│    * Roster management      │
-└─────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Client Application (React)                       │
+│                                                                         │
+│  ┌─────────────────────────┐          ┌──────────────────────────────┐  │
+│  │   Public Showcase UI    │          │     Admin Management Suite   │  │
+│  │  - Hero (Record & Form) │          │  - Bulk Roster Grid Editor   │  │
+│  │  - Roster (Valid PDFs)  │          │  - Saved Google Sheet Diff   │  │
+│  │  - Schedule & Standings │          │  - ECNL Weekly Sync & Review │  │
+│  └────────────┬────────────┘          └──────────────┬───────────────┘  │
+└───────────────┼──────────────────────────────────────┼──────────────────┘
+                │                                      │
+      Real-Time Hydration                    POST /api/ecnl/sync
+      (No Hardcoded Overrides)               (Auto-Check & Manual)
+                │                                      │
+┌───────────────▼────────────────┐      ┌──────────────▼───────────────┐
+│       Firebase Firestore       │      │   Express Server (server.ts) │
+│  - players (Single Source)     │      │  - TGS / ECNL Data Fetcher   │
+│  - matches & standings (12x)   │      │  - @google/genai Structured  │
+│  - teamInfo (sheetUrl, syncAt) │      │    Score & Table Parser      │
+└────────────────────────────────┘      └──────────────────────────────┘
 ```
 
-#### Proposed File Modifications Upon Approval:
-1. `src/App.tsx`:
-   - Remove obsolete `onTogglePlayerScouting` prop from `<RosterSection>`.
-   - Wire `handleTogglePlayerScouting` directly into `handleSavePlayers` when updated via the admin editor.
-2. `src/components/editor/PlayerEditorTab.tsx`:
-   - Add `includeInScoutingPack` checkbox in the player edit form (with clear helper text: *"Include in College Scouting Pack & Bifold"*).
-   - Add a quick-toggle column/badge in the admin player table to allow toggling scouting inclusion with one click.
-3. `src/components/PrintScoutingPack.tsx`:
-   - Remove `viewMode` state, table view switcher buttons, and table rendering code.
-   - Retain page navigation (`All Pages`, `Page 1 (Inside Spread)`, `Page 2 (Outside Cover)`).
-   - Ensure center fold crease and equalized grid templates remain active.
-4. `src/components/Hero.tsx`:
-   - Remove `ActionCarousel` import and rendering.
-   - Adjust column layouts so the team spotlight and next match block fill the hero area cleanly.
-5. Verification:
-   - Run `lint_applet` (`tsc --noEmit`) to verify zero TypeScript errors.
-   - Run `compile_applet` to verify production Vite build.
+- **Data Model & State Extensions**:
+  - `TeamInfo`: Add optional `rosterGoogleSheetUrl?: string`, `scheduleGoogleSheetUrl?: string`, `lastEcnlSyncAt?: string`, and `ecnlAutoCheckEnabled?: boolean`.
+  - `Player`: Hydrate all attributes cleanly from Firestore without hardcoded per-player photo overrides.
+  - `StandingTeam` & `Match`: Support full 12-team NorCal GU16 standings updates alongside De Anza Force fixture score synchronization.
+- **Interactive Component & State Mapping**:
+  - **Admin Bulk Roster Grid**: Tracks dirty cells locally, supports inline editing across all key recruiting attributes, and commits atomically to Firestore.
+  - **Google Sheet Diff Preview**: Computes a per-player field diff (`before` vs. `after`) between current Firestore `players` and incoming CSV rows before saving.
+  - **ECNL Sync Review Modal**: Triggered automatically when `lastEcnlSyncAt` is older than 7 days (in Admin) or on-demand via the **"Sync ECNL NorCal GU16"** button in the Schedule and Standings tabs.

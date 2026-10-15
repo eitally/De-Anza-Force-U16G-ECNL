@@ -25,7 +25,10 @@ interface ScheduleSectionProps {
 export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   matches,
 }) => {
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed'>('upcoming');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed'>(() => {
+    const hasUpcoming = (matches || []).some((m) => m?.status === 'upcoming');
+    return hasUpcoming ? 'upcoming' : 'all';
+  });
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'compact' | 'cards'>('compact');
   const [isExpanded, setIsExpanded] = useState<boolean>(false);

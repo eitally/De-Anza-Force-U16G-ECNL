@@ -16,10 +16,27 @@ function resolvePlayerPhoto(name: string, photoFromCsv?: string, existingPhoto?:
   return existingPhoto || DEFAULT_PLAYER_PHOTO;
 }
 
+export interface PlayerFieldChange {
+  field: string;
+  label: string;
+  before: string;
+  after: string;
+}
+
+export interface PlayerDiffRecord {
+  playerId: string;
+  jerseyNumber: number;
+  name: string;
+  status: 'new' | 'updated' | 'unchanged';
+  changes: PlayerFieldChange[];
+}
+
 export interface RosterParseResult {
   players: Player[];
   matchedCount: number;
   newCount: number;
+  updatedWithChangesCount: number;
+  diffs: PlayerDiffRecord[];
   errors: string[];
   warnings: string[];
   columnsFound: string[];
@@ -57,16 +74,18 @@ export function detectPositionCategory(pos: string): PositionCategory {
   const p = (pos || '').toLowerCase();
   if (p.includes('gk') || p.includes('goal') || p.includes('keeper')) return 'Goalkeeper';
   if (p.includes('def') || p.includes('cb') || p.includes('lb') || p.includes('rb') || p.includes('back') || p.includes('ob')) return 'Defender';
-  if (p.includes('mid') || p.includes('cm') || p.includes('am') || p.includes('dm') || p.includes('winger') && p.includes('mid')) return 'Midfielder';
+  if (p.includes('mid') || p.includes('cm') || p.includes('am') || p.includes('dm') || (p.includes('winger') && p.includes('mid'))) return 'Midfielder';
   return 'Forward';
 }
 
 /**
- * Normalizes header keys to standard property names
+ * Normalizes header keys to standard property names.
+ * Note: Checks 'email' / 'contact' BEFORE 'flyer' / 'pdf' so headers like
+ * "Contact Info for the Flyer" map cleanly to contactEmail instead of profileDocUrl.
  */
 function normalizeHeaderName(header: string): string {
   const cleaned = header.toLowerCase().replace(/[^a-z0-9]/g, '');
-  
+
   if (cleaned.includes('jersey') || cleaned.includes('uniform') || ['number', 'no', 'num', 'jerseynumber'].includes(cleaned)) return 'jerseyNumber';
   if (cleaned.includes('firstname') || cleaned === 'first') return 'firstName';
   if (cleaned.includes('lastname') || cleaned === 'last') return 'lastName';
@@ -79,9 +98,10 @@ function normalizeHeaderName(header: string): string {
   if (cleaned.includes('grad')) return 'gradYear';
   if (cleaned.includes('birth') || cleaned === 'dob') return 'birthday';
   if (cleaned.includes('school') || cleaned === 'hs') return 'highSchool';
-  if (cleaned.includes('email')) return 'contactEmail';
+  // Check email / contact info BEFORE flyer/pdf so "Contact Info for the Flyer" maps to contactEmail
+  if (cleaned.includes('email') || cleaned.includes('contactinfo') || cleaned === 'contact') return 'contactEmail';
   if (cleaned.includes('phone') || cleaned === 'cell' || cleaned === 'mobile') return 'phone';
-  if (cleaned.includes('pdf') || cleaned.includes('flyer') || (cleaned.includes('profile') && (cleaned.includes('link') || cleaned.includes('doc')))) return 'profileDocUrl';
+  if (cleaned.includes('pdf') || cleaned.includes('flyer') || cleaned.includes('playerprofile') || (cleaned.includes('profile') && (cleaned.includes('link') || cleaned.includes('doc') || cleaned.includes('url')))) return 'profileDocUrl';
   if (cleaned.includes('video') || cleaned.includes('highlight') || cleaned.includes('hudl') || cleaned.includes('veo')) return 'highlightsUrl';
   if (cleaned.includes('commit') || cleaned.includes('college')) return 'commitment';
   if (cleaned.includes('ncaa') || cleaned.includes('eligibility')) return 'ncaaId';
@@ -96,10 +116,49 @@ function normalizeHeaderName(header: string): string {
 }
 
 /**
- * Parses raw CSV text into Player objects with fuzzy column mapping and smart merge support.
+ * Computes field-level differences between an existing Player and an updated Player
+ */
+export function computePlayerChanges(existing: Player, updated: Player): PlayerFieldChange[] {
+  const fieldsToCompare: Array<{ key: keyof Player; label: string }> = [
+    { key: 'jerseyNumber', label: 'Jersey #' },
+    { key: 'name', label: 'Name' },
+    { key: 'primaryPosition', label: 'Category' },
+    { key: 'specificPosition', label: 'Position' },
+    { key: 'gradYear', label: 'Grad Year' },
+    { key: 'birthday', label: 'DOB' },
+    { key: 'height', label: 'Height' },
+    { key: 'weight', label: 'Weight' },
+    { key: 'gpa', label: 'GPA' },
+    { key: 'highSchool', label: 'High School' },
+    { key: 'contactEmail', label: 'Email' },
+    { key: 'commitment', label: 'Commitment' },
+    { key: 'highlightsUrl', label: 'Video URL' },
+    { key: 'profileDocUrl', label: 'Profile Flyer' },
+    { key: 'ncaaId', label: 'NCAA ID' },
+  ];
+
+  const changes: PlayerFieldChange[] = [];
+  for (const { key, label } of fieldsToCompare) {
+    const beforeVal = String(existing[key] ?? '').trim();
+    const afterVal = String(updated[key] ?? '').trim();
+    if (beforeVal !== afterVal && (beforeVal !== '' || afterVal !== '')) {
+      changes.push({
+        field: String(key),
+        label,
+        before: beforeVal || '—',
+        after: afterVal || '—',
+      });
+    }
+  }
+  return changes;
+}
+
+/**
+ * Parses raw CSV text into Player objects with fuzzy column mapping,
+ * rightmost duplicate-column precedence (Height, Weight, GPA), and diff tracking.
  */
 export function parseRosterCSV(
-  csvText: string, 
+  csvText: string,
   existingPlayers: Player[] = [],
   mode: 'merge' | 'replace' = 'merge'
 ): RosterParseResult {
@@ -107,6 +166,8 @@ export function parseRosterCSV(
     players: [],
     matchedCount: 0,
     newCount: 0,
+    updatedWithChangesCount: 0,
+    diffs: [],
     errors: [],
     warnings: [],
     columnsFound: [],
@@ -150,6 +211,24 @@ export function parseRosterCSV(
   const parsedPlayers: Player[] = [];
   const processedPlayerIds = new Set<string>();
 
+  // Columns where rightmost non-empty duplicate column should win (e.g. updated Height, Weight, GPA)
+  const rightmostPrecedenceKeys = new Set([
+    'height',
+    'weight',
+    'gpa',
+    'gradYear',
+    'birthday',
+    'highSchool',
+    'contactEmail',
+    'profileDocUrl',
+    'highlightsUrl',
+    'commitment',
+    'ncaaId',
+    'instagram',
+    'dominantFoot',
+    'photoUrl',
+  ]);
+
   for (let i = headerRowIndex + 1; i < rawRows.length; i++) {
     const row = rawRows[i];
     if (row.length === 0 || row.every(c => !c || c.trim() === '')) continue;
@@ -157,8 +236,9 @@ export function parseRosterCSV(
     const rowObj: Record<string, string> = {};
     mappedHeaders.forEach((key, colIdx) => {
       const val = row[colIdx] ? row[colIdx].trim() : '';
-      // Don't overwrite if duplicate column mapped
-      if (!rowObj[key] && val) {
+      if (!val || val.toLowerCase() === 'na' || val.toLowerCase() === 'n/a') return;
+
+      if (!rowObj[key] || rightmostPrecedenceKeys.has(key)) {
         rowObj[key] = val;
       }
     });
@@ -215,9 +295,20 @@ export function parseRosterCSV(
     const pos = rowObj.primaryPosition || rowObj.specificPosition || existing?.primaryPosition || 'Midfielder';
     const primaryPos = detectPositionCategory(pos);
 
+    const incomingDocVal = rowObj.profileDocUrl || '';
+    const isIncomingDocValidUrl =
+      incomingDocVal.startsWith('http://') ||
+      incomingDocVal.startsWith('https://') ||
+      incomingDocVal.startsWith('data:') ||
+      incomingDocVal.startsWith('/');
+
     if (existing) {
       result.matchedCount++;
       processedPlayerIds.add(existing.id);
+
+      const resolvedPdfUrl = isIncomingDocValidUrl
+        ? incomingDocVal
+        : existing.profilePdfUrl || (existing.profileDocUrl && (existing.profileDocUrl.startsWith('http') || existing.profileDocUrl.startsWith('data:')) ? existing.profileDocUrl : '');
 
       const mergedPlayer: Player = {
         ...existing,
@@ -234,8 +325,8 @@ export function parseRosterCSV(
         highSchool: rowObj.highSchool || existing.highSchool || 'Bay Area High School',
         gpa: gpa || existing.gpa || '4.00',
         contactEmail: rowObj.contactEmail || existing.contactEmail,
-        profileDocUrl: rowObj.profileDocUrl || existing.profileDocUrl,
-        profilePdfUrl: rowObj.profileDocUrl || existing.profilePdfUrl || existing.profileDocUrl,
+        profileDocUrl: incomingDocVal || existing.profileDocUrl,
+        profilePdfUrl: resolvedPdfUrl,
         highlightsUrl: rowObj.highlightsUrl || existing.highlightsUrl,
         commitment: rowObj.commitment || existing.commitment || 'Uncommitted',
         ncaaId: rowObj.ncaaId || existing.ncaaId,
@@ -244,6 +335,18 @@ export function parseRosterCSV(
         bio: rowObj.bio || existing.bio,
         photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl, existing.photoUrl),
       };
+
+      const changes = computePlayerChanges(existing, mergedPlayer);
+      if (changes.length > 0) {
+        result.updatedWithChangesCount++;
+      }
+      result.diffs.push({
+        playerId: mergedPlayer.id,
+        jerseyNumber: mergedPlayer.jerseyNumber,
+        name: mergedPlayer.name,
+        status: changes.length > 0 ? 'updated' : 'unchanged',
+        changes,
+      });
 
       parsedPlayers.push(mergedPlayer);
     } else {
@@ -257,14 +360,15 @@ export function parseRosterCSV(
         secondaryPositions: [],
         gradYear: parseInt(rowObj.gradYear, 10) || 2028,
         birthYear: parseInt(rowObj.birthYear, 10) || 2010,
+        birthday: rowObj.birthday || '',
         height: height || '5\'6"',
         weight: weight || '120 lbs',
         dominantFoot: (rowObj.dominantFoot as any) || 'Right',
         highSchool: rowObj.highSchool || 'Bay Area High School',
         gpa: gpa || '4.00',
         contactEmail: rowObj.contactEmail || '',
-        profileDocUrl: rowObj.profileDocUrl || '',
-        profilePdfUrl: rowObj.profileDocUrl || '',
+        profileDocUrl: incomingDocVal,
+        profilePdfUrl: isIncomingDocValidUrl ? incomingDocVal : '',
         highlightsUrl: rowObj.highlightsUrl || '',
         commitment: rowObj.commitment || 'Uncommitted',
         ncaaId: rowObj.ncaaId || '',
@@ -272,6 +376,7 @@ export function parseRosterCSV(
         photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl),
         bio: rowObj.bio || `${name} is an elite youth soccer athlete competing for De Anza Force U16G ECNL.`,
         awards: ['ECNL NorCal Candidate'],
+        includeInScoutingPack: true,
         stats: {
           appearances: 0,
           starts: 0,
@@ -282,6 +387,18 @@ export function parseRosterCSV(
           minutesPlayed: 0,
         },
       };
+
+      result.diffs.push({
+        playerId: newPlayer.id,
+        jerseyNumber: newPlayer.jerseyNumber,
+        name: newPlayer.name,
+        status: 'new',
+        changes: [
+          { field: 'position', label: 'Position', before: '—', after: newPlayer.specificPosition },
+          { field: 'gpa', label: 'GPA', before: '—', after: newPlayer.gpa },
+          { field: 'height', label: 'Height', before: '—', after: newPlayer.height },
+        ],
+      });
 
       parsedPlayers.push(newPlayer);
     }

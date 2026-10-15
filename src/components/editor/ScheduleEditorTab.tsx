@@ -20,6 +20,7 @@ interface ScheduleEditorTabProps {
   showNotification: (msg: string) => void;
   onAutoSyncRecordAndForm?: () => void;
   onOpenSyncTab?: () => void;
+  onOpenEcnlSyncModal?: () => void;
 }
 
 export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
@@ -28,6 +29,7 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
   showNotification,
   onAutoSyncRecordAndForm,
   onOpenSyncTab,
+  onOpenEcnlSyncModal,
 }) => {
   // Local working copy for editing
   const [localMatches, setLocalMatches] = useState<Match[]>(matches);
@@ -102,6 +104,18 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {onOpenEcnlSyncModal && (
+            <button
+              type="button"
+              onClick={onOpenEcnlSyncModal}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#00ADEF]/90 text-slate-950 font-condensed font-black text-xs uppercase tracking-wider transition-colors cursor-pointer shrink-0"
+              title="Sync weekly ECNL NorCal GU16 match scores and 12-team conference table"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Sync ECNL Scores &amp; Table</span>
+            </button>
+          )}
+
           {onAutoSyncRecordAndForm && (
             <button
               type="button"

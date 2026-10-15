@@ -16,6 +16,7 @@ import { StandingsEditorTab } from '../editor/StandingsEditorTab';
 import { TeamInfoEditorTab } from '../editor/TeamInfoEditorTab';
 import { MediaEditorTab } from '../editor/MediaEditorTab';
 import { ImportExportTab } from '../editor/ImportExportTab';
+import { EcnlSyncModal } from '../editor/EcnlSyncModal';
 import { GameDayQuickScore } from './GameDayQuickScore';
 import { syncStandingsAndTeamInfoWithMatches } from '../../utils/recordUtils';
 import { 
@@ -30,7 +31,8 @@ import {
   ExternalLink, 
   ArrowLeft, 
   LogOut, 
-  Shield 
+  Shield,
+  RefreshCw
 } from 'lucide-react';
 
 export type AdminTab = 'players' | 'coaches' | 'schedule' | 'standings' | 'team' | 'media' | 'import_export';
@@ -74,6 +76,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('players');
   const [notification, setNotification] = useState<string | null>(null);
+  const [isEcnlSyncOpen, setIsEcnlSyncOpen] = useState(false);
+
+  const isWeeklySyncDue = React.useMemo(() => {
+    if (teamInfo.ecnlAutoCheckEnabled === false) return false;
+    if (!teamInfo.lastEcnlSyncAt) return true;
+    const elapsedMs = Date.now() - new Date(teamInfo.lastEcnlSyncAt).getTime();
+    return elapsedMs > 7 * 24 * 60 * 60 * 1000;
+  }, [teamInfo.lastEcnlSyncAt, teamInfo.ecnlAutoCheckEnabled]);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -132,8 +142,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <button
             type="button"
+            onClick={() => setIsEcnlSyncOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#00ADEF]/20 hover:bg-[#00ADEF]/30 text-[#00ADEF] border border-[#00ADEF]/40 font-bold text-xs transition-colors cursor-pointer whitespace-nowrap"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Sync ECNL GU16</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onExitAdmin}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer whitespace-nowrap"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>View Public Site</span>
@@ -152,6 +171,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Weekly ECNL Auto-Check Banner */}
+        {isWeeklySyncDue && (
+          <div className="p-4 rounded-2xl bg-[#0c1629] border border-[#00ADEF]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-[#00ADEF]/15 text-[#00ADEF]">
+                <RefreshCw className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-condensed font-black text-base uppercase text-white">
+                  Weekly ECNL Northern California GU16 Score &amp; Standings Check Ready
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {teamInfo.lastEcnlSyncAt
+                    ? `Last synced on ${new Date(teamInfo.lastEcnlSyncAt).toLocaleDateString()}. Review this week's match results and 12-team NorCal table.`
+                    : 'Run a 1-click weekly check to reconcile ECNL Northern California GU16 match scores and the 12-team conference table.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEcnlSyncOpen(true)}
+              className="px-4 py-2 rounded-xl bg-[#00ADEF] hover:bg-[#00ADEF]/90 text-slate-950 font-condensed font-black text-xs uppercase tracking-wider cursor-pointer shrink-0 transition-colors"
+            >
+              Review &amp; Sync ECNL GU16
+            </button>
+          </div>
+        )}
+
         {/* Game Day Quick Score Bar */}
         <GameDayQuickScore
           matches={matches}
@@ -219,6 +266,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               showNotification={showNotification}
               onAutoSyncRecordAndForm={handleAutoSyncRecordAndForm}
               onOpenSyncTab={() => setActiveTab('import_export')}
+              onOpenEcnlSyncModal={() => setIsEcnlSyncOpen(true)}
             />
           )}
 
@@ -229,6 +277,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onSaveStandings={onSaveStandings}
               onSaveTeamInfo={onSaveTeamInfo}
               showNotification={showNotification}
+              onOpenEcnlSyncModal={() => setIsEcnlSyncOpen(true)}
             />
           )}
 
@@ -252,14 +301,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <ImportExportTab
               players={players}
               matches={matches}
+              teamInfo={teamInfo}
               onSavePlayers={onSavePlayers}
               onSaveMatches={onSaveMatches}
+              onSaveTeamInfo={onSaveTeamInfo}
               onResetToDefaults={onResetToDefaults}
               showNotification={showNotification}
             />
           )}
         </div>
       </main>
+
+      <EcnlSyncModal
+        isOpen={isEcnlSyncOpen}
+        onClose={() => setIsEcnlSyncOpen(false)}
+        matches={matches}
+        standings={standings}
+        teamInfo={teamInfo}
+        onSaveMatches={onSaveMatches}
+        onSaveStandings={onSaveStandings}
+        onSaveTeamInfo={onSaveTeamInfo}
+        showNotification={showNotification}
+      />
     </div>
   );
 };
