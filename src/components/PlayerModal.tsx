@@ -171,7 +171,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
               )}
 
               {/* Direct Photo Upload Button for Admins */}
-              {onUpdatePlayerPhoto && (
+              {isAdminMode && onUpdatePlayerPhoto && (
                 <label className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white text-xs font-bold backdrop-blur-md border border-white/20 shadow-xl cursor-pointer transition-all hover:scale-105 active:scale-95">
                   <Camera className="w-3.5 h-3.5 text-blue-400" />
                   <span>Change Photo</span>
@@ -597,48 +597,50 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-              {onTogglePlayerScouting && (
-                <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={player.includeInScoutingPack !== false}
-                    onChange={(e) => onTogglePlayerScouting(player.id, e.target.checked)}
-                    className="w-4 h-4 rounded text-[#00ADEF] focus:ring-[#00ADEF] border-slate-300 dark:border-slate-600 cursor-pointer"
-                  />
-                  <span>Scouting Profile: {player.includeInScoutingPack !== false ? 'Included' : 'Excluded (Alternate)'}</span>
-                </label>
-              )}
+            {isAdminMode && (
+              <div className="flex items-center gap-3 flex-wrap">
+                {onTogglePlayerScouting && (
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer select-none hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={player.includeInScoutingPack !== false}
+                      onChange={(e) => onTogglePlayerScouting(player.id, e.target.checked)}
+                      className="w-4 h-4 rounded text-[#00ADEF] focus:ring-[#00ADEF] border-slate-300 dark:border-slate-600 cursor-pointer"
+                    />
+                    <span>Scouting Profile: {player.includeInScoutingPack !== false ? 'Included' : 'Excluded (Alternate)'}</span>
+                  </label>
+                )}
 
-              {onDeletePlayer && (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-300 text-xs font-bold border border-red-800 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete Player</span>
-                </button>
-              )}
+                {onDeletePlayer && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-300 text-xs font-bold border border-red-800 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Player</span>
+                  </button>
+                )}
 
-              {onEditPlayer && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onEditPlayer(player);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Edit Profile</span>
-                </button>
-              )}
-            </div>
+                {onEditPlayer && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onEditPlayer(player);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700"
+                  >
+                    <Sliders className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Edit Profile</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Inline Delete Confirmation Overlay */}
-          {confirmDelete && (
+          {isAdminMode && confirmDelete && (
             <div 
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150"
               onClick={(e) => {

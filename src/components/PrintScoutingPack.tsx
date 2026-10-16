@@ -21,7 +21,6 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   coaches,
   onTogglePlayerScouting,
 }) => {
-  const [activePage, setActivePage] = useState<'all' | 'p1' | 'p2' | 'p3'>('all');
   const [tournamentTitle, setTournamentTitle] = useState('SCOUTING ROSTER');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
@@ -238,54 +237,8 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
             </div>
           </div>
 
-          {/* Center: Page View Filter & Title customizer */}
+          {/* Center: Title customizer */}
           <div className="flex items-center gap-2">
-            {/* Page View Filter */}
-            <div className="inline-flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700 text-xs">
-              <button
-                onClick={() => setActivePage('all')}
-                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                  activePage === 'all'
-                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                All Pages
-              </button>
-              <button
-                onClick={() => setActivePage('p1')}
-                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                  activePage === 'p1'
-                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Page 1 (Inside Spread)
-              </button>
-              <button
-                onClick={() => setActivePage('p2')}
-                className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                  activePage === 'p2'
-                    ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Page 2 (Outside Cover)
-              </button>
-              {page3Players.length > 0 && (
-                <button
-                  onClick={() => setActivePage('p3')}
-                  className={`px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer ${
-                    activePage === 'p3'
-                      ? 'bg-white dark:bg-slate-700 text-[#00ADEF] shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Page 3 ({page3Players.length})
-                </button>
-              )}
-            </div>
-
             {/* Generic Title Editor */}
             <div className="hidden lg:flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
               <span className="text-[11px] text-slate-400">Roster Title:</span>
@@ -344,10 +297,9 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               {/* ========================================================= */}
               {/* PAGE 1: INSIDE BIFOLD SPREAD (LEFT SPREAD | FOLD GAP | RIGHT SPREAD) */}
               {/* ========================================================= */}
-              {(activePage === 'all' || activePage === 'p1') && (
-                <div 
-                  className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
-                >
+              <div 
+                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+              >
                   {/* Compact Header for Page 1 */}
                   <div className="border-b-2 border-slate-950 pb-1.5 mb-1.5 flex items-center justify-between print:pb-1 print:mb-1 shrink-0">
                     <div className="flex items-center gap-2">
@@ -403,15 +355,13 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
                   </div>
                 </div>
-              )}
 
               {/* ========================================================= */}
               {/* PAGE 2: OUTSIDE BIFOLD SPREAD (BACK COVER & FRONT COVER)  */}
               {/* ========================================================= */}
-              {(activePage === 'all' || activePage === 'p2') && (
-                <div 
-                  className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
-                >
+              <div 
+                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+              >
                   {/* Bifold 2-Panel Spread matching Page 1 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 print:grid-cols-2 print:gap-6 flex-1 relative">
                     
@@ -623,12 +573,11 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
                   </div>
                 </div>
-              )}
 
               {/* ========================================================= */}
               {/* PAGE 3: SQUAD RESERVES & EXTENDED ROSTER (IF > 19 PLAYERS) */}
               {/* ========================================================= */}
-              {page3Players.length > 0 && (activePage === 'all' || activePage === 'p3') && (
+              {page3Players.length > 0 && (
                 <div 
                   className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-4 sm:p-5 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-2 print-page-break min-h-[680px]"
                 >

@@ -1,98 +1,83 @@
-# Player Roster Sync & ECNL GU16 League Automation Plan
+# Public Player Profile Security & Scouting Pack UI Cleanup
 
-This plan upgrades the De Anza Force U16G ECNL portal with a single-source-of-truth player synchronization system (persistent Google Sheet live diff sync + inline Admin spreadsheet grid editor) and an automated ECNL Northern California GU16 weekly match score and 12-team league standings engine with a review preview.
+This update locks down all roster modification controls inside the public Player Profile modal so unauthenticated visitors cannot delete, edit, or alter player profiles, and simplifies the Printable College Scouting Pack modal header by removing the page switcher buttons so all pages always display together.
 
-### User Review & Critical Decisions
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following decisions were confirmed from your clarifying answers and govern this implementation:
+> The following decisions were confirmed during clarification and govern this update:
 
-- **Confirmed Decision 1 (ECNL GU16 Weekly Automation & Review Preview)**: Automatically check for weekly ECNL Northern California GU16 match scores and league table updates (when an admin opens the portal and the last check is >7 days old) and provide a **1-Click "Sync ECNL Scores & Table"** button with a visual review preview before saving to Firestore.
-- **Confirmed Decision 2 (Player Details Sync Workflows)**:
-  1. **Saved Google Sheet URL with 1-Click Diff Sync & Duplicate-Column Fix**: Persist the team's Google Sheet URL in `TeamInfo`, map `"Contact Info for the Flyer"` to `contactEmail`, give precedence to rightmost updated `Height`, `Weight`, and `GPA` columns over earlier blank/outdated columns, and show a field-by-field diff preview before applying.
-  2. **Inline Spreadsheet Grid Editor in Admin**: Add an Excel-style bulk editing table inside the Admin Roster tab for rapid multi-player edits (jersey, position, height, weight, GPA, grad year, email, video link, and scouting pack inclusion) with 1-click save.
-- **Confirmed Decision 3 (Non-URL PDF Label Handling)**: Validate `profilePdfUrl` and `profileDocUrl` on Player Cards so text labels (e.g., `"Eliot Kline Player Profile"`) hide the external PDF badge on the card and open the interactive Player Profile Modal instead of a broken link.
-- **Confirmed Decision 4 (Firestore Source of Truth & Clean Notifications)**:
-  1. Remove hardcoded photo and player overrides in `App.tsx` so Firestore is the true single source of truth.
-  2. Replace blocking browser `window.alert()` calls with clean, non-blocking in-app toast notifications.
+- **Confirmed Decision 1 — Admin-Only Controls in Public Player Profile Modal**: Hide all admin mutation controls (`Delete Player`, `Change Photo`, `Edit Profile`, and the `Scouting Profile: Included/Excluded` toggle) on the public Player Profile modal unless the user is authenticated as an admin.
+- **Confirmed Decision 2 — Scouting Pack Default Display**: Remove the `"All Pages"`, `"Page 1 (Inside Spread)"`, and `"Page 2 (Outside Cover)"` filter buttons from the Scouting Pack header bar and always render all pages together by default.
 
 ---
 
-### 1. Overview & Core Concept
+## 1. Overview & Core Concept
 
-- **What It Does**: Eliminates manual double-entry for the coaching and management staff by connecting player profiles to a saved Google Sheet / inline bulk grid editor and automating weekly ECNL Northern California GU16 match score and 12-team conference standings updates.
-- **Target Audience / Persona**: Team Administrators / Head Coach (managing weekly updates in seconds) and College Scouts / Families (viewing accurate player profiles, match results, and conference standings).
-- **Key Value**: Guarantees player details stay accurately in sync across every view, and keeps both De Anza Force's schedule and the entire 12-team ECNL NorCal GU16 league table current.
+- **What It Does**:
+  1. Ensures public visitors and college scouts viewing a player's profile modal see a clean, read-only showcase (bio, metrics, game film, academics, and recruiting liaison contact) without any administrative edit or delete buttons.
+  2. Authenticated admins retain full access to edit, photo upload, scouting pack inclusion toggles, and player deletion.
+  3. Streamlines the Printable College Scouting Pack modal by removing the page-view toggle buttons and always rendering the complete multi-page scouting brochure.
+- **Target Audience / Persona**: College soccer scouts, players, parents, and team administrators.
+- **Key Value**: Prevents accidental or unauthorized roster deletions/edits on the public site and provides a cleaner, print-ready Scouting Pack experience.
 
 ---
 
-### 2. User Experience & Visual Design
+## 2. User Experience & Visual Design
 
 - **Key User Flows**:
-  1. **Weekly ECNL NorCal GU16 Auto-Check & 1-Click Sync**:
-     - When opening the Admin Suite (or Standings/Schedule editor tabs), if more than 7 days have passed since `lastEcnlSyncAt`—or when clicking **"Sync ECNL NorCal GU16"**—the backend queries the ECNL Northern California GU16 schedule (`ECNLG_0808235238.aspx`) and standings (`ECNLG_0808235831.aspx`) data, supported by server-side Gemini structured extraction and a **"Smart Paste ECNL Page"** option if external firewall rules block automated requests.
-     - A **Sync Review Preview Modal** displays newly completed De Anza Force match scores (`teamScore - opponentScore`) and a side-by-side comparison of rank, GP, W-L-D, GF, GA, GD, PTS, and PPG changes across all 12 NorCal GU16 clubs.
-     - Clicking **"Approve & Publish Updates"** atomically updates the Schedule, Standings, and Hero Season Record / Recent Form in Firestore.
-  2. **1-Click Saved Google Sheet Roster Sync with Field Diffs**:
-     - The Admin Spreadsheet Sync tab stores your Google Sheet URL in Firestore.
-     - Clicking **"Fetch & Compare Live Sheet"** parses the sheet and highlights exact field-level changes per player (e.g., `GPA: 3.90 → 4.05`, `Height: 5'6" → 5'7"`) before saving.
-  3. **Inline Admin Spreadsheet Grid Mode**:
-     - Inside the Admin Roster tab, a **"Card List / Bulk Grid"** toggle switches the player list into a high-density editable table where any cell can be modified inline and saved in one click.
+  - **Public Visitor / College Scout Flow (Player Modal)**: Clicking any player card opens the Player Profile modal in read-only mode. The photo upload button (`Change Photo`) and footer admin actions (`Scouting Profile` checkbox, `Delete Player` button, and `Edit Profile` button) are completely hidden. Only the Recruiting Liaison contact button and public profile tabs are shown.
+  - **Authenticated Admin Flow (Player Modal)**: When an admin has authenticated in the current session, the Player Profile modal displays the administrative actions (`Change Photo`, `Scouting Profile` toggle, `Edit Profile`, and `Delete Player`).
+  - **Scouting Pack Flow**: Clicking `Scouting Pack (Print)` opens the 2-page landscape brochure with both the Inside Spread (Page 1 player grid) and Outside Cover (Page 2 program cover & coaching staff) displayed together, ready for immediate printing or PDF export without page-filter clutter in the top bar.
 - **Visual Identity & Theme**:
-  - *Aesthetic Direction*: High-contrast athletic command center combining broadcast-style sports telemetry with clean SaaS data density.
-  - *Color Palette & Mood*: Deep pitch-slate surfaces (`#080c14`, `#0b1220`), Force Cyan (`#00ADEF`) primary interactive accents, Crimson (`#DC2626`) live/alert badges, and Emerald (`#10B981`) diff highlights for newly synced scores and updated player attributes.
-  - *Typography & Hierarchy*: Condensed athletic display headers (`font-condensed font-black uppercase`) paired with `tabular-nums` monospace alignment for standings metrics and diff previews.
-  - *Component Styling & Layout*: 12-column responsive layout with sticky table headers, subtle `1px` slate borders (`border-slate-800/80`), and zero layout shift when switching between list and bulk-edit grid views.
-- **Interactive Feedback & Motion**:
-  - Non-blocking toast banners for all sync, upload, and validation events.
-  - Pulsing badge indicator when weekly ECNL updates or unsaved inline grid edits are pending review.
+  - Preserves the existing De Anza Force athletic dark/light visual identity (`#00ADEF` cyan accents, deep navy `#080c14` surfaces, and condensed display typography).
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Hybrid ECNL Sync Architecture (Direct Fetch + AI Structured Extraction + Smart Paste)**
-  - *Chosen Approach*: Route ECNL synchronization through an Express backend endpoint (`/api/ecnl/sync`) that fetches ECNL / Total Global Sports data (`orgId=9`, `orgSeasonId=80`, Northern California GU16) and uses server-side `@google/genai` structured JSON extraction (`responseSchema`) to normalize both match scores and the 12-team standings table, paired with a Smart Paste text/HTML input in the review modal.
-  - *Why*: Combines automated server-side retrieval + AI search/extraction + instant copy-paste fallback so weekly updates work reliably even if ECNL's widget provider throttles cloud IPs.
-- **Decision 2: Rightmost Column Precedence & Fuzzy Header Mapping in CSV Parser**
-  - *Chosen Approach*: Update the CSV/Sheet parser so non-empty values in rightmost duplicate columns (`Height`, `Weight`, `GPA`) override earlier columns, and `"Contact Info for the Flyer"` maps to `contactEmail`.
-  - *Why*: Matches the exact column layout of the team's master Google Sheet without requiring manual sheet restructuring.
-- **Decision 3: Strict URL Validation for Recruiting Document Links**
-  - *Chosen Approach*: Validate that `profilePdfUrl` / `profileDocUrl` begins with `http://`, `https://`, `data:application/pdf`, or a valid `.pdf` path before rendering the external PDF badge on Player Cards.
-  - *Why*: Prevents broken navigation when spreadsheet cells contain descriptive text notes like `"Eliot Kline Player Profile"`, routing card clicks cleanly to the Player Profile Modal.
+- **Decision 1: Gate Player Modal Mutation Props & UI by Admin Authentication State**
+  - *Chosen Approach*: Pass `isAdminMode={isAuthenticated && isAdminMode}` (or gate the mutation callbacks `onDeletePlayer`, `onEditPlayer`, `onUpdatePlayerPhoto`, and `onTogglePlayerScouting` by `isAuthenticated`) from the root application state AND enforce `isAdminMode` checks inside the Player Modal component before rendering any mutation controls.
+  - *Why*: Defense-in-depth ensures that neither the UI buttons nor the underlying callbacks are exposed to unauthenticated public visitors, even if a visitor opens a deep-linked player URL (`?player=p1`).
+- **Decision 2: Always Render All Scouting Pack Pages**
+  - *Chosen Approach*: Remove the segmented page switcher buttons (`All Pages`, `Page 1 (Inside Spread)`, `Page 2 (Outside Cover)`) from the Scouting Pack top toolbar and lock the view state to always render the full multi-page layout.
+  - *Why*: Reduces toolbar clutter and ensures college scouts immediately see the complete bifold brochure and print all pages together.
 
 ---
 
-### 4. Technical Architecture & Data Strategy *(Technical Reference)*
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+
+### Architecture & Component Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        Client Application (React)                       │
-│                                                                         │
-│  ┌─────────────────────────┐          ┌──────────────────────────────┐  │
-│  │   Public Showcase UI    │          │     Admin Management Suite   │  │
-│  │  - Hero (Record & Form) │          │  - Bulk Roster Grid Editor   │  │
-│  │  - Roster (Valid PDFs)  │          │  - Saved Google Sheet Diff   │  │
-│  │  - Schedule & Standings │          │  - ECNL Weekly Sync & Review │  │
-│  └────────────┬────────────┘          └──────────────┬───────────────┘  │
-└───────────────┼──────────────────────────────────────┼──────────────────┘
-                │                                      │
-      Real-Time Hydration                    POST /api/ecnl/sync
-      (No Hardcoded Overrides)               (Auto-Check & Manual)
-                │                                      │
-┌───────────────▼────────────────┐      ┌──────────────▼───────────────┐
-│       Firebase Firestore       │      │   Express Server (server.ts) │
-│  - players (Single Source)     │      │  - TGS / ECNL Data Fetcher   │
-│  - matches & standings (12x)   │      │  - @google/genai Structured  │
-│  - teamInfo (sheetUrl, syncAt) │      │    Score & Table Parser      │
-└────────────────────────────────┘      └──────────────────────────────┘
+│                        Root Application State                           │
+│   • isAuthenticated (sessionStorage 'daf_team_editor_auth')             │
+│   • isAdminMode (URL param / Admin session state)                       │
+└───────────────────┬─────────────────────────────────┬───────────────────┘
+                    │                                 │
+                    ▼                                 ▼
+┌───────────────────────────────────────┐ ┌───────────────────────────────┐
+│          Player Profile Modal         │ │    Printable Scouting Pack    │
+│                                       │ │                               │
+│ • Public View (Default):              │ │ • Top Control Bar:            │
+│   - Read-only Bio, Stats, Film, NCAA  │ │   - Brochure Title Customizer │
+│   - Email Recruiting Liaison CTA      │ │   - Print / Save as PDF CTA   │
+│   - NO Delete / Edit / Photo / Toggle │ │   - (Page Switcher Removed)   │
+│                                       │ │                               │
+│ • Authenticated Admin View:           │ │ • Document Body:              │
+│   - Change Photo Upload               │ │   - Always renders Page 1     │
+│   - Scouting Pack Inclusion Toggle    │ │     (Inside Spread) + Page 2  │
+│   - Edit Profile & Delete Player      │ │     (Outside Cover)           │
+└───────────────────────────────────────┘ └───────────────────────────────┘
 ```
 
-- **Data Model & State Extensions**:
-  - `TeamInfo`: Add optional `rosterGoogleSheetUrl?: string`, `scheduleGoogleSheetUrl?: string`, `lastEcnlSyncAt?: string`, and `ecnlAutoCheckEnabled?: boolean`.
-  - `Player`: Hydrate all attributes cleanly from Firestore without hardcoded per-player photo overrides.
-  - `StandingTeam` & `Match`: Support full 12-team NorCal GU16 standings updates alongside De Anza Force fixture score synchronization.
-- **Interactive Component & State Mapping**:
-  - **Admin Bulk Roster Grid**: Tracks dirty cells locally, supports inline editing across all key recruiting attributes, and commits atomically to Firestore.
-  - **Google Sheet Diff Preview**: Computes a per-player field diff (`before` vs. `after`) between current Firestore `players` and incoming CSV rows before saving.
-  - **ECNL Sync Review Modal**: Triggered automatically when `lastEcnlSyncAt` is older than 7 days (in Admin) or on-demand via the **"Sync ECNL NorCal GU16"** button in the Schedule and Standings tabs.
+### Interactive Component & State Mapping
+
+1. **Root Application -> Player Modal Prop Gating**:
+   - Replace the hardcoded `isAdminMode={true}` and unconditional mutation handlers passed to `<PlayerModal />` with `isAuthenticated`-gated props (`isAdminMode={isAuthenticated}` and only passing `onEditPlayer`, `onDeletePlayer`, `onUpdatePlayerPhoto`, and `onTogglePlayerScouting` when `isAuthenticated` is `true`).
+2. **Player Modal Internal Guard**:
+   - Inside `PlayerModal`, require `isAdminMode` to be `true` before rendering the `Change Photo` upload overlay, `Scouting Profile` inclusion checkbox, `Delete Player` button (and its confirmation dialog), and `Edit Profile` button.
+3. **Printable Scouting Pack Toolbar & Page Rendering**:
+   - Remove the `All Pages`, `Page 1 (Inside Spread)`, and `Page 2 (Outside Cover)` filter button group from the top control bar in `PrintScoutingPack` while keeping the `Roster Title` inline editor and `Print / Save as PDF` button intact.
+   - Always render both Page 1 and Page 2 in the scrollable preview and print output.

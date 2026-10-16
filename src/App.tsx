@@ -835,11 +835,11 @@ export default function App() {
             teamInfo={teamInfo}
             coaches={coaches}
             onClose={() => setSelectedPlayer(null)}
-            onEditPlayer={(player) => handleOpenTeamEditor('players', player)}
-            onDeletePlayer={handleDeletePlayer}
-            onUpdatePlayerPhoto={handleUpdatePlayerPhoto}
-            onTogglePlayerScouting={handleTogglePlayerScouting}
-            isAdminMode={true}
+            onEditPlayer={isAuthenticated ? (player) => handleOpenTeamEditor('players', player) : undefined}
+            onDeletePlayer={isAuthenticated ? handleDeletePlayer : undefined}
+            onUpdatePlayerPhoto={isAuthenticated ? handleUpdatePlayerPhoto : undefined}
+            onTogglePlayerScouting={isAuthenticated ? handleTogglePlayerScouting : undefined}
+            isAdminMode={isAuthenticated}
           />
         )}
       </AnimatePresence>
@@ -849,6 +849,7 @@ export default function App() {
         isOpen={isAdminLoginOpen}
         onClose={() => setIsAdminLoginOpen(false)}
         onSuccess={() => {
+          setIsAuthenticated(true);
           setIsAdminLoginOpen(false);
           setIsEditorOpen(true);
         }}

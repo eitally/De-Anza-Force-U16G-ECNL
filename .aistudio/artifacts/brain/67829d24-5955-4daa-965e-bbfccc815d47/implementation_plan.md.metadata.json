@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan for ECNL Northern California GU16 weekly score & league table automation, persistent Google Sheet diff sync, inline Admin spreadsheet grid editor, URL validation for player PDF badges, and Firestore single source of truth.",
-  "updatedAt": "2026-10-14T23:12:58.177861656Z",
+  "summary": "Implementation plan to secure the public Player Profile modal by hiding all admin mutation controls unless authenticated, and to streamline the Printable College Scouting Pack header by removing the page-filter toggle buttons while always displaying all pages together.",
+  "updatedAt": "2026-10-16T15:42:05.023583385Z",
   "requestFeedback": true,
   "userFacing": true
 }
