@@ -153,7 +153,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
         {/* Center: Large Centered Headshot (NO frame, fade to white at bottom) */}
         <div className="relative -mt-3 sm:-mt-3.5 flex items-center justify-center my-auto">
           {hasHeadshot ? (
-            <div className="relative w-22 h-22 sm:w-24 sm:h-24 print:w-[86px] print:h-[86px] flex items-center justify-center overflow-hidden">
+            <div className="relative w-20 h-20 sm:w-[82px] sm:h-[82px] print:w-[76px] print:h-[76px] flex items-center justify-center overflow-hidden">
               <img
                 src={playerPhoto}
                 alt={player.name}
@@ -168,11 +168,11 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                 }}
               />
               {/* Soft fade to white at bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
             </div>
           ) : (
             /* Clean De Anza Force Logo (NO frame, centered) */
-            <div className="w-18 h-18 sm:w-20 sm:h-20 print:w-16 print:h-16 flex items-center justify-center p-0.5">
+            <div className="w-16 h-16 sm:w-18 sm:h-18 print:w-15 print:h-15 flex items-center justify-center p-0.5">
               <img 
                 src="/logo.png" 
                 alt="De Anza Force" 
@@ -182,9 +182,16 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
           )}
         </div>
 
-        {/* Bottom Section: Text Moved Down (No Email, Larger Font Sizes for Readability) */}
-        <div className="text-center flex flex-col justify-end mt-auto pt-1 min-w-0">
-          <h4 className="font-sans font-black text-xs sm:text-[13px] print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate px-0.5" title={player.name}>
+        {/* Bottom Section: Text Moved Down (No Email, Multi-line Name Support, Larger Font Sizes) */}
+        <div className="text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
+          <h4
+            className={`font-sans font-black uppercase text-slate-950 leading-[1.08] whitespace-normal break-words px-0.5 ${
+              player.name.length > 16 || player.name.split(/\s+/).some(w => w.length > 11)
+                ? 'text-[10.5px] sm:text-[11px] print:text-[9.5px] tracking-tighter'
+                : 'text-xs sm:text-[12.5px] print:text-[10.5px] tracking-tight'
+            }`}
+            title={player.name}
+          >
             {player.name}
           </h4>
           <div className="font-bold text-[10px] sm:text-[10.5px] print:text-[9px] uppercase tracking-tight text-[#00ADEF] leading-tight truncate mt-0.5" title={position}>
