@@ -1,83 +1,57 @@
-# Public Player Profile Security & Scouting Pack UI Cleanup
+# Scouting Packet Layout & Recruiting Contact Updates
 
-This update locks down all roster modification controls inside the public Player Profile modal so unauthenticated visitors cannot delete, edit, or alter player profiles, and simplifies the Printable College Scouting Pack modal header by removing the page switcher buttons so all pages always display together.
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> The following decisions were confirmed during clarification and govern this update:
-
-- **Confirmed Decision 1 — Admin-Only Controls in Public Player Profile Modal**: Hide all admin mutation controls (`Delete Player`, `Change Photo`, `Edit Profile`, and the `Scouting Profile: Included/Excluded` toggle) on the public Player Profile modal unless the user is authenticated as an admin.
-- **Confirmed Decision 2 — Scouting Pack Default Display**: Remove the `"All Pages"`, `"Page 1 (Inside Spread)"`, and `"Page 2 (Outside Cover)"` filter buttons from the Scouting Pack header bar and always render all pages together by default.
+This plan updates the Printable College Scouting Packet layout and print orientation, increases readability on player cards, updates recruiting contact messaging to feature Head Coach Paul Bravo, and removes Paul Holocher from the Coaching & Staff roster.
 
 ---
 
-## 1. Overview & Core Concept
+## 1. Printable Scouting Packet (`src/components/PrintScoutingPack.tsx`)
 
-- **What It Does**:
-  1. Ensures public visitors and college scouts viewing a player's profile modal see a clean, read-only showcase (bio, metrics, game film, academics, and recruiting liaison contact) without any administrative edit or delete buttons.
-  2. Authenticated admins retain full access to edit, photo upload, scouting pack inclusion toggles, and player deletion.
-  3. Streamlines the Printable College Scouting Pack modal by removing the page-view toggle buttons and always rendering the complete multi-page scouting brochure.
-- **Target Audience / Persona**: College soccer scouts, players, parents, and team administrators.
-- **Key Value**: Prevents accidental or unauthorized roster deletions/edits on the public site and provides a cleaner, print-ready Scouting Pack experience.
+### A. Move Coach Information to the Front/Title Cover & Full-Page Notes
+- **Front Cover (Outside Right Panel)**:
+  - Place the coach information cards (**Paul Bravo — Head Coach • ECNL Dir** and **Yuta Tanaka — Strength & Agility Coach**) directly beneath the `2026` year heading and above the team website QR code footer.
+  - Adjust spacing and padding on the Front Cover so the crest, titles (`DE ANZA FORCE`, `U16G ECNL - 2010/2011`, `SCOUTING ROSTER`, `2026`), coach contact cards, and QR code fit cleanly within the single bifold panel without overflowing.
+- **Back Cover / Notes Page (Outside Left Panel)**:
+  - Remove the top 3-column row (the small Team Profile card and the two Coach cards).
+  - Expand the ruled **NOTES** section to span the full height of the Outside Left Panel (~32 ruled lines) so college scouts have a full dedicated page for match notes.
 
----
+### B. Remove Player Emails & Increase Card Font Sizes
+- In `renderPlayerCard(player)`:
+  - Remove the `mailto:` email address link at the bottom of each player card while preserving the bottom cyan accent line (`bg-[#00ADEF]`).
+  - Increase typography sizes across the bottom info block for better readability both on screen and in print:
+    - **Player Name**: Increase from `text-[11px] print:text-[9.5px]` to `text-xs sm:text-[13px] print:text-[11px]`.
+    - **Position**: Increase from `text-[8.5px] print:text-[7.5px]` to `text-[10px] sm:text-[10.5px] print:text-[9px]`.
+    - **Height • GPA • Grad Year**: Increase from `text-[7.5px] print:text-[7px]` to `text-[9.5px] sm:text-[10px] print:text-[8.5px]`.
 
-## 2. User Experience & Visual Design
-
-- **Key User Flows**:
-  - **Public Visitor / College Scout Flow (Player Modal)**: Clicking any player card opens the Player Profile modal in read-only mode. The photo upload button (`Change Photo`) and footer admin actions (`Scouting Profile` checkbox, `Delete Player` button, and `Edit Profile` button) are completely hidden. Only the Recruiting Liaison contact button and public profile tabs are shown.
-  - **Authenticated Admin Flow (Player Modal)**: When an admin has authenticated in the current session, the Player Profile modal displays the administrative actions (`Change Photo`, `Scouting Profile` toggle, `Edit Profile`, and `Delete Player`).
-  - **Scouting Pack Flow**: Clicking `Scouting Pack (Print)` opens the 2-page landscape brochure with both the Inside Spread (Page 1 player grid) and Outside Cover (Page 2 program cover & coaching staff) displayed together, ready for immediate printing or PDF export without page-filter clutter in the top bar.
-- **Visual Identity & Theme**:
-  - Preserves the existing De Anza Force athletic dark/light visual identity (`#00ADEF` cyan accents, deep navy `#080c14` surfaces, and condensed display typography).
-
----
-
-## 3. Key Product Decisions & Trade-Offs
-
-- **Decision 1: Gate Player Modal Mutation Props & UI by Admin Authentication State**
-  - *Chosen Approach*: Pass `isAdminMode={isAuthenticated && isAdminMode}` (or gate the mutation callbacks `onDeletePlayer`, `onEditPlayer`, `onUpdatePlayerPhoto`, and `onTogglePlayerScouting` by `isAuthenticated`) from the root application state AND enforce `isAdminMode` checks inside the Player Modal component before rendering any mutation controls.
-  - *Why*: Defense-in-depth ensures that neither the UI buttons nor the underlying callbacks are exposed to unauthenticated public visitors, even if a visitor opens a deep-linked player URL (`?player=p1`).
-- **Decision 2: Always Render All Scouting Pack Pages**
-  - *Chosen Approach*: Remove the segmented page switcher buttons (`All Pages`, `Page 1 (Inside Spread)`, `Page 2 (Outside Cover)`) from the Scouting Pack top toolbar and lock the view state to always render the full multi-page layout.
-  - *Why*: Reduces toolbar clutter and ensures college scouts immediately see the complete bifold brochure and print all pages together.
+### C. Fix Duplex Print Orientation on Inner Player Cards Page
+- In standard landscape duplex printing ("Flip on Long Edge"), the inside spread prints upside down relative to the outside folded cover unless rotated 180°.
+- Add `print:rotate-180` to the **Page 1 (Inside Bifold Spread)** container in `PrintScoutingPack.tsx`:
+  - On screen in the modal preview, Page 1 remains right-side-up for easy reading.
+  - When printed (`@media print`), Page 1 automatically rotates 180° so that when folded in half along the center crease, the inner player cards are right-side-up relative to the front cover.
 
 ---
 
-## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+## 2. Player Profile Modal Recruiting Footer (`src/components/PlayerModal.tsx`)
 
-### Architecture & Component Diagram
+- Update the coach contact lookup in `PlayerModal.tsx` to resolve to Head Coach **Paul Bravo** (`coaches.find(c => c.name.toLowerCase().includes('bravo')) || coaches[0]`).
+- Replace the footer label:
+  - **Before**: `College Recruiting Liaison: {recruitingCoach?.name}` + `Email Liaison` button.
+  - **After**: `For recruiting, contact head coach Paul Bravo` + `Email Coach Bravo` button linking to `mailto:paulbravo9@gmail.com` with the pre-filled player inquiry subject line.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Root Application State                           │
-│   • isAuthenticated (sessionStorage 'daf_team_editor_auth')             │
-│   • isAdminMode (URL param / Admin session state)                       │
-└───────────────────┬─────────────────────────────────┬───────────────────┘
-                    │                                 │
-                    ▼                                 ▼
-┌───────────────────────────────────────┐ ┌───────────────────────────────┐
-│          Player Profile Modal         │ │    Printable Scouting Pack    │
-│                                       │ │                               │
-│ • Public View (Default):              │ │ • Top Control Bar:            │
-│   - Read-only Bio, Stats, Film, NCAA  │ │   - Brochure Title Customizer │
-│   - Email Recruiting Liaison CTA      │ │   - Print / Save as PDF CTA   │
-│   - NO Delete / Edit / Photo / Toggle │ │   - (Page Switcher Removed)   │
-│                                       │ │                               │
-│ • Authenticated Admin View:           │ │ • Document Body:              │
-│   - Change Photo Upload               │ │   - Always renders Page 1     │
-│   - Scouting Pack Inclusion Toggle    │ │     (Inside Spread) + Page 2  │
-│   - Edit Profile & Delete Player      │ │     (Outside Cover)           │
-└───────────────────────────────────────┘ └───────────────────────────────┘
-```
+---
 
-### Interactive Component & State Mapping
+## 3. Remove Paul Holocher & Update Recruitment Hub (`src/data/defaultData.ts`, `src/App.tsx`, `src/components/CoachingStaff.tsx`, `src/components/RecruitmentHub.tsx`)
 
-1. **Root Application -> Player Modal Prop Gating**:
-   - Replace the hardcoded `isAdminMode={true}` and unconditional mutation handlers passed to `<PlayerModal />` with `isAuthenticated`-gated props (`isAdminMode={isAuthenticated}` and only passing `onEditPlayer`, `onDeletePlayer`, `onUpdatePlayerPhoto`, and `onTogglePlayerScouting` when `isAuthenticated` is `true`).
-2. **Player Modal Internal Guard**:
-   - Inside `PlayerModal`, require `isAdminMode` to be `true` before rendering the `Change Photo` upload overlay, `Scouting Profile` inclusion checkbox, `Delete Player` button (and its confirmation dialog), and `Edit Profile` button.
-3. **Printable Scouting Pack Toolbar & Page Rendering**:
-   - Remove the `All Pages`, `Page 1 (Inside Spread)`, and `Page 2 (Outside Cover)` filter button group from the top control bar in `PrintScoutingPack` while keeping the `Roster Title` inline editor and `Print / Save as PDF` button intact.
-   - Always render both Page 1 and Page 2 in the scrollable preview and print output.
+- **Default Data & State Hydration (`src/data/defaultData.ts`, `src/App.tsx`)**:
+  - Remove Paul Holocher (`id: "c3"`) from `INITIAL_COACHES` in `src/data/defaultData.ts`.
+  - Filter out any cached coach entry matching `"holocher"` when loading `coaches` from `localStorage` or Firestore `onSnapshot` in `src/App.tsx` (and persist the cleaned list back to Firestore/localStorage if present) so his card never reappears from cached database state.
+- **Coaching & Staff Grid (`src/components/CoachingStaff.tsx`)**:
+  - Update the desktop grid layout from 4 columns to 3 columns (`lg:grid-cols-3`) so the 3 remaining staff cards (**Paul Bravo**, **Yuta Tanaka**, and **Rhoda Longhenry**) display in a balanced full-width row.
+- **College Recruitment Hub (`src/components/RecruitmentHub.tsx`)**:
+  - Update the contact card to feature **Head Coach Paul Bravo** (selecting `coaches.find(c => c.name.toLowerCase().includes('bravo')) || coaches[0]`) with header `Head Coach & Recruiting Contact` instead of `College Liaison Contact`.
+
+---
+
+## Verification Plan
+- Run `lint_applet` and `compile_applet` to verify zero TypeScript or build errors.
+- Verify the Scouting Packet modal shows Coach cards beneath `2026` on the Front Cover, full-page ruled lines on the Notes panel, larger font sizes with no email addresses on player cards, and `print:rotate-180` on the inner spread.
+- Verify the Player Profile modal footer displays `"For recruiting, contact head coach Paul Bravo"` and that Paul Holocher is removed from the Coaching & Staff section.

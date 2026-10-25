@@ -182,30 +182,23 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
           )}
         </div>
 
-        {/* Bottom Section: Text Moved Down */}
-        <div className="text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
-          <h4 className="font-sans font-black text-[11px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate px-0.5" title={player.name}>
+        {/* Bottom Section: Text Moved Down (No Email, Larger Font Sizes for Readability) */}
+        <div className="text-center flex flex-col justify-end mt-auto pt-1 min-w-0">
+          <h4 className="font-sans font-black text-xs sm:text-[13px] print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate px-0.5" title={player.name}>
             {player.name}
           </h4>
-          <div className="font-bold text-[8.5px] print:text-[7.5px] uppercase tracking-tight text-[#00ADEF] leading-tight truncate mt-0.5" title={position}>
+          <div className="font-bold text-[10px] sm:text-[10.5px] print:text-[9px] uppercase tracking-tight text-[#00ADEF] leading-tight truncate mt-0.5" title={position}>
             {position}
           </div>
-          <div className="text-[7.5px] print:text-[7px] text-slate-700 font-semibold leading-tight mt-0.5 flex items-center justify-center gap-1 truncate">
+          <div className="text-[9px] sm:text-[9.5px] print:text-[8.5px] text-slate-700 font-semibold leading-tight mt-0.5 flex items-center justify-center gap-1 truncate">
             <span>Ht: {heightDisplay}</span>
             <span>•</span>
             <span>GPA: {gpaDisplay}</span>
             <span>•</span>
             <span>'{String(player.gradYear || 2029).slice(-2)}</span>
           </div>
-          <div className="pt-0.5 min-w-0">
-            <a
-              href={`mailto:${player.contactEmail}`}
-              className="text-[7.5px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline text-center"
-              title={player.contactEmail}
-            >
-              {player.contactEmail || 'info@deanzaforce.org'}
-            </a>
-            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+          <div className="pt-1 min-w-0">
+            <div className="h-0.5 bg-[#00ADEF] w-full rounded-full"></div>
           </div>
         </div>
       </div>
@@ -298,7 +291,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               {/* PAGE 1: INSIDE BIFOLD SPREAD (LEFT SPREAD | FOLD GAP | RIGHT SPREAD) */}
               {/* ========================================================= */}
               <div 
-                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print:rotate-180 print-page-break min-h-[660px]"
               >
                   {/* Compact Header for Page 1 */}
                   <div className="border-b-2 border-slate-950 pb-1.5 mb-1.5 flex items-center justify-between print:pb-1 print:mb-1 shrink-0">
@@ -368,131 +361,23 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                     {/* Visual Center Fold Crease Guideline (print-friendly) */}
                     <div className="hidden print:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 border-r border-dashed border-slate-300 pointer-events-none" />
 
-                    {/* OUTSIDE LEFT PANEL: De Anza Force Card, Paul Bravo, Yuta Tanaka, & Scout Notes */}
+                    {/* OUTSIDE LEFT PANEL: Full-Page Lined Scout Notes */}
                     <div className="flex flex-col justify-between md:pr-1.5 print:pr-1">
                       
-                      {/* Top Row: 3 Compact Shrunk Boxes (Team Profile + 2 Coaches) */}
-                      {/* Top Row: 3 Compact Shrunk Boxes (Team Profile + 2 Coaches - NO PHOTOS) */}
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 print:gap-1.5 shrink-0">
-                        
-                        {/* 1. Team Profile Box (Matching compact height) */}
-                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-condensed font-black text-[9px] print:text-[8.5px] text-slate-950 uppercase tracking-wider truncate">
-                              DE ANZA FORCE
-                            </span>
-                            <span className="text-[6.5px] print:text-[6px] font-bold text-[#00ADEF] uppercase tracking-wider shrink-0">
-                              NORCAL ECNL
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 my-auto py-0.5">
-                            <div className="w-6 h-7 print:w-5.5 print:h-6.5 shrink-0 flex items-center justify-center">
-                              <img src="/logo.png" alt="De Anza Force" className="w-full h-full object-contain pointer-events-none select-none" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <h5 className="font-condensed font-black text-[9px] print:text-[8px] uppercase text-slate-950 leading-tight truncate">
-                                U16G ECNL - 2010/2011
-                              </h5>
-                              <p className="text-[6.5px] print:text-[6px] text-slate-600 font-semibold leading-tight mt-0.5 truncate">
-                                Silicon Valley, CA
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="pt-0.5 border-t border-slate-100 flex items-center justify-between min-w-0">
-                            <a
-                              href="https://deanzaforce2011g.com"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[6.5px] print:text-[6px] text-sky-800 hover:text-sky-600 font-semibold truncate hover:underline"
-                            >
-                              deanzaforce2011g.com
-                            </a>
-                            <div className="h-0.5 bg-[#00ADEF] w-10 rounded-full"></div>
-                          </div>
-                        </div>
-
-                        {/* 2. Coach Box: Paul Bravo (NO PHOTO - Compact Info Card) */}
-                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-[7.5px] print:text-[7px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
-                              HEAD COACH • ECNL DIR
-                            </span>
-                            <span className="text-[6.5px] print:text-[6px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
-                              STAFF
-                            </span>
-                          </div>
-
-                          <div className="my-auto py-0.5 min-w-0">
-                            <h4 className="font-sans font-black text-[10.5px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
-                              {paulBravo.name}
-                            </h4>
-                            <div className="text-[7.5px] print:text-[7px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
-                              {paulBravo.phone || '(720) 475-6991'}
-                            </div>
-                          </div>
-
-                          <div className="pt-0.5 border-t border-slate-100 min-w-0">
-                            <a
-                              href={`mailto:${paulBravo.email || 'paulgbravo9@gmail.com'}`}
-                              className="text-[7px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
-                              title={paulBravo.email}
-                            >
-                              {paulBravo.email || 'paulgbravo9@gmail.com'}
-                            </a>
-                            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
-                          </div>
-                        </div>
-
-                        {/* 3. Coach Box: Yuta Tanaka (NO PHOTO - Compact Info Card) */}
-                        <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 print:shadow-none print:border-slate-300 min-h-[72px] max-h-[86px]">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-[7.5px] print:text-[7px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
-                              STRENGTH &amp; AGILITY COACH
-                            </span>
-                            <span className="text-[6.5px] print:text-[6px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
-                              STAFF
-                            </span>
-                          </div>
-
-                          <div className="my-auto py-0.5 min-w-0">
-                            <h4 className="font-sans font-black text-[10.5px] print:text-[9.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
-                              {yutaTanaka.name}
-                            </h4>
-                            <div className="text-[7.5px] print:text-[7px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
-                              {yutaTanaka.phone || '(650) 619-3670'}
-                            </div>
-                          </div>
-
-                          <div className="pt-0.5 border-t border-slate-100 min-w-0">
-                            <a
-                              href={`mailto:${yutaTanaka.email || 'yuta.tanaka@gmail.com'}`}
-                              className="text-[7px] print:text-[6.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
-                              title={yutaTanaka.email}
-                            >
-                              {yutaTanaka.email || 'yuta.tanaka@gmail.com'}
-                            </a>
-                            <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
-                          </div>
-                        </div>
-
-                      </div>
-
-                      {/* Dedicated Lined Scout Notes Section (Uses all available space on Page 2) */}
-                      <div className="mt-2.5 pt-1.5 flex-1 flex flex-col min-h-0">
+                      {/* Dedicated Lined Scout Notes Section (Full Panel Height) */}
+                      <div className="flex-1 flex flex-col min-h-0">
                         {/* Cyan Top Line */}
                         <div className="h-0.5 bg-[#00ADEF] w-full mb-1 shrink-0"></div>
                         
-                        <div className="flex items-center justify-between mb-1 shrink-0">
+                        <div className="flex items-center justify-between mb-1.5 shrink-0">
                           <span className="font-condensed font-black text-sm tracking-wider uppercase text-slate-950">
                             NOTES
                           </span>
                         </div>
 
                         {/* Ruled Notebook Lines that stretch to use all available height */}
-                        <div className="flex-1 flex flex-col justify-between py-1 min-h-[460px] print:min-h-[500px]">
-                          {Array.from({ length: 26 }).map((_, i) => (
+                        <div className="flex-1 flex flex-col justify-between py-1 min-h-[540px] print:min-h-[580px]">
+                          {Array.from({ length: 30 }).map((_, i) => (
                             <div key={i} className="border-b border-slate-300/90 w-full h-0"></div>
                           ))}
                         </div>
@@ -500,14 +385,14 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
                     </div>
 
-                    {/* OUTSIDE RIGHT PANEL: Cover with SCOUTING ROSTER & Digital Team Website QR */}
+                    {/* OUTSIDE RIGHT PANEL: Cover with SCOUTING ROSTER, Coach Info Beneath 2026 & Digital Team Website QR */}
                     <div className="flex flex-col justify-between md:pl-1.5 print:pl-1">
                       
-                      {/* Upper Center: Big Crest with Speed Racing Stripes */}
-                      <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-6">
+                      {/* Upper Center: Big Crest with Speed Racing Stripes + Title + Coach Information */}
+                      <div className="flex-1 flex flex-col items-center justify-center py-2 sm:py-3">
                         
                         {/* Crest with Left & Right 3 Horizontal Stripes */}
-                        <div className="w-full flex items-center justify-center gap-3 sm:gap-4 max-w-lg mb-4">
+                        <div className="w-full flex items-center justify-center gap-3 sm:gap-4 max-w-lg mb-2.5">
                           {/* 3 Black Stripes Left */}
                           <div className="flex-1 space-y-1.5">
                             <div className="h-2 bg-slate-950 rounded-sm"></div>
@@ -516,7 +401,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                           </div>
 
                           {/* Force Shield Crest */}
-                          <div className="w-24 h-28 sm:w-28 sm:h-32 shrink-0">
+                          <div className="w-20 h-24 sm:w-24 sm:h-28 shrink-0">
                             <ClubCrest size="xl" showText={false} className="w-full h-full" />
                           </div>
 
@@ -537,29 +422,90 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                           U16G ECNL - 2010/2011
                         </div>
 
-                        <h2 className="font-condensed font-black text-2xl sm:text-3xl lg:text-4xl uppercase tracking-wider text-slate-950 text-center leading-tight mt-1">
+                        <h2 className="font-condensed font-black text-2xl sm:text-3xl lg:text-4xl uppercase tracking-wider text-slate-950 text-center leading-tight mt-0.5">
                           SCOUTING ROSTER
                         </h2>
 
-                        <div className="font-condensed font-black text-xl sm:text-2xl text-slate-950 tracking-wider text-center mt-1">
+                        <div className="font-condensed font-black text-xl sm:text-2xl text-slate-950 tracking-wider text-center mt-0.5">
                           {currentYear}
+                        </div>
+
+                        {/* Coach Information Beneath "2026" */}
+                        <div className="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-3 mt-3">
+                          {/* Coach Box: Paul Bravo */}
+                          <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-left">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[8.5px] print:text-[8px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                                HEAD COACH • ECNL DIR
+                              </span>
+                            </div>
+
+                            <div className="my-1 min-w-0">
+                              <h4 className="font-sans font-black text-xs print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                                {paulBravo.name}
+                              </h4>
+                              <div className="text-[9.5px] print:text-[8.5px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                                {paulBravo.phone || '(720) 475-6991'}
+                              </div>
+                            </div>
+
+                            <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                              <a
+                                href={`mailto:${paulBravo.email || 'paulgbravo9@gmail.com'}`}
+                                className="text-[8.5px] print:text-[8px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                                title={paulBravo.email}
+                              >
+                                {paulBravo.email || 'paulgbravo9@gmail.com'}
+                              </a>
+                              <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                            </div>
+                          </div>
+
+                          {/* Coach Box: Yuta Tanaka */}
+                          <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-left">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[8.5px] print:text-[8px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                                STRENGTH &amp; AGILITY COACH
+                              </span>
+                            </div>
+
+                            <div className="my-1 min-w-0">
+                              <h4 className="font-sans font-black text-xs print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                                {yutaTanaka.name}
+                              </h4>
+                              <div className="text-[9.5px] print:text-[8.5px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                                {yutaTanaka.phone || '(650) 619-3670'}
+                              </div>
+                            </div>
+
+                            <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                              <a
+                                href={`mailto:${yutaTanaka.email || 'yuta.tanaka@gmail.com'}`}
+                                className="text-[8.5px] print:text-[8px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                                title={yutaTanaka.email}
+                              >
+                                {yutaTanaka.email || 'yuta.tanaka@gmail.com'}
+                              </a>
+                              <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                       {/* Lower Section: Team Website Self-Referential QR Code */}
-                      <div className="mt-auto pt-3 border-t border-slate-200">
-                        <div className="flex flex-col items-center justify-center p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
+                      <div className="mt-auto pt-2 border-t border-slate-200">
+                        <div className="flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-200/80 rounded-xl">
                           <a
                             href="https://www.deanzaforce2011g.com/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group flex flex-col items-center gap-1.5"
+                            className="group flex flex-col items-center gap-1"
                             title="Scan or click to open the official Team Website (https://www.deanzaforce2011g.com/)"
                           >
                             <img
                               src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent('https://www.deanzaforce2011g.com/')}`}
                               alt="Team Website QR Code"
-                              className="w-16 h-16 sm:w-18 sm:h-18 border-2 border-slate-900 rounded bg-white p-1 shadow-xs group-hover:scale-105 transition-transform"
+                              className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-slate-900 rounded bg-white p-1 shadow-xs group-hover:scale-105 transition-transform"
                               loading="lazy"
                             />
                             <span className="font-condensed font-black text-xs sm:text-sm tracking-wide text-slate-950 font-mono group-hover:text-[#00ADEF] transition-colors">

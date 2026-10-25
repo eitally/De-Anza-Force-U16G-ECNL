@@ -105,7 +105,12 @@ export default function App() {
       const saved = localStorage.getItem('daf_team_coaches');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const filtered = parsed.filter(
+            (c: Coach) => c.id !== 'c3' && !(c.name || '').toLowerCase().includes('holocher')
+          );
+          if (filtered.length > 0) return filtered;
+        }
       }
     } catch {}
     return INITIAL_COACHES;
@@ -171,8 +176,16 @@ export default function App() {
             }
           }
           if (data.coaches) {
-            setCoaches(data.coaches);
-            try { localStorage.setItem('daf_team_coaches', JSON.stringify(data.coaches)); } catch {}
+            const rawCoaches = data.coaches as Coach[];
+            const cleanedCoaches = rawCoaches.filter(
+              (c) => c.id !== 'c3' && !(c.name || '').toLowerCase().includes('holocher')
+            );
+            setCoaches(cleanedCoaches);
+            try { localStorage.setItem('daf_team_coaches', JSON.stringify(cleanedCoaches)); } catch {}
+            if (cleanedCoaches.length !== rawCoaches.length) {
+              const cleanPayload = sanitizeGlobalDocPayload({ coaches: cleanedCoaches });
+              setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch(() => {});
+            }
           }
           if (data.teamInfo) {
             setTeamInfo((prev) => ({

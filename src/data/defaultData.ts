@@ -1518,17 +1518,6 @@ export const INITIAL_COACHES: Coach[] = [
     "bio": "Coordinates all team travel logistics, ECNL match rosters, tournament registration, and parent liaison communications.",
     "photoUrl": "https://i.imgur.com/c0qeiY4.png",
     "experience": "ECNL Club Operations & Tournament Logistics"
-  },
-  {
-    "email": "paul.holocher@deanzaforce.org",
-    "bio": "Oversees tactical curriculum and serves as primary liaison for college coaching staffs across NCAA Division I, II, III and NAIA programs.",
-    "name": "Paul Holocher",
-    "phone": "(408) 555-0199",
-    "experience": "20+ Years NCAA D1 Head Coach & Pro Academy Director",
-    "photoUrl": "https://i.imgur.com/c0qeiY4.png",
-    "role": "Technical Director & College Recruiting Coordinator",
-    "license": "USSF Pro License",
-    "id": "c3"
   }
 ];
 

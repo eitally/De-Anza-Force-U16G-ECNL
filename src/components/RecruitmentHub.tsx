@@ -29,20 +29,20 @@ export const RecruitmentHub: React.FC<RecruitmentHubProps> = ({
   onOpenScoutPack,
 }) => {
   const fallbackCoach: Coach = {
-    id: 'default-recruiting',
-    name: 'Technical Staff',
-    role: 'College Recruiting Coordinator',
-    license: 'USSF Licensed Director',
-    experience: '10+ Years',
-    email: 'recruiting@deanzaforce.org',
-    phone: '(408) 555-0199',
+    id: 'c1',
+    name: 'Paul Bravo',
+    role: 'Head Coach',
+    license: 'USSF A-Senior National License / UEFA Licensed',
+    experience: '12+ Years Elite Youth Development & ECNL National Championships',
+    email: 'paulbravo9@gmail.com',
+    phone: '(720) 475-6991',
     photoUrl: DEFAULT_COACH_PHOTO,
-    bio: 'Dedicated point of contact for college scouting inquiries, verified player film, and recruiting profiles.',
+    bio: 'Head Coach of De Anza Force U16G ECNL. Primary point of contact for college scouting inquiries, verified player film, and recruiting profiles.',
   };
 
   const recruitingCoach =
     (coaches && coaches.length > 0
-      ? coaches.find((c) => (c.role || '').toLowerCase().includes('recruiting')) || coaches[0]
+      ? coaches.find((c) => (c.name || '').toLowerCase().includes('bravo')) || coaches[0]
       : fallbackCoach) || fallbackCoach;
 
   const uncommittedCount = players.filter((p) => p.commitment === 'Uncommitted').length;
@@ -127,7 +127,7 @@ export const RecruitmentHub: React.FC<RecruitmentHubProps> = ({
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-5 h-5 text-blue-400" />
                   <span className="font-condensed font-black text-lg uppercase text-slate-900 dark:text-white">
-                    College Liaison Contact
+                    Head Coach &amp; Recruiting Contact
                   </span>
                 </div>
                 <span className="text-xs font-bold text-blue-400 uppercase bg-blue-950 px-2.5 py-1 rounded-md border border-blue-800">

@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan to secure the public Player Profile modal by hiding all admin mutation controls unless authenticated, and to streamline the Printable College Scouting Pack header by removing the page-filter toggle buttons while always displaying all pages together.",
-  "updatedAt": "2026-10-16T15:42:05.023583385Z",
-  "requestFeedback": true,
-  "userFacing": true
+  "summary":  "Implementation plan for Scouting Packet layout/print orientation updates, larger player card typography without emails, updating Player Modal and Recruitment Hub to feature Head Coach Paul Bravo, and removing Paul Holocher from Coaching & Staff.",
+  "updatedAt":  "2026-10-25T14:32:44.658310802Z",
+  "requestFeedback":  true,
+  "userFacing":  true
 }
