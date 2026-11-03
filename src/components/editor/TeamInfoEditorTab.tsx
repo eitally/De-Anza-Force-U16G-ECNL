@@ -133,27 +133,6 @@ export const TeamInfoEditorTab: React.FC<TeamInfoEditorTabProps> = ({
               onSaveTeamInfo(updated);
               showNotification('✓ Updated official squad photo!');
             }}
-            onRemove={() => {
-              const updated = {
-                ...localInfo,
-                teamPhotoUrl: '',
-              };
-              setLocalInfo(updated);
-              onSaveTeamInfo(updated);
-              showNotification('✓ Removed team squad photo.');
-            }}
-            onRestoreDefault={() => {
-              const defaultUrl = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80';
-              const defaultCaption = '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
-              const updated = {
-                ...localInfo,
-                teamPhotoUrl: defaultUrl,
-                teamPhotoCaption: defaultCaption,
-              };
-              setLocalInfo(updated);
-              onSaveTeamInfo(updated);
-              showNotification('✓ Restored default squad photo.');
-            }}
           />
         </div>
       </div>

@@ -302,13 +302,21 @@ export function getPlayerHeadshot(playerName: string, customPhotoUrl?: string, j
   return CLUB_LOGO_URL;
 }
 
+export const OFFICIAL_SQUAD_PHOTO_URL = 'https://i.imgur.com/BPz21Cf.jpeg';
+
 /**
- * Automatically cleans and converts common cloud storage links (Google Drive, Dropbox, etc.)
+ * Automatically cleans and converts common cloud storage links (Imgur, Google Drive, Dropbox, etc.)
  * into directly loadable image stream URLs.
  */
 export function transformImageUrl(url: string): string {
   if (!url) return '';
   let cleanUrl = url.trim();
+
+  // 0. Imgur page link -> direct i.imgur.com image stream
+  const imgurPageMatch = cleanUrl.match(/^https?:\/\/(?:www\.)?imgur\.com\/(?!a\/|gallery\/)([a-zA-Z0-9]+)(?:\.[a-zA-Z0-9]+)?$/);
+  if (imgurPageMatch && imgurPageMatch[1]) {
+    return `https://i.imgur.com/${imgurPageMatch[1]}.jpeg`;
+  }
 
   // 1. Google Drive direct link extraction
   const gDriveMatch1 = cleanUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -358,18 +366,14 @@ export function handleImageError(
   }
 }
 
-
-
-
 /**
- * Produces crisp, high-resolution 1-2MB JPEGs (up to 2560px, 0.92 quality)
- * preserving all fine details, jersey text, and sharp focus.
+ * Produces crisp, high-resolution JPEGs while staying well within Firestore's 1MB document limit.
  */
-export async function compressHeadshot(file: File, maxDim = 2560, quality = 0.92): Promise<string> {
+export async function compressHeadshot(file: File, maxDim = 1600, quality = 0.85): Promise<string> {
   return compressImage(file, maxDim, quality);
 }
 
-export async function compressImage(file: File, maxWidth = 2560, quality = 0.92): Promise<string> {
+export async function compressImage(file: File, maxWidth = 1600, quality = 0.82): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!file) {
       reject(new Error("No file provided"));

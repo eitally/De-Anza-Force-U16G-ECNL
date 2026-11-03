@@ -2,17 +2,20 @@ import React, { useState, useRef } from 'react';
 import { 
   Camera, 
   Upload, 
-  Trash2, 
-  RotateCcw, 
   Maximize2, 
   X, 
   Check, 
   Image as ImageIcon, 
-  Sparkles,
-  Link2,
-  AlertCircle
+  Link2
 } from 'lucide-react';
-import { compressImage, DEFAULT_PLAYER_PHOTO, handleImageError, getSafeImageSrc } from '../utils/imageUtils';
+import {
+  compressImage,
+  DEFAULT_PLAYER_PHOTO,
+  handleImageError,
+  getSafeImageSrc,
+  transformImageUrl,
+  OFFICIAL_SQUAD_PHOTO_URL,
+} from '../utils/imageUtils';
 
 interface TeamPhotoManagerProps {
   photoUrl?: string;
@@ -20,14 +23,13 @@ interface TeamPhotoManagerProps {
   caption?: string;
   currentCaption?: string;
   onUpdate: (photoUrl: string, caption: string) => void;
-  onRemove: () => void;
+  onRemove?: () => void;
   onRestoreDefault?: () => void;
   title?: string;
   description?: string;
 }
 
-const SAMPLE_TEAM_PHOTO = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80';
-const DEFAULT_CAPTION = '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
+const DEFAULT_CAPTION = 'Spring 2026 Phoenix Showcase Squad';
 
 export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
   photoUrl,
@@ -35,70 +37,67 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
   caption,
   currentCaption: propCurrentCaption,
   onUpdate,
-  onRemove,
-  onRestoreDefault,
   title = 'Official Squad Portrait & Team Photo',
-  description = 'Displayed in the squad showcase header banner above the roster and featured in the media archives.',
+  description = 'Change the squad photo using a local image file or an Imgur URL.',
 }) => {
-  const initialUrl = photoUrl ?? currentPhotoUrl ?? '';
-  const initialCaption = caption ?? propCurrentCaption ?? DEFAULT_CAPTION;
-  const [currentUrl, setCurrentUrl] = useState(initialUrl);
-  const [currentCaption, setCurrentCaption] = useState(initialCaption);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const resolvedInitialUrl = photoUrl ?? currentPhotoUrl ?? OFFICIAL_SQUAD_PHOTO_URL;
+  const resolvedInitialCaption = caption ?? propCurrentCaption ?? DEFAULT_CAPTION;
+
+  const [currentUrl, setCurrentUrl] = useState(resolvedInitialUrl);
+  // Only show http(s) URLs in the text box—never dump base64 data URLs into the text input
+  const [urlInput, setUrlInput] = useState(
+    resolvedInitialUrl.startsWith('data:') ? '' : resolvedInitialUrl
+  );
+  const [currentCaption, setCurrentCaption] = useState(resolvedInitialCaption);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync state if prop changes externally
   React.useEffect(() => {
-    setCurrentUrl(photoUrl ?? currentPhotoUrl ?? '');
+    const nextUrl = photoUrl ?? currentPhotoUrl ?? OFFICIAL_SQUAD_PHOTO_URL;
+    setCurrentUrl(nextUrl);
+    if (!nextUrl.startsWith('data:')) {
+      setUrlInput(nextUrl);
+    }
     setCurrentCaption(caption ?? propCurrentCaption ?? DEFAULT_CAPTION);
   }, [photoUrl, currentPhotoUrl, caption, propCurrentCaption]);
 
   const showToast = (msg: string) => {
     setFeedbackMsg(msg);
-    setTimeout(() => setFeedbackMsg(null), 3000);
+    setTimeout(() => setFeedbackMsg(null), 3500);
   };
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      showToast('⚠️ Please upload an image file (JPEG, PNG, WebP).');
+      showToast('Please select a valid image file (JPG, PNG, WebP).');
       return;
     }
 
     try {
-      showToast('Processing high-resolution squad photo...');
-      const compressedDataUrl = await compressImage(file);
+      showToast('Processing squad photo...');
+      const compressedDataUrl = await compressImage(file, 1600, 0.82);
       setCurrentUrl(compressedDataUrl);
+      setUrlInput('');
       onUpdate(compressedDataUrl, currentCaption);
-      showToast('✓ Squad photo uploaded successfully!');
+      showToast('✓ Squad photo updated from file!');
     } catch (e) {
       console.error(e);
-      showToast('⚠️ Failed to compress image.');
+      showToast('Failed to process image file.');
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+  const handleApplyImgurUrl = () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) {
+      showToast('Please enter an Imgur image URL.');
+      return;
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setCurrentUrl(val);
-    onUpdate(val, currentCaption);
+    const normalized = transformImageUrl(trimmed);
+    setCurrentUrl(normalized);
+    setUrlInput(normalized);
+    onUpdate(normalized, currentCaption);
+    showToast('✓ Squad photo updated from Imgur URL!');
   };
 
   const handleCaptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,26 +106,8 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
     onUpdate(currentUrl, val);
   };
 
-  const handleRemovePhoto = () => {
-    setCurrentUrl('');
-    onRemove();
-    showToast('✓ Squad photo removed.');
-  };
-
-  const handleRestoreSample = () => {
-    setCurrentUrl(SAMPLE_TEAM_PHOTO);
-    setCurrentCaption(DEFAULT_CAPTION);
-    if (onRestoreDefault) {
-      onRestoreDefault();
-    } else {
-      onUpdate(SAMPLE_TEAM_PHOTO, DEFAULT_CAPTION);
-    }
-    showToast('✓ Restored sample squad portrait.');
-  };
-
   return (
     <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2.5">
@@ -144,38 +125,37 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
         </div>
 
         {feedbackMsg && (
-          <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800/80 animate-in fade-in">
+          <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-800/80">
             {feedbackMsg}
           </span>
         )}
       </div>
 
-      {/* Main Preview & Dropzone */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
-        
+      {/* Main Preview & Simplified Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
         {/* Visual Live Preview Banner */}
-        <div className="md:col-span-7 flex flex-col justify-between">
+        <div className="md:col-span-7">
           <div className="relative aspect-[21/9] sm:aspect-[24/9] rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 group shadow-inner">
             {currentUrl ? (
               <>
                 <img
-                  src={getSafeImageSrc(currentUrl, SAMPLE_TEAM_PHOTO)}
+                  src={getSafeImageSrc(currentUrl, OFFICIAL_SQUAD_PHOTO_URL)}
                   alt={currentCaption}
                   onError={(e) => handleImageError(e, DEFAULT_PLAYER_PHOTO)}
                   className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                 
-                {/* Overlay Caption & Controls */}
+                {/* Overlay Caption & Fullscreen Preview */}
                 <div className="absolute bottom-2 inset-x-2 flex items-end justify-between gap-2">
-                  <span className="text-[11px] font-condensed font-black text-slate-900 dark:text-white truncate drop-shadow-md">
+                  <span className="text-[11px] font-condensed font-black text-white truncate drop-shadow-md">
                     {currentCaption}
                   </span>
 
                   <button
                     type="button"
                     onClick={() => setIsLightboxOpen(true)}
-                    className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-slate-900 dark:text-white text-xs border border-white/20 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white text-xs border border-white/20 transition-colors cursor-pointer"
                     title="View full-size photo"
                   >
                     <Maximize2 className="w-3.5 h-3.5 text-blue-400" />
@@ -185,67 +165,27 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-4 text-center">
                 <ImageIcon className="w-8 h-8 mb-1.5 opacity-40 text-slate-500 dark:text-slate-400" />
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">No squad photo currently assigned</span>
-                <span className="text-[10px] text-slate-600 mt-0.5">Upload a photo file or paste an image URL below</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">No squad photo selected</span>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+        {/* Option 1: File Picker & Option 2: Imgur URL */}
+        <div className="md:col-span-5 space-y-3.5">
+          {/* 1. File Picker */}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800">
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2">
+              Option 1: Upload from Computer
+            </label>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-condensed font-bold text-xs uppercase tracking-wider shadow transition-colors cursor-pointer"
             >
-              <Upload className="w-3.5 h-3.5" />
-              <span>{currentUrl ? 'Replace Photo File' : 'Upload Photo File'}</span>
+              <Upload className="w-4 h-4" />
+              <span>Choose Photo File</span>
             </button>
-
-            {currentUrl && (
-              <button
-                type="button"
-                onClick={handleRemovePhoto}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-slate-900 dark:hover:text-white font-condensed font-bold text-xs uppercase tracking-wider border border-red-800/80 transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Remove Photo</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleRestoreSample}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-condensed font-bold text-xs uppercase tracking-wider border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer ml-auto"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-blue-400" />
-              <span>Restore Sample</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Drag & Drop Upload Zone + Direct Inputs */}
-        <div className="md:col-span-5 flex flex-col justify-between space-y-3">
-          
-          {/* Drag & Drop Box */}
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-              isDragOver 
-                ? 'border-blue-500 bg-blue-950/40 text-blue-300 scale-[1.02]' 
-                : 'border-slate-300 dark:border-slate-700 hover:border-blue-500/80 bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-50 dark:bg-slate-950/80 text-slate-500 dark:text-slate-400'
-            }`}
-          >
-            <Upload className={`w-6 h-6 mb-1.5 transition-colors ${isDragOver ? 'text-blue-400' : 'text-slate-500'}`} />
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-              Drag & Drop squad photo here
-            </span>
-            <span className="text-[10px] text-slate-500 mt-0.5">
-              or click to browse from your computer (PNG, JPG, WebP)
-            </span>
             <input
               ref={fileInputRef}
               type="file"
@@ -254,41 +194,56 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleFile(file);
+                e.target.value = '';
               }}
             />
           </div>
 
-          {/* Direct URL Input */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Link2 className="w-3 h-3 text-blue-400" />
-              <span>Or Direct Web Image URL</span>
+          {/* 2. Imgur URL Input */}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800">
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+              <Link2 className="w-3.5 h-3.5 text-blue-400" />
+              <span>Option 2: Imgur Image URL</span>
             </label>
-            <input
-              type="url"
-              placeholder="https://images.unsplash.com/... or web image link"
-              value={currentUrl}
-              onChange={handleUrlChange}
-              className="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white font-mono text-xs focus:border-blue-500"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="url"
+                placeholder="https://i.imgur.com/BPz21Cf.jpeg"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleApplyImgurUrl();
+                  }
+                }}
+                className="flex-1 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={handleApplyImgurUrl}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-condensed font-bold text-xs uppercase tracking-wider cursor-pointer shrink-0 transition-colors"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Apply</span>
+              </button>
+            </div>
           </div>
 
           {/* Caption Input */}
           <div>
             <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">
-              Team Photo Caption / Title
+              Photo Caption
             </label>
             <input
               type="text"
-              placeholder="e.g., 2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff"
+              placeholder="e.g., Spring 2026 Phoenix Showcase Squad"
               value={currentCaption}
               onChange={handleCaptionChange}
               className="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-xs focus:border-blue-500"
             />
           </div>
-
         </div>
-
       </div>
 
       {/* High Res Lightbox Modal */}
@@ -315,7 +270,7 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
 
             <div className="relative aspect-video max-h-[75vh] overflow-auto bg-black flex items-center justify-center">
               <img
-                src={currentUrl}
+                src={getSafeImageSrc(currentUrl, OFFICIAL_SQUAD_PHOTO_URL)}
                 alt={currentCaption}
                 className="w-full h-full object-contain"
               />
@@ -334,7 +289,6 @@ export const TeamPhotoManager: React.FC<TeamPhotoManagerProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -27,7 +27,12 @@ import {
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
 import { enrichPlayersWithVerifiedSheet } from './utils/standingsCron';
-import { getOfficialImgurHeadshotForPlayer, isLegacyOrPlaceholderHeadshot } from './utils/imageUtils';
+import {
+  getOfficialImgurHeadshotForPlayer,
+  isLegacyOrPlaceholderHeadshot,
+  OFFICIAL_SQUAD_PHOTO_URL,
+  transformImageUrl,
+} from './utils/imageUtils';
 import {
   ECNL_DATA_API_URL,
   fetchLiveEcnlDataFromApi,
@@ -160,12 +165,22 @@ export default function App() {
                 const n = (p.name || '').toLowerCase();
                 return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
               });
+            let headshotsUpgraded = false;
             const hydrated = rawFirestore.map(p => {
               const defaultP = INITIAL_PLAYERS.find(
                 dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
               );
+              const officialImgur = getOfficialImgurHeadshotForPlayer(p.name || defaultP?.name, p.jerseyNumber || defaultP?.jerseyNumber);
               const cached = getLocalCachedPlayerPhoto(p.id);
-              const photoUrl = p.photoUrl || cached || defaultP?.photoUrl || '';
+              const photoUrl =
+                officialImgur ||
+                (!isLegacyOrPlaceholderHeadshot(p.photoUrl) ? p.photoUrl : '') ||
+                (!isLegacyOrPlaceholderHeadshot(cached) ? cached : '') ||
+                defaultP?.photoUrl ||
+                '';
+              if (photoUrl !== p.photoUrl) {
+                headshotsUpgraded = true;
+              }
               return {
                 ...defaultP,
                 ...p,
@@ -177,7 +192,7 @@ export default function App() {
             enriched.sort((a, b) => (a.jerseyNumber || 0) - (b.jerseyNumber || 0));
             setPlayers(enriched);
             try { localStorage.setItem('daf_team_players', JSON.stringify(enriched)); } catch {}
-            if (rosterEnriched) {
+            if (rosterEnriched || headshotsUpgraded) {
               const cleanPayload = sanitizeGlobalDocPayload({ players: enriched });
               setDoc(TEAM_DATA_DOC, cleanPayload, { merge: true }).catch(() => {});
             }
@@ -195,13 +210,29 @@ export default function App() {
             }
           }
           if (data.teamInfo) {
-            setTeamInfo((prev) => ({
+            const rawPhotoUrl = (data.teamInfo.teamPhotoUrl || '').trim();
+            const isLegacySquadPhoto =
+              !rawPhotoUrl ||
+              rawPhotoUrl.startsWith('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEU') ||
+              rawPhotoUrl.includes('images.unsplash.com');
+            const resolvedSquadPhotoUrl = isLegacySquadPhoto
+              ? OFFICIAL_SQUAD_PHOTO_URL
+              : transformImageUrl(rawPhotoUrl);
+            const upgradedTeamInfo: TeamInfo = {
               ...data.teamInfo,
+              teamPhotoUrl: resolvedSquadPhotoUrl,
+            };
+            setTeamInfo((prev) => ({
+              ...upgradedTeamInfo,
               // Preserve live seasonRecord & recentForm populated by the Google Apps Script API
-              seasonRecord: prev.seasonRecord || data.teamInfo.seasonRecord,
-              recentForm: prev.recentForm || data.teamInfo.recentForm,
-              recentFormStat: prev.recentFormStat || data.teamInfo.recentFormStat,
+              seasonRecord: prev.seasonRecord || upgradedTeamInfo.seasonRecord,
+              recentForm: prev.recentForm || upgradedTeamInfo.recentForm,
+              recentFormStat: prev.recentFormStat || upgradedTeamInfo.recentFormStat,
             }));
+            try { localStorage.setItem('daf_team_info', JSON.stringify(upgradedTeamInfo)); } catch {}
+            if (isLegacySquadPhoto || resolvedSquadPhotoUrl !== rawPhotoUrl) {
+              setDoc(TEAM_DATA_DOC, { teamInfo: upgradedTeamInfo }, { merge: true }).catch(() => {});
+            }
           }
           if (data.actionPhotos) setActionPhotos(data.actionPhotos);
           if (data.googlePhotosAlbums) setGooglePhotosAlbums(data.googlePhotosAlbums);
@@ -460,11 +491,15 @@ export default function App() {
   };
 
   const handleSaveTeamInfo = (updated: TeamInfo) => {
-    setTeamInfo(updated);
+    const normalized: TeamInfo = {
+      ...updated,
+      teamPhotoUrl: updated.teamPhotoUrl ? transformImageUrl(updated.teamPhotoUrl) : updated.teamPhotoUrl,
+    };
+    setTeamInfo(normalized);
     try {
-      localStorage.setItem('daf_team_info', JSON.stringify(updated));
+      localStorage.setItem('daf_team_info', JSON.stringify(normalized));
     } catch {}
-    setDoc(TEAM_DATA_DOC, { teamInfo: updated }, { merge: true }).catch((err) => {
+    setDoc(TEAM_DATA_DOC, { teamInfo: normalized }, { merge: true }).catch((err) => {
       console.warn("Notice: Firestore teamInfo save status:", err?.message || err);
     });
   };

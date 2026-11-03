@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Player, PositionCategory, TeamInfo } from '../types';
 import { PlayerCard } from './PlayerCard';
-import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO } from '../utils/imageUtils';
+import { getSafeImageSrc, handleImageError, DEFAULT_PLAYER_PHOTO, OFFICIAL_SQUAD_PHOTO_URL } from '../utils/imageUtils';
 import { getValidDocumentUrl } from '../utils/urlUtils';
 import { 
   Users, 
@@ -37,7 +37,9 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [isPhotoLightboxOpen, setIsPhotoLightboxOpen] = useState(false);
 
-  const teamPhotoUrl = teamInfo?.teamPhotoUrl;
+  const teamPhotoUrl = teamInfo?.teamPhotoUrl
+    ? getSafeImageSrc(teamInfo.teamPhotoUrl, OFFICIAL_SQUAD_PHOTO_URL)
+    : OFFICIAL_SQUAD_PHOTO_URL;
   const teamPhotoCaption = teamInfo?.teamPhotoCaption || '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
 
   // Available graduation classes

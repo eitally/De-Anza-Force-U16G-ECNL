@@ -31,29 +31,6 @@ export const MediaEditorTab: React.FC<MediaEditorTabProps> = ({
     showNotification('✓ Updated official squad photo!');
   };
 
-  const handleRemovePhoto = () => {
-    const updated = {
-      ...localInfo,
-      teamPhotoUrl: '',
-    };
-    setLocalInfo(updated);
-    onSaveTeamInfo(updated);
-    showNotification('✓ Removed team squad photo.');
-  };
-
-  const handleRestoreDefault = () => {
-    const defaultUrl = 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&auto=format&fit=crop&q=80';
-    const defaultCaption = '2026-2027 De Anza Force U16 ECNL Squad & Coaching Staff';
-    const updated = {
-      ...localInfo,
-      teamPhotoUrl: defaultUrl,
-      teamPhotoCaption: defaultCaption,
-    };
-    setLocalInfo(updated);
-    onSaveTeamInfo(updated);
-    showNotification('✓ Restored default squad photo.');
-  };
-
   return (
     <div className="space-y-6">
       <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/30 to-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
@@ -82,8 +59,6 @@ export const MediaEditorTab: React.FC<MediaEditorTabProps> = ({
           currentPhotoUrl={localInfo.teamPhotoUrl}
           currentCaption={localInfo.teamPhotoCaption}
           onUpdate={handleUpdatePhoto}
-          onRemove={handleRemovePhoto}
-          onRestoreDefault={handleRestoreDefault}
         />
       </div>
     </div>
