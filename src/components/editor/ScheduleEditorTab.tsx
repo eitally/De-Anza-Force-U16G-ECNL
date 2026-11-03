@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Match, MatchCompetition, MatchStatus } from '../../types';
 import { computeRecordAndFormFromMatches } from '../../utils/recordUtils';
+import { sortMatchesByDate } from '../../utils/ecnlApi';
 import { 
   Plus, 
   Trash2, 
@@ -31,13 +32,13 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
   onOpenSyncTab,
   onOpenEcnlSyncModal,
 }) => {
-  // Local working copy for editing
-  const [localMatches, setLocalMatches] = useState<Match[]>(matches);
+  // Local working copy for editing, sorted chronologically by calendar date
+  const [localMatches, setLocalMatches] = useState<Match[]>(() => sortMatchesByDate(matches));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Keep in sync when props change from outside
   React.useEffect(() => {
-    setLocalMatches(matches);
+    setLocalMatches(sortMatchesByDate(matches));
     setHasUnsavedChanges(false);
   }, [matches]);
 
@@ -85,7 +86,9 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
   };
 
   const handleSaveAllMatches = () => {
-    onSaveMatches(localMatches);
+    const sorted = sortMatchesByDate(localMatches);
+    setLocalMatches(sorted);
+    onSaveMatches(sorted);
     setHasUnsavedChanges(false);
     showNotification('✓ Match schedule saved to database successfully!');
   };
@@ -221,7 +224,7 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-condensed font-bold text-sm text-slate-900 dark:text-white">
-                  Match #{localMatches.length - index}: {m.opponent}
+                  Match #{index + 1} ({m.date}): {m.opponent}
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
                   m.status === 'completed' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :

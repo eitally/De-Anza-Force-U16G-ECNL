@@ -27,6 +27,7 @@ import {
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
 import { enrichPlayersWithVerifiedSheet } from './utils/standingsCron';
+import { getValidDocumentUrl } from './utils/urlUtils';
 import {
   getOfficialImgurHeadshotForPlayer,
   isLegacyOrPlaceholderHeadshot,
@@ -40,6 +41,7 @@ import {
   mapEcnlApiSchedule,
   selectNextFixtureMatch,
   buildTeamInfoFromLiveEcnl,
+  sortMatchesByDate,
 } from './utils/ecnlApi';
 import { DEFAULT_INSTAGRAM_POST, InstagramPostData } from './components/InstagramFeaturedPost';
 
@@ -95,13 +97,16 @@ export default function App() {
               (!isLegacyOrPlaceholderHeadshot(cached) ? cached : '') ||
               defaultP?.photoUrl ||
               '';
-            return {
-              ...defaultP,
-              ...p,
-              specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
-              photoUrl,
-            };
-          });
+              const validDoc = getValidDocumentUrl(p) || (defaultP ? getValidDocumentUrl(defaultP) : undefined);
+              return {
+                ...defaultP,
+                ...p,
+                specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
+                profilePdfUrl: validDoc || p.profilePdfUrl || defaultP?.profilePdfUrl || '',
+                profileDocUrl: validDoc || p.profileDocUrl || defaultP?.profileDocUrl || '',
+                photoUrl,
+              };
+            });
         }
       }
     } catch {}
@@ -109,7 +114,7 @@ export default function App() {
   });
 
   // Use hardcoded data as the initial fallback state while the live Google Apps Script fetch completes
-  const [matches, setMatches] = useState<Match[]>(INITIAL_MATCHES);
+  const [matches, setMatches] = useState<Match[]>(() => sortMatchesByDate(INITIAL_MATCHES));
   const [standings, setStandings] = useState<StandingTeam[]>(INITIAL_STANDINGS);
 
   const [coaches, setCoaches] = useState<Coach[]>(() => {
@@ -181,10 +186,13 @@ export default function App() {
               if (photoUrl !== p.photoUrl) {
                 headshotsUpgraded = true;
               }
+              const validDoc = getValidDocumentUrl(p) || (defaultP ? getValidDocumentUrl(defaultP) : undefined);
               return {
                 ...defaultP,
                 ...p,
                 photoUrl,
+                profilePdfUrl: validDoc || p.profilePdfUrl || defaultP?.profilePdfUrl || '',
+                profileDocUrl: validDoc || p.profileDocUrl || defaultP?.profileDocUrl || '',
                 specificPosition: p.specificPosition || defaultP?.specificPosition || p.primaryPosition,
               };
             });
@@ -310,10 +318,12 @@ export default function App() {
         }
 
         if (hasLiveSchedule) {
-          setMatches(liveMatches);
+          const sortedLiveMatches = sortMatchesByDate(liveMatches);
+          setMatches(sortedLiveMatches);
           try {
-            localStorage.setItem('daf_team_matches', JSON.stringify(liveMatches));
+            localStorage.setItem('daf_team_matches', JSON.stringify(sortedLiveMatches));
           } catch {}
+          setDoc(TEAM_DATA_DOC, { matches: sortedLiveMatches }, { merge: true }).catch(() => {});
         }
 
         setTeamInfo((prevInfo) => {
@@ -367,10 +377,15 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Deep-link to player profile modal from QR codes or shared URLs (?player=p1)
+  // Deep-link to player profile modal from QR codes or shared URLs (?player=p1 or /#roster?player=p1)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const playerId = params.get('player');
+    const searchParams = new URLSearchParams(window.location.search);
+    let playerId = searchParams.get('player');
+    if (!playerId && window.location.hash.includes('?')) {
+      const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+      const hashParams = new URLSearchParams(hashQuery);
+      playerId = hashParams.get('player');
+    }
     if (playerId && players.length > 0) {
       const match = players.find(p => p.id === playerId || String(p.jerseyNumber) === playerId);
       if (match) {
@@ -438,15 +453,16 @@ export default function App() {
 
   // Atomic Match Schedule Save (Consolidates matches + standings into 1 write)
   const handleSaveMatches = (updated: Match[]) => {
-    setMatches(updated);
+    const sorted = sortMatchesByDate(updated);
+    setMatches(sorted);
     try {
-      localStorage.setItem('daf_team_matches', JSON.stringify(updated));
+      localStorage.setItem('daf_team_matches', JSON.stringify(sorted));
     } catch {}
     
     // Automatically recalculate and sync De Anza Force standings and team season record
-    const computed = computeRecordAndFormFromMatches(updated);
+    const computed = computeRecordAndFormFromMatches(sorted);
     if (computed.completedMatchesCount > 0) {
-      const synced = syncStandingsAndTeamInfoWithMatches(updated, standings, teamInfo);
+      const synced = syncStandingsAndTeamInfoWithMatches(sorted, standings, teamInfo);
       setStandings(synced.updatedStandings);
       setTeamInfo(synced.updatedTeamInfo);
       try {
@@ -455,14 +471,14 @@ export default function App() {
       } catch {}
       // Single atomic write for matches + standings + teamInfo
       setDoc(TEAM_DATA_DOC, { 
-        matches: updated,
+        matches: sorted,
         standings: synced.updatedStandings, 
         teamInfo: synced.updatedTeamInfo 
       }, { merge: true }).catch((err) => {
         console.warn("Notice: Firestore matches & standings atomic save status:", err?.message || err);
       });
     } else {
-      setDoc(TEAM_DATA_DOC, { matches: updated }, { merge: true }).catch((err) => {
+      setDoc(TEAM_DATA_DOC, { matches: sorted }, { merge: true }).catch((err) => {
         console.warn("Notice: Firestore matches save status:", err?.message || err);
       });
     }
@@ -554,6 +570,7 @@ export default function App() {
     googlePhotosAlbums: GooglePhotosAlbum[];
     masterAlbumInfo: MasterAlbumInfo;
   }) => {
+    data.matches = sortMatchesByDate(data.matches);
     // Only recalculate De Anza Force from matches if there are actual completed matches recorded
     const computed = computeRecordAndFormFromMatches(data.matches);
     if (computed.completedMatchesCount > 0) {

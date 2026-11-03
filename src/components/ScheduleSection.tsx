@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Match, MatchStatus } from '../types';
+import { sortMatchesByDate, getMatchSortTimestamp } from '../utils/ecnlApi';
 import { 
   Calendar, 
   MapPin, 
@@ -67,10 +68,13 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
     }
   };
 
-  // Available unique months from match dates
+  // Always normalize and sort matches chronologically by calendar date
+  const sortedMatches = useMemo(() => sortMatchesByDate(matches || []), [matches]);
+
+  // Available unique months from match dates (in chronological order)
   const availableMonths = useMemo(() => {
     const months = new Set<string>();
-    (matches || []).forEach((m) => {
+    sortedMatches.forEach((m) => {
       const d = parseDateObj(m?.date);
       if (d) {
         const monthKey = d.toLocaleDateString('en-US', { month: 'short' });
@@ -78,10 +82,10 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
       }
     });
     return Array.from(months);
-  }, [matches]);
+  }, [sortedMatches]);
 
   const filteredMatches = useMemo(() => {
-    return (matches || [])
+    return sortedMatches
       .filter((m) => {
         if (!m) return false;
         // Status filter
@@ -95,12 +99,8 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
         }
         return true;
       })
-      .sort((a, b) => {
-        const timeA = parseDateObj(a?.date)?.getTime() || 0;
-        const timeB = parseDateObj(b?.date)?.getTime() || 0;
-        return timeA - timeB;
-      });
-  }, [matches, filter, selectedMonth]);
+      .sort((a, b) => getMatchSortTimestamp(a) - getMatchSortTimestamp(b));
+  }, [sortedMatches, filter, selectedMonth]);
 
   // Display limit when not expanded (6 matches initially for high vertical efficiency)
   const INITIAL_LIMIT = 6;

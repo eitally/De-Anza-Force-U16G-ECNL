@@ -1,6 +1,6 @@
 import type { Player, StandingTeam, TeamInfo } from '../types';
 import { normalizeGoogleSheetUrl, parseStandingsCSV, parseRosterCSV, type StandingsParseResult } from './csvSync';
-import { getValidInstagramUrl, getValidVideoUrl } from './urlUtils';
+import { getValidDocumentUrl, getValidInstagramUrl, getValidVideoUrl } from './urlUtils';
 import { getOfficialImgurHeadshotForPlayer, isLegacyOrPlaceholderHeadshot } from './imageUtils';
 
 /**
@@ -215,8 +215,11 @@ export function enrichPlayersWithVerifiedSheet(existingPlayers: Player[]): {
       .replace(/[’‘]/g, "'")
       .replace(/[“”]/g, '"')
       .replace(/^([456])"(\d{1,2})"?$/, "$1'$2\"");
-    const cleanVideo = getValidVideoUrl(p.highlightsUrl) || sheetPlayer?.highlightsUrl || '';
-    const cleanIg = getValidInstagramUrl(p.instagram) || sheetPlayer?.instagram || '';
+    const cleanVideo = getValidVideoUrl(p.highlightsUrl) || (sheetPlayer ? getValidVideoUrl(sheetPlayer.highlightsUrl) : '') || '';
+    const cleanIg = getValidInstagramUrl(p.instagram) || (sheetPlayer ? getValidInstagramUrl(sheetPlayer.instagram) : '') || '';
+    const validDoc = getValidDocumentUrl(p) || (sheetPlayer ? getValidDocumentUrl(sheetPlayer) : undefined);
+    const nextProfilePdfUrl = validDoc || p.profilePdfUrl || sheetPlayer?.profilePdfUrl || '';
+    const nextProfileDocUrl = validDoc || p.profileDocUrl || sheetPlayer?.profileDocUrl || '';
     const phone = p.phone || sheetPlayer?.phone || '';
 
     const officialImgurUrl = getOfficialImgurHeadshotForPlayer(p.name, p.jerseyNumber);
@@ -229,6 +232,8 @@ export function enrichPlayersWithVerifiedSheet(existingPlayers: Player[]): {
       cleanHeight !== p.height ||
       cleanVideo !== (p.highlightsUrl || '') ||
       cleanIg !== (p.instagram || '') ||
+      nextProfilePdfUrl !== (p.profilePdfUrl || '') ||
+      nextProfileDocUrl !== (p.profileDocUrl || '') ||
       (phone && phone !== (p.phone || '')) ||
       nextPhotoUrl !== p.photoUrl
     ) {
@@ -239,6 +244,8 @@ export function enrichPlayersWithVerifiedSheet(existingPlayers: Player[]): {
         phone,
         highlightsUrl: cleanVideo,
         instagram: cleanIg,
+        profilePdfUrl: nextProfilePdfUrl,
+        profileDocUrl: nextProfileDocUrl,
         photoUrl: nextPhotoUrl,
       };
     }

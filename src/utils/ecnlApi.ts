@@ -84,7 +84,7 @@ function parseFloatSafe(val: string, fallback = 0): number {
 }
 
 /**
- * Normalizes dates like "Aug 22, 2026", "2026-08-22", or ISO strings to "YYYY-MM-DD"
+ * Normalizes dates like "Aug 22, 2026", "11/07/26", "2026-08-22", or ISO strings to "YYYY-MM-DD"
  * so sorting, month tabs, and calendar exports work consistently.
  */
 export function normalizeMatchDateString(rawDate: string): string {
@@ -92,6 +92,16 @@ export function normalizeMatchDateString(rawDate: string): string {
   if (!trimmed) return '';
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
     return trimmed;
+  }
+
+  // Handle MM/DD/YY or MM/DD/YYYY explicitly so 2-digit years map to 20YY
+  const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slashMatch) {
+    const month = slashMatch[1].padStart(2, '0');
+    const day = slashMatch[2].padStart(2, '0');
+    const yearRaw = slashMatch[3];
+    const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
+    return `${year}-${month}-${day}`;
   }
 
   const parsed = new Date(trimmed);
@@ -103,6 +113,64 @@ export function normalizeMatchDateString(rawDate: string): string {
   }
 
   return trimmed;
+}
+
+/**
+ * Converts a match's date (and optional kickoff time) into a numeric timestamp for chronological sorting.
+ */
+export function getMatchSortTimestamp(match?: Partial<Match> | null): number {
+  if (!match || !match.date) return Number.MAX_SAFE_INTEGER;
+  const isoDate = normalizeMatchDateString(match.date);
+  const baseDate = /^\d{4}-\d{2}-\d{2}$/.test(isoDate)
+    ? new Date(`${isoDate}T00:00:00`)
+    : new Date(isoDate);
+  const baseTime = baseDate.getTime();
+  if (Number.isNaN(baseTime)) return Number.MAX_SAFE_INTEGER;
+
+  // Optional tie-breaker using kickoff time (e.g. "01:00 PM PST")
+  let minutesOffset = 0;
+  if (match.time) {
+    const timeMatch = match.time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (timeMatch) {
+      let hours = Number.parseInt(timeMatch[1], 10);
+      const mins = Number.parseInt(timeMatch[2], 10) || 0;
+      const meridiem = (timeMatch[3] || '').toUpperCase();
+      if (meridiem === 'PM' && hours < 12) hours += 12;
+      if (meridiem === 'AM' && hours === 12) hours = 0;
+      minutesOffset = hours * 60 + mins;
+    }
+  }
+
+  return baseTime + minutesOffset * 60 * 1000;
+}
+
+/**
+ * Normalizes known rescheduled fixtures (such as GM# 1094723 at Santa Rosa United moved to March 2027)
+ * and sorts the entire match schedule strictly by calendar date ascending (never by GM# / match number).
+ */
+export function sortMatchesByDate(matches: Match[]): Match[] {
+  if (!Array.isArray(matches)) return [];
+
+  const normalized = matches
+    .filter((m): m is Match => Boolean(m))
+    .map((m) => {
+      let cleanDate = normalizeMatchDateString(m.date);
+      const isSantaRosaAwayRescheduled =
+        (m.id === 'm1094723' || m.id === '1094723' || (!m.isHome && /santa\s*rosa/i.test(m.opponent || ''))) &&
+        m.status !== 'completed' &&
+        cleanDate.startsWith('2026-10');
+
+      if (isSantaRosaAwayRescheduled) {
+        cleanDate = '2027-03-27';
+      }
+
+      return {
+        ...m,
+        date: cleanDate || m.date,
+      };
+    });
+
+  return [...normalized].sort((a, b) => getMatchSortTimestamp(a) - getMatchSortTimestamp(b));
 }
 
 /**
@@ -199,7 +267,7 @@ export function mapEcnlApiSchedule(
   fallbackMatches: Match[]
 ): Match[] {
   if (!Array.isArray(rawSchedule) || rawSchedule.length === 0) {
-    return fallbackMatches;
+    return sortMatchesByDate(fallbackMatches);
   }
 
   const mapped: Match[] = rawSchedule
@@ -208,7 +276,7 @@ export function mapEcnlApiSchedule(
 
       const gmNum = getField(row, 'GM#', 'GM', 'GAME#', 'ID', 'MATCH ID');
       const rawDate = getField(row, 'DATE', 'MATCH DATE');
-      const normalizedDate = normalizeMatchDateString(rawDate);
+      let normalizedDate = normalizeMatchDateString(rawDate);
       const time = getField(row, 'TIME', 'KICKOFF') || 'TBD';
       const competition = (getField(row, 'COMPETITION', 'LEAGUE') ||
         'ECNL Northern California') as MatchCompetition;
@@ -278,7 +346,7 @@ export function mapEcnlApiSchedule(
         statusRaw === 'completed' ||
         statusRaw === 'final' ||
         statusRaw === 'ft' ||
-        (( resultRaw === 'W' || resultRaw === 'D' || resultRaw === 'L') &&
+        ((resultRaw === 'W' || resultRaw === 'D' || resultRaw === 'L') &&
           teamScore !== undefined &&
           opponentScore !== undefined)
       ) {
@@ -287,6 +355,16 @@ export function mapEcnlApiSchedule(
         status = 'live';
       } else {
         status = 'upcoming';
+      }
+
+      // If GM# 1094723 (Away at Santa Rosa United) still reports its pre-reschedule Oct 2026 date while unplayed,
+      // place it in March 2027 where it was rescheduled.
+      if (
+        (matchId === 'm1094723' || (!isHome && /santa\s*rosa/i.test(opponent))) &&
+        status !== 'completed' &&
+        normalizedDate.startsWith('2026-10')
+      ) {
+        normalizedDate = '2027-03-27';
       }
 
       const address =
@@ -323,38 +401,51 @@ export function mapEcnlApiSchedule(
     .filter((item): item is Match => item !== null);
 
   if (mapped.length === 0) {
-    return fallbackMatches;
+    return sortMatchesByDate(fallbackMatches);
   }
 
-  return mapped.sort((a, b) => {
-    const tA = a.date ? new Date(`${a.date}T00:00:00`).getTime() || 0 : 0;
-    const tB = b.date ? new Date(`${b.date}T00:00:00`).getTime() || 0 : 0;
-    return tA - tB;
-  });
+  return sortMatchesByDate(mapped);
 }
 
 /**
  * Selects the Next Fixture Spotlight match from the schedule.
- * Prioritizes the earliest upcoming match on or after today, or the first upcoming match.
+ * Always orders matches chronologically by calendar date and selects the earliest upcoming match
+ * after the latest completed match date (and on or after today).
  */
 export function selectNextFixtureMatch(matches: Match[]): Match | undefined {
   if (!Array.isArray(matches) || matches.length === 0) return undefined;
 
-  const upcoming = matches.filter((m) => m && (m.status === 'upcoming' || m.status === 'live'));
+  const sorted = sortMatchesByDate(matches);
+
+  const liveMatch = sorted.find((m) => m.status === 'live');
+  if (liveMatch) return liveMatch;
+
+  const upcoming = sorted.filter((m) => m.status === 'upcoming');
   if (upcoming.length > 0) {
     const now = new Date();
     const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
       now.getDate()
     ).padStart(2, '0')}`;
 
-    const futureUpcoming = upcoming.filter((m) => m.date >= todayIso);
+    // Also find the latest completed match date so any unplayed past-date match
+    // earlier than the most recently completed fixture is never treated as the next upcoming match.
+    const completedDates = sorted
+      .filter((m) => m.status === 'completed' && /^\d{4}-\d{2}-\d{2}$/.test(m.date))
+      .map((m) => m.date);
+    const latestCompletedIso =
+      completedDates.length > 0 ? completedDates[completedDates.length - 1] : '';
+
+    const effectiveCutoffIso =
+      latestCompletedIso && latestCompletedIso > todayIso ? latestCompletedIso : todayIso;
+
+    const futureUpcoming = upcoming.filter((m) => m.date >= effectiveCutoffIso);
     if (futureUpcoming.length > 0) {
       return futureUpcoming[0];
     }
     return upcoming[0];
   }
 
-  return matches[matches.length - 1] || matches[0];
+  return sorted[sorted.length - 1] || sorted[0];
 }
 
 /**

@@ -96,7 +96,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { label: 'Roster', href: '#roster', icon: Users, badge: `${playerCount}` },
     { label: 'Schedule', href: '#schedule', icon: Calendar },
     { label: 'Standings', href: '#standings', icon: Trophy },
-    { label: 'Recruiting Hub', href: '#recruiting', icon: GraduationCap },
     { label: 'Staff', href: '#staff', icon: ShieldCheck },
   ];
 

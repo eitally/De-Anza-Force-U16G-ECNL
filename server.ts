@@ -531,23 +531,99 @@ If any updated scores or standings are present in the snippet below, extract the
     return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
   }
 
+  function toGoogleSheetHtmlExportUrl(rawUrl: string): string | null {
+    const trimmed = (rawUrl || '').trim();
+    if (!trimmed.includes('docs.google.com/spreadsheets')) return null;
+    const idMatch = trimmed.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!idMatch || !idMatch[1]) return null;
+    const sheetId = idMatch[1];
+    const gidMatch = trimmed.match(/[#&?]gid=([0-9]+)/);
+    const gid = gidMatch && gidMatch[1] ? gidMatch[1] : '0';
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=html&gid=${gid}`;
+  }
+
+  function unwrapGoogleRedirectUrl(rawHref: string): string {
+    const decoded = rawHref
+      .replace(/&amp;/g, '&')
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .trim();
+    try {
+      const u = new URL(decoded);
+      if ((u.hostname === 'www.google.com' || u.hostname === 'google.com') && u.pathname === '/url') {
+        const q = u.searchParams.get('q') || u.searchParams.get('url');
+        if (q) return q;
+      }
+    } catch {}
+    return decoded;
+  }
+
   async function fetchGoogleSheetCsvServerSide(sheetUrl: string): Promise<string> {
     const exportUrl = toGoogleSheetCsvExportUrl(sheetUrl);
-    const response = await fetch(exportUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; DeAnzaForceECNLSync/1.0)',
-        Accept: 'text/csv,text/plain,*/*',
-      },
-    });
+    const htmlExportUrl = toGoogleSheetHtmlExportUrl(sheetUrl);
+    const [response, htmlResponse] = await Promise.all([
+      fetch(exportUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; DeAnzaForceECNLSync/1.0)',
+          Accept: 'text/csv,text/plain,*/*',
+        },
+      }),
+      htmlExportUrl
+        ? fetch(htmlExportUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; DeAnzaForceECNLSync/1.0)',
+              Accept: 'text/html,*/*',
+            },
+          }).catch(() => null)
+        : Promise.resolve(null),
+    ]);
     if (!response.ok) {
       throw new Error(`Google Sheet fetch returned HTTP ${response.status}`);
     }
-    const text = await response.text();
+    let text = await response.text();
     if (text.trim().startsWith('<!DOCTYPE html>') || text.includes('<html')) {
       throw new Error(
         'Google Sheet returned an HTML sign-in page instead of CSV. Set Google Sheet access to "Anyone with the link can view".'
       );
     }
+
+    // If HTML export succeeded, extract rich-text cell hyperlinks (<a href="...">Label</a>)
+    // and replace matching cell display labels in the CSV with their actual underlying URLs.
+    if (htmlResponse && htmlResponse.ok) {
+      try {
+        const html = await htmlResponse.text();
+        const linkRegex = /<a\b[^>]*?\bhref="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+        const labelToUrl = new Map<string, string>();
+        let match: RegExpExecArray | null;
+        while ((match = linkRegex.exec(html)) !== null) {
+          const href = unwrapGoogleRedirectUrl(match[1]);
+          const label = match[2]
+            .replace(/<[^>]+>/g, '')
+            .replace(/&amp;/g, '&')
+            .replace(/&#39;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/&nbsp;/g, ' ')
+            .trim();
+          if (
+            label &&
+            href &&
+            (href.startsWith('http://') || href.startsWith('https://')) &&
+            label !== href
+          ) {
+            labelToUrl.set(label, href);
+          }
+        }
+        if (labelToUrl.size > 0) {
+          for (const [label, href] of labelToUrl.entries()) {
+            const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            text = text.replace(new RegExp(`(,|^)"?${escaped}"?(?=,|\\r?\\n|$)`, 'gm'), `$1${href}`);
+          }
+        }
+      } catch {
+        // Ignore HTML hyperlink enrichment errors and return standard CSV
+      }
+    }
+
     return text;
   }
 

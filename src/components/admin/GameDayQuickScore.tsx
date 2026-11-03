@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Match, StandingTeam, TeamInfo } from '../../types';
 import { syncStandingsAndTeamInfoWithMatches } from '../../utils/recordUtils';
+import { selectNextFixtureMatch } from '../../utils/ecnlApi';
 import { 
   Zap, 
   Trophy, 
@@ -31,10 +32,15 @@ export const GameDayQuickScore: React.FC<GameDayQuickScoreProps> = ({
   onSaveTeamInfo,
   showNotification,
 }) => {
-  // Default to the first upcoming or live match, or the most recent match
+  // Default to the next chronological upcoming or live match
   const defaultMatchIndex = () => {
     const liveIdx = matches.findIndex(m => m.status === 'live');
     if (liveIdx !== -1) return liveIdx;
+    const nextFixture = selectNextFixtureMatch(matches);
+    if (nextFixture) {
+      const nextIdx = matches.findIndex(m => m.id === nextFixture.id);
+      if (nextIdx !== -1) return nextIdx;
+    }
     const upcomingIdx = matches.findIndex(m => m.status === 'upcoming');
     if (upcomingIdx !== -1) return upcomingIdx;
     return 0;

@@ -104,11 +104,9 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   // Single Player Card matching bifold specifications
   const renderPlayerCard = (player: Player) => {
     const validDocUrl = getValidDocumentUrl(player);
-    const profileUrl = validDocUrl || player.highlightsUrl || '#';
-    const qrTarget =
-      validDocUrl ||
-      player.highlightsUrl ||
-      (typeof window !== 'undefined' ? `${window.location.origin}/#roster?player=${player.id}` : 'https://www.deanzaforce2011g.com/');
+    const fallbackModalUrl = `https://www.deanzaforce2011g.com/?player=${encodeURIComponent(String(player.jerseyNumber || player.id))}#roster`;
+    const qrTarget = validDocUrl || fallbackModalUrl;
+    const profileUrl = validDocUrl || fallbackModalUrl;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;
     const position = getPlayerPosition(player);
     const gpaDisplay = player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' && player.gpa.toLowerCase() !== 'n/a' ? player.gpa : 'NA';
@@ -126,64 +124,67 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
     return (
       <div 
         key={player.id}
-        className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-1.5 print:p-1 transition-all hover:border-slate-300 print:shadow-none print:border-slate-300 h-full min-h-0"
+        className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative px-1.5 pb-1.5 pt-0 print:px-1 print:pb-1 print:pt-0 transition-all hover:border-slate-300 print:shadow-none print:border-slate-300 h-full min-h-0"
       >
-        {/* Top Header Row: #Jersey Number on left + QR code on right */}
-        <div className="flex items-start justify-between z-10 shrink-0">
-          <span className="font-sans font-black text-lg sm:text-xl print:text-base text-slate-950 leading-none select-none tracking-tight">
-            #{player.jerseyNumber}
-          </span>
-          
-          <a
-            href={profileUrl !== '#' ? profileUrl : undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`Scan or click to view ${player.name}'s profile flyer`}
-            className="shrink-0 group/qr"
-          >
-            <img
-              src={qrCodeUrl}
-              alt={`QR code for ${player.name}`}
-              className="w-8 h-8 sm:w-8.5 sm:h-8.5 print:w-7.5 print:h-7.5 border border-slate-300 rounded bg-white p-0.5 shadow-xs group-hover/qr:scale-105 transition-transform"
-              loading="lazy"
-            />
-          </a>
-        </div>
-
-        {/* Center: Large Centered Headshot (NO frame, fade to white at bottom) */}
-        <div className="relative -mt-3 sm:-mt-3.5 flex items-center justify-center my-auto">
-          {hasHeadshot ? (
-            <div className="relative w-20 h-20 sm:w-[82px] sm:h-[82px] print:w-[76px] print:h-[76px] flex items-center justify-center overflow-hidden">
+        {/* Upper Region: Top-Aligned Enlarged Headshot + Overlaid #Jersey & QR Code */}
+        <div className="relative flex-1 w-full min-h-[96px] sm:min-h-[104px] print:min-h-[94px]">
+          {/* Top Header Row: #Jersey Number on left + QR code on right */}
+          <div className="relative z-10 flex items-start justify-between pt-1.5 print:pt-1 pointer-events-none">
+            <span className="font-sans font-black text-lg sm:text-xl print:text-base text-slate-950 leading-none select-none tracking-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+              #{player.jerseyNumber}
+            </span>
+            
+            <a
+              href={profileUrl !== '#' ? profileUrl : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Scan or click to view ${player.name}'s profile flyer`}
+              className="shrink-0 group/qr pointer-events-auto"
+            >
               <img
-                src={playerPhoto}
-                alt={player.name}
-                className="w-full h-full object-cover object-top select-none pointer-events-none"
+                src={qrCodeUrl}
+                alt={`QR code for ${player.name}`}
+                className="w-8 h-8 sm:w-8.5 sm:h-8.5 print:w-7.5 print:h-7.5 border border-slate-300 rounded bg-white p-0.5 shadow-xs group-hover/qr:scale-105 transition-transform"
                 loading="lazy"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  if (target.parentElement) {
-                    target.parentElement.className = 'w-16 h-16 flex items-center justify-center p-0.5';
-                  }
-                }}
               />
-              {/* Soft fade to white at bottom */}
-              <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
-            </div>
-          ) : (
-            /* Clean De Anza Force Logo (NO frame, centered) */
-            <div className="w-16 h-16 sm:w-18 sm:h-18 print:w-15 print:h-15 flex items-center justify-center p-0.5">
-              <img 
-                src="/logo.png" 
-                alt="De Anza Force" 
-                className="w-full h-full object-contain pointer-events-none select-none border-0 shadow-none" 
-              />
-            </div>
-          )}
+            </a>
+          </div>
+
+          {/* Top-Aligned Enlarged Centered Headshot (Flush with Top of Box, NO frame, fade to white at bottom) */}
+          <div className="absolute inset-x-0 top-0 flex items-start justify-center pointer-events-none">
+            {hasHeadshot ? (
+              <div className="relative w-24 h-24 sm:w-[104px] sm:h-[104px] print:w-[94px] print:h-[94px] flex items-start justify-center overflow-hidden">
+                <img
+                  src={playerPhoto}
+                  alt={player.name}
+                  className="w-full h-full object-cover object-top select-none pointer-events-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    if (target.parentElement) {
+                      target.parentElement.className = 'w-20 h-20 flex items-center justify-center p-1 mt-1';
+                    }
+                  }}
+                />
+                {/* Soft fade to white at bottom */}
+                <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
+              </div>
+            ) : (
+              /* Clean De Anza Force Logo (NO frame, centered) */
+              <div className="w-20 h-20 sm:w-22 sm:h-22 print:w-18 print:h-18 flex items-center justify-center p-1 mt-1">
+                <img 
+                  src="/logo.png" 
+                  alt="De Anza Force" 
+                  className="w-full h-full object-contain pointer-events-none select-none border-0 shadow-none" 
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Bottom Section: Text Moved Down (No Email, Multi-line Name Support, Larger Font Sizes) */}
-        <div className="text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
+        <div className="relative z-10 text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
           <h4
             className={`font-sans font-black uppercase text-slate-950 leading-[1.08] whitespace-normal break-words px-0.5 ${
               player.name.length > 16 || player.name.split(/\s+/).some(w => w.length > 11)
