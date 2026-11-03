@@ -27,6 +27,7 @@ import {
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
 import { enrichPlayersWithVerifiedSheet } from './utils/standingsCron';
+import { getOfficialImgurHeadshotForPlayer, isLegacyOrPlaceholderHeadshot } from './utils/imageUtils';
 import {
   ECNL_DATA_API_URL,
   fetchLiveEcnlDataFromApi,
@@ -81,8 +82,14 @@ export default function App() {
             const defaultP = INITIAL_PLAYERS.find(
               dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
             );
+            const officialImgur = getOfficialImgurHeadshotForPlayer(p.name || defaultP?.name, p.jerseyNumber || defaultP?.jerseyNumber);
             const cached = getLocalCachedPlayerPhoto(p.id);
-            const photoUrl = p.photoUrl || cached || defaultP?.photoUrl || '';
+            const photoUrl =
+              officialImgur ||
+              (!isLegacyOrPlaceholderHeadshot(p.photoUrl) ? p.photoUrl : '') ||
+              (!isLegacyOrPlaceholderHeadshot(cached) ? cached : '') ||
+              defaultP?.photoUrl ||
+              '';
             return {
               ...defaultP,
               ...p,
@@ -218,9 +225,15 @@ export default function App() {
         setPlayers((currentPlayers) => {
           let changed = false;
           const merged = currentPlayers.map((p) => {
-            if (photosMap[p.id] && photosMap[p.id] !== p.photoUrl) {
+            const customPhoto = photosMap[p.id];
+            if (
+              customPhoto &&
+              !isLegacyOrPlaceholderHeadshot(customPhoto) &&
+              customPhoto !== p.photoUrl &&
+              !getOfficialImgurHeadshotForPlayer(p.name, p.jerseyNumber)
+            ) {
               changed = true;
-              return { ...p, photoUrl: photosMap[p.id] };
+              return { ...p, photoUrl: customPhoto };
             }
             return p;
           });

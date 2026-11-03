@@ -1,18 +1,23 @@
 import Papa from 'papaparse';
 import type { Player, Match, StandingTeam, PositionCategory, MatchCompetition, MatchStatus } from '../types';
-import { DEFAULT_PLAYER_PHOTO, IMGUR_HEADSHOTS } from './imageUtils';
+import { DEFAULT_PLAYER_PHOTO, getOfficialImgurHeadshotForPlayer, isLegacyOrPlaceholderHeadshot } from './imageUtils';
 import { getValidVideoUrl, getValidInstagramUrl } from './urlUtils';
 
-function resolvePlayerPhoto(name: string, photoFromCsv?: string, existingPhoto?: string): string {
-  if (photoFromCsv && (photoFromCsv.startsWith('http://') || photoFromCsv.startsWith('https://') || photoFromCsv.startsWith('data:')) && !photoFromCsv.includes('photos.app.goo.gl')) {
+function resolvePlayerPhoto(name: string, photoFromCsv?: string, existingPhoto?: string, jerseyNumber?: number): string {
+  if (
+    photoFromCsv &&
+    (photoFromCsv.startsWith('http://') || photoFromCsv.startsWith('https://') || photoFromCsv.startsWith('data:')) &&
+    !photoFromCsv.includes('photos.app.goo.gl') &&
+    !isLegacyOrPlaceholderHeadshot(photoFromCsv)
+  ) {
     return photoFromCsv;
   }
-  if (existingPhoto && existingPhoto !== DEFAULT_PLAYER_PHOTO && existingPhoto.trim() !== '') {
+  if (existingPhoto && !isLegacyOrPlaceholderHeadshot(existingPhoto)) {
     return existingPhoto;
   }
-  const firstName = (name || '').split(' ')[0].toLowerCase().trim();
-  if (IMGUR_HEADSHOTS[firstName]) {
-    return IMGUR_HEADSHOTS[firstName].url;
+  const officialImgur = getOfficialImgurHeadshotForPlayer(name, jerseyNumber);
+  if (officialImgur) {
+    return officialImgur;
   }
   return existingPhoto || DEFAULT_PLAYER_PHOTO;
 }

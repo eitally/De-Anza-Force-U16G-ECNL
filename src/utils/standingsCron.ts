@@ -1,6 +1,7 @@
 import type { Player, StandingTeam, TeamInfo } from '../types';
 import { normalizeGoogleSheetUrl, parseStandingsCSV, parseRosterCSV, type StandingsParseResult } from './csvSync';
 import { getValidInstagramUrl, getValidVideoUrl } from './urlUtils';
+import { getOfficialImgurHeadshotForPlayer, isLegacyOrPlaceholderHeadshot } from './imageUtils';
 
 /**
  * Returns the Date object corresponding to the most recent Sunday at 9:00 PM Pacific Time (America/Los_Angeles),
@@ -218,11 +219,18 @@ export function enrichPlayersWithVerifiedSheet(existingPlayers: Player[]): {
     const cleanIg = getValidInstagramUrl(p.instagram) || sheetPlayer?.instagram || '';
     const phone = p.phone || sheetPlayer?.phone || '';
 
+    const officialImgurUrl = getOfficialImgurHeadshotForPlayer(p.name, p.jerseyNumber);
+    const nextPhotoUrl =
+      officialImgurUrl && (isLegacyOrPlaceholderHeadshot(p.photoUrl) || p.photoUrl !== officialImgurUrl)
+        ? officialImgurUrl
+        : p.photoUrl;
+
     if (
       cleanHeight !== p.height ||
       cleanVideo !== (p.highlightsUrl || '') ||
       cleanIg !== (p.instagram || '') ||
-      (phone && phone !== (p.phone || ''))
+      (phone && phone !== (p.phone || '')) ||
+      nextPhotoUrl !== p.photoUrl
     ) {
       changed = true;
       return {
@@ -231,6 +239,7 @@ export function enrichPlayersWithVerifiedSheet(existingPlayers: Player[]): {
         phone,
         highlightsUrl: cleanVideo,
         instagram: cleanIg,
+        photoUrl: nextPhotoUrl,
       };
     }
     return p;

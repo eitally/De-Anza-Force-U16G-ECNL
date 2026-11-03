@@ -10,106 +10,236 @@ export const DEFAULT_PLAYER_PHOTO = CLUB_LOGO_URL;
 export const DEFAULT_COACH_PHOTO = 'https://i.imgur.com/iNiPnJD.jpeg'; // Coach Yuta Nomura from album or default
 
 /**
- * Official Player Headshots from the verified Imgur Album: https://imgur.com/a/hmNIg8Y
- * Keyed by lowercase first name / nickname matching the filename in the album.
+ * Official Player Headshots from the updated Imgur Album: https://imgur.com/a/Gc4jn5p
  */
-export const IMGUR_HEADSHOTS: Record<string, { filename: string; url: string; firstName: string }> = {
-  amaya: {
-    filename: 'amaya.jpg',
-    url: 'https://i.imgur.com/9bM3Tr1.jpeg',
-    firstName: 'Amaya',
-  },
-  breeze: {
-    filename: 'breeze.jpg',
-    url: 'https://i.imgur.com/CBROqa4.jpeg',
-    firstName: 'Breeze',
+export const IMGUR_HEADSHOTS: Record<string, { filename: string; url: string; firstName: string; fullName?: string; jerseyNumber?: number }> = {
+  ava: {
+    filename: 'DSC03342_DxO-2.jpg',
+    url: 'https://i.imgur.com/udRJFZp.jpeg',
+    firstName: 'Ava',
+    fullName: 'Ava Golshan',
+    jerseyNumber: 0,
   },
   eliot: {
-    filename: 'eliot.jpg',
-    url: 'https://i.imgur.com/BgA9tkV.jpeg',
+    filename: '1_eliot_headshot.jpg',
+    url: 'https://i.imgur.com/zGthYBx.jpeg',
     firstName: 'Eliot',
-  },
-  elise: {
-    filename: 'elise.jpg',
-    url: 'https://i.imgur.com/FAqbkxw.jpeg',
-    firstName: 'Elise',
-  },
-  ellie: {
-    filename: 'ellie.jpg',
-    url: 'https://i.imgur.com/F9OMlVL.jpeg',
-    firstName: 'Ellie',
-  },
-  emma: {
-    filename: 'emma.jpg',
-    url: 'https://i.imgur.com/2leh7W5.jpeg',
-    firstName: 'Emma',
+    fullName: 'Eliot Kline',
+    jerseyNumber: 1,
   },
   faith: {
-    filename: 'faith.jpg',
-    url: 'https://i.imgur.com/mDWC2cz.jpeg',
+    filename: '3_faith_headshot.jpg',
+    url: 'https://i.imgur.com/Tjje6ZO.jpeg',
     firstName: 'Faith',
+    fullName: 'Faith Vrionis',
+    jerseyNumber: 3,
   },
-  isabella: {
-    filename: 'isabella.jpg',
-    url: 'https://i.imgur.com/z82Kr8e.jpeg',
-    firstName: 'Isabella',
+  isabella_guillebeaux: {
+    filename: '4_isabella_guillebeaux_headshot.jpg',
+    url: 'https://i.imgur.com/84iAcYm.jpeg',
+    firstName: 'Isabella (#4)',
+    fullName: 'Isabella Guillebeaux',
+    jerseyNumber: 4,
   },
-  kayla: {
-    filename: 'kayla.jpg',
-    url: 'https://i.imgur.com/FCXUDDf.jpeg',
-    firstName: 'Kayla',
+  breeze: {
+    filename: '5_breeze_headshot.jpg',
+    url: 'https://i.imgur.com/PleqXfZ.jpeg',
+    firstName: 'Breeze',
+    fullName: 'Breeze Longhenry',
+    jerseyNumber: 5,
   },
-  mack: {
-    filename: 'mack.jpg',
-    url: 'https://i.imgur.com/mEo0r5F.jpeg',
-    firstName: 'Mack (Camille)',
-  },
-  camille: {
-    filename: 'mack.jpg',
-    url: 'https://i.imgur.com/mEo0r5F.jpeg',
-    firstName: 'Camille',
-  },
-  marley: {
-    filename: 'marley.jpg',
-    url: 'https://i.imgur.com/OWHGLWq.jpeg',
-    firstName: 'Marley',
-  },
-  mia: {
-    filename: 'mia.jpg',
-    url: 'https://i.imgur.com/AqxihGX.jpeg',
-    firstName: 'Mia',
+  elise: {
+    filename: '7_elise_headshot.jpg',
+    url: 'https://i.imgur.com/2eU2GVy.jpeg',
+    firstName: 'Elise',
+    fullName: 'Elise Laxague',
+    jerseyNumber: 7,
   },
   quinn: {
-    filename: 'quinn.jpg',
-    url: 'https://i.imgur.com/fxGV8qB.jpeg',
+    filename: '9_quinn_headshot.jpg',
+    url: 'https://i.imgur.com/nDxeOkf.jpeg',
     firstName: 'Quinn',
+    fullName: 'Quinn Mozdean',
+    jerseyNumber: 9,
   },
-  sadie: {
-    filename: 'sadie.jpg',
-    url: 'https://i.imgur.com/IbQY6g6.jpeg',
-    firstName: 'Sadie',
-  },
-  sakura: {
-    filename: 'sakura.jpg',
-    url: 'https://i.imgur.com/aTnMjDm.jpeg',
-    firstName: 'Sakura',
+  ellie: {
+    filename: '10_ellie_headshot.jpg',
+    url: 'https://i.imgur.com/smZdLLg.jpeg',
+    firstName: 'Ellie',
+    fullName: 'Ellie Tarabichi',
+    jerseyNumber: 10,
   },
   sienna: {
-    filename: 'sienna.jpg',
-    url: 'https://i.imgur.com/nu130xn.jpeg',
+    filename: '11_sienna_headshot.jpg',
+    url: 'https://i.imgur.com/BslIpek.jpeg',
     firstName: 'Sienna',
-  },
-  younwoo: {
-    filename: 'younwoo.jpg',
-    url: 'https://i.imgur.com/bNtd5dL.jpeg',
-    firstName: 'Younwoo',
+    fullName: 'Sienna Ranaweera',
+    jerseyNumber: 11,
   },
   yoonwoo: {
-    filename: 'younwoo.jpg',
-    url: 'https://i.imgur.com/bNtd5dL.jpeg',
+    filename: '12_yoonwoo_headshot.jpg',
+    url: 'https://i.imgur.com/46J8U7l.jpeg',
     firstName: 'Yoonwoo',
+    fullName: 'Yoonwoo Kim',
+    jerseyNumber: 12,
+  },
+  younwoo: {
+    filename: '12_yoonwoo_headshot.jpg',
+    url: 'https://i.imgur.com/46J8U7l.jpeg',
+    firstName: 'Younwoo',
+    fullName: 'Yoonwoo Kim',
+    jerseyNumber: 12,
+  },
+  marley: {
+    filename: '14_marley_headshot.jpg',
+    url: 'https://i.imgur.com/L5YgEwy.jpeg',
+    firstName: 'Marley',
+    fullName: 'Marley Dorsey',
+    jerseyNumber: 14,
+  },
+  meera: {
+    filename: '15_meera_headshot.jpg',
+    url: 'https://i.imgur.com/sRCBiQo.jpeg',
+    firstName: 'Meera',
+    fullName: 'Meera Ramasubramanian',
+    jerseyNumber: 15,
+  },
+  ella: {
+    filename: '18_ella_headshot.jpg',
+    url: 'https://i.imgur.com/1NYOhYH.jpeg',
+    firstName: 'Ella',
+    fullName: 'Ella Harris',
+    jerseyNumber: 18,
+  },
+  sofia: {
+    filename: '20_sofia_headshot.jpg',
+    url: 'https://i.imgur.com/yFe7FeD.jpeg',
+    firstName: 'Sofia',
+    fullName: 'Sofia Marini',
+    jerseyNumber: 20,
+  },
+  mia: {
+    filename: '22_mia_headshot.jpg',
+    url: 'https://i.imgur.com/byjHVgw.jpeg',
+    firstName: 'Mia',
+    fullName: 'Mia Tally',
+    jerseyNumber: 22,
+  },
+  camille: {
+    filename: '24_camille_headshot.jpg',
+    url: 'https://i.imgur.com/cAInQxB.jpeg',
+    firstName: 'Camille',
+    fullName: 'Camille Chamberlain',
+    jerseyNumber: 24,
+  },
+  mack: {
+    filename: '24_camille_headshot.jpg',
+    url: 'https://i.imgur.com/cAInQxB.jpeg',
+    firstName: 'Mack (Camille)',
+    fullName: 'Camille Chamberlain',
+    jerseyNumber: 24,
+  },
+  emma: {
+    filename: '25_emma_headshot.jpg',
+    url: 'https://i.imgur.com/oQmrQ8c.jpeg',
+    firstName: 'Emma',
+    fullName: 'Emma Holtz',
+    jerseyNumber: 25,
+  },
+  sakura: {
+    filename: '26_sakura_headshot.jpg',
+    url: 'https://i.imgur.com/Y0FJvHk.jpeg',
+    firstName: 'Sakura',
+    fullName: 'Sakura Kapla',
+    jerseyNumber: 26,
+  },
+  jessica: {
+    filename: '28_jessica_headshot.jpg',
+    url: 'https://i.imgur.com/5MKv5Bg.jpeg',
+    firstName: 'Jessica',
+    fullName: 'Jessica Teixeira',
+    jerseyNumber: 28,
+  },
+  amaya: {
+    filename: '30_amaya_headshot.jpg',
+    url: 'https://i.imgur.com/sOkeWd2.jpeg',
+    firstName: 'Amaya',
+    fullName: 'Amaya Espinoza',
+    jerseyNumber: 30,
+  },
+  kayla: {
+    filename: '32_kayla_headshot.jpg',
+    url: 'https://i.imgur.com/MqdRdQg.jpeg',
+    firstName: 'Kayla',
+    fullName: 'Kayla Halada',
+    jerseyNumber: 32,
+  },
+  avery: {
+    filename: '37_avery_headshot.jpg',
+    url: 'https://i.imgur.com/bhrA34h.jpeg',
+    firstName: 'Avery',
+    fullName: 'Avery Richter',
+    jerseyNumber: 37,
+  },
+  isabella_gagni: {
+    filename: '47_isabella_gagni_headshot.jpg',
+    url: 'https://i.imgur.com/nfyofPG.jpeg',
+    firstName: 'Isabella (#46)',
+    fullName: 'Isabella Gagni',
+    jerseyNumber: 46,
+  },
+  isabella: {
+    filename: '47_isabella_gagni_headshot.jpg',
+    url: 'https://i.imgur.com/nfyofPG.jpeg',
+    firstName: 'Isabella',
+    fullName: 'Isabella Gagni',
+    jerseyNumber: 46,
+  },
+  sadie: {
+    filename: '49_sadie_headshot.jpg',
+    url: 'https://i.imgur.com/njCAIUP.jpeg',
+    firstName: 'Sadie',
+    fullName: 'Sadie Goldberg',
+    jerseyNumber: 49,
   },
 };
+
+/**
+ * Previous Imgur album URLs and default crest placeholders that should be upgraded
+ * to the new Imgur album (https://imgur.com/a/Gc4jn5p).
+ */
+export const LEGACY_HEADSHOT_URLS = new Set<string>([
+  'https://i.imgur.com/9bM3Tr1.jpeg',
+  'https://i.imgur.com/CBROqa4.jpeg',
+  'https://i.imgur.com/BgA9tkV.jpeg',
+  'https://i.imgur.com/FAqbkxw.jpeg',
+  'https://i.imgur.com/F9OMlVL.jpeg',
+  'https://i.imgur.com/2leh7W5.jpeg',
+  'https://i.imgur.com/mDWC2cz.jpeg',
+  'https://i.imgur.com/z82Kr8e.jpeg',
+  'https://i.imgur.com/FCXUDDf.jpeg',
+  'https://i.imgur.com/mEo0r5F.jpeg',
+  'https://i.imgur.com/OWHGLWq.jpeg',
+  'https://i.imgur.com/AqxihGX.jpeg',
+  'https://i.imgur.com/fxGV8qB.jpeg',
+  'https://i.imgur.com/IbQY6g6.jpeg',
+  'https://i.imgur.com/aTnMjDm.jpeg',
+  'https://i.imgur.com/nu130xn.jpeg',
+  'https://i.imgur.com/bNtd5dL.jpeg',
+  'https://i.imgur.com/c0qeiY4.png',
+  '/assets/daf-crest.png',
+  '/logo.png',
+]);
+
+export function isLegacyOrPlaceholderHeadshot(url?: string | null): boolean {
+  if (!url || !url.trim()) return true;
+  const trimmed = url.trim();
+  if (LEGACY_HEADSHOT_URLS.has(trimmed)) return true;
+  if (trimmed.includes('images.unsplash.com') || trimmed.includes('c0qeiY4') || trimmed.includes('daf-crest')) {
+    return true;
+  }
+  return false;
+}
 
 /**
  * Extracts first name from player's full name, e.g. "Eliot Kline" -> "eliot"
@@ -122,28 +252,53 @@ export function extractFirstName(fullName: string): string {
 }
 
 /**
- * Resolves player headshot:
- * Checks if a player has a matching headshot filename in the Imgur album (https://imgur.com/a/hmNIg8Y).
- * If no match, or if the photo is missing or an old placeholder, returns the Club Logo (DEFAULT_PLAYER_PHOTO).
+ * Finds the official headshot URL from the updated Imgur album (https://imgur.com/a/Gc4jn5p)
+ * matching by full name, jersey number, or first name.
  */
-export function getPlayerHeadshot(playerName: string, customPhotoUrl?: string): string {
-  const firstName = extractFirstName(playerName);
+export function getOfficialImgurHeadshotForPlayer(playerName?: string, jerseyNumber?: number): string | null {
+  const normName = (playerName || '').trim().toLowerCase();
+  if (normName) {
+    if (normName.includes('guillebeaux')) return IMGUR_HEADSHOTS.isabella_guillebeaux.url;
+    if (normName.includes('gagni')) return IMGUR_HEADSHOTS.isabella_gagni.url;
 
-  // If a valid custom photo is explicitly provided by user (data URL or uploaded image)
-  if (customPhotoUrl && customPhotoUrl.trim() !== '') {
-    const trimmed = customPhotoUrl.trim();
-    // If it's not an old generic unsplash placeholder
-    if (!trimmed.includes('images.unsplash.com')) {
-      return transformImageUrl(trimmed);
+    for (const item of Object.values(IMGUR_HEADSHOTS)) {
+      if (item.fullName && item.fullName.toLowerCase() === normName) {
+        return item.url;
+      }
     }
   }
 
-  // Check matching first name in Imgur album
+  if (jerseyNumber === 4 && normName.startsWith('isabella')) {
+    return IMGUR_HEADSHOTS.isabella_guillebeaux.url;
+  }
+  if ((jerseyNumber === 46 || jerseyNumber === 47) && normName.startsWith('isabella')) {
+    return IMGUR_HEADSHOTS.isabella_gagni.url;
+  }
+
+  const firstName = extractFirstName(playerName || '');
   if (firstName && IMGUR_HEADSHOTS[firstName]) {
     return IMGUR_HEADSHOTS[firstName].url;
   }
 
-  // Any player without a matching headshot in the album gets the club logo
+  return null;
+}
+
+/**
+ * Resolves player headshot:
+ * Checks if a player has a matching headshot in the Imgur album (https://imgur.com/a/Gc4jn5p).
+ * If no match, or if the photo is missing or an old placeholder, returns the Club Logo (DEFAULT_PLAYER_PHOTO).
+ */
+export function getPlayerHeadshot(playerName: string, customPhotoUrl?: string, jerseyNumber?: number): string {
+  // If a non-legacy custom photo is explicitly provided by user
+  if (customPhotoUrl && customPhotoUrl.trim() !== '' && !isLegacyOrPlaceholderHeadshot(customPhotoUrl)) {
+    return transformImageUrl(customPhotoUrl.trim());
+  }
+
+  const official = getOfficialImgurHeadshotForPlayer(playerName, jerseyNumber);
+  if (official) {
+    return official;
+  }
+
   return CLUB_LOGO_URL;
 }
 
