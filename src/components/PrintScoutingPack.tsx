@@ -216,10 +216,10 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   return (
     <div 
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md print-scouting-pack"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md print-scouting-pack print:static print:block print:p-0 print:m-0"
     >
       <div 
-        className="relative w-full max-w-[1240px] rounded-2xl bg-slate-100 text-slate-900 shadow-2xl overflow-hidden my-auto max-h-[96vh] flex flex-col print:max-h-none print:shadow-none print:rounded-none print:bg-white print:overflow-visible print:w-full print:max-w-none"
+        className="relative w-full max-w-[1240px] rounded-2xl bg-slate-100 text-slate-900 shadow-2xl overflow-hidden my-auto max-h-[96vh] flex flex-col print:my-0 print:m-0 print:p-0 print:max-h-none print:shadow-none print:rounded-none print:bg-white print:overflow-visible print:w-full print:max-w-none print:block"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Control Bar (Hidden on print) */}
@@ -299,19 +299,19 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               {/* PAGE 1: INSIDE BIFOLD SPREAD (LEFT SPREAD | FOLD GAP | RIGHT SPREAD) */}
               {/* ========================================================= */}
               <div 
-                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print:rotate-180 print-page-break min-h-[660px]"
+                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-0 print:m-0 print:rotate-180 print-page-break min-h-[700px] print:h-[8in] print:min-h-[8in] print:max-h-[8in]"
               >
-                  {/* Compact Header for Page 1 */}
-                  <div className="border-b-2 border-slate-950 pb-1.5 mb-1.5 flex items-center justify-between print:pb-1 print:mb-1 shrink-0">
+                  {/* Compact Header for Page 1 (Flush to Top 1/4" Margin) */}
+                  <div className="border-b-2 border-slate-950 pb-1 mb-1 flex items-center justify-between print:pb-0.5 print:mb-1 shrink-0">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-8 print:w-6 print:h-7 shrink-0">
+                      <div className="w-6 h-7 print:w-5.5 print:h-6.5 shrink-0">
                         <img src="/logo.png" alt="De Anza Force" className="w-full h-full object-contain pointer-events-none select-none" />
                       </div>
                       <div>
                         <h3 className="font-condensed font-black text-base sm:text-lg print:text-sm uppercase tracking-tight text-slate-950 leading-none">
                           DE ANZA FORCE U16G ECNL - 2010/2011 • {tournamentTitle}
                         </h3>
-                        <p className="text-[9.5px] print:text-[8px] font-bold text-slate-600 uppercase tracking-wider mt-0.5">
+                        <p className="text-[9.5px] print:text-[8px] font-bold text-slate-600 uppercase tracking-wider mt-0.5 leading-none">
                           College Showcase &amp; Scouting Roster • Head Coach: {paulBravo.name} ({paulBravo.phone})
                         </p>
                       </div>
@@ -329,28 +329,52 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                   </div>
 
                   {/* Bifold 2-Page Inside Spread with Center Folding Gap */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 print:grid-cols-2 print:gap-6 flex-1 relative">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 print:grid-cols-2 print:gap-5 flex-1 min-h-0 relative">
                     
                     {/* Visual Center Fold Crease Guideline (print-friendly) */}
                     <div className="hidden print:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 border-r border-dashed border-slate-300 pointer-events-none" />
 
-                    {/* INSIDE LEFT PANEL (First Half of Squad) */}
-                    <div className="flex flex-col justify-between md:pr-1.5 print:pr-1 h-full">
+                    {/* INSIDE LEFT PANEL (First Half of Squad + Bottom Note Lines) */}
+                    <div className="flex flex-col justify-between md:pr-1 print:pr-1 h-full min-h-0">
                       <div 
-                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1"
+                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1 min-h-0"
                         style={{ gridTemplateRows: `repeat(${gridRowCount}, minmax(0, 1fr))` }}
                       >
                         {leftSpreadPlayers.map((player) => renderPlayerCard(player))}
                       </div>
+
+                      {/* Reclaimed Bottom Space: Quick Scout Notes Lines (Left Panel) */}
+                      <div className="mt-1.5 pt-1 border-t border-slate-300 shrink-0 space-y-2.5 print:mt-1 print:pt-0.5 print:space-y-2">
+                        <div className="flex items-end gap-1.5">
+                          <span className="font-condensed font-black text-[9px] uppercase tracking-wider text-slate-700 leading-none shrink-0">
+                            Notes:
+                          </span>
+                          <div className="flex-1 border-b border-slate-300 h-2.5"></div>
+                        </div>
+                        <div className="border-b border-slate-300 w-full h-2.5"></div>
+                        <div className="border-b border-slate-300 w-full h-2.5"></div>
+                      </div>
                     </div>
 
-                    {/* INSIDE RIGHT PANEL (Second Half of Squad) */}
-                    <div className="flex flex-col justify-between md:pl-1.5 print:pl-1 h-full">
+                    {/* INSIDE RIGHT PANEL (Second Half of Squad + Bottom Note Lines) */}
+                    <div className="flex flex-col justify-between md:pl-1 print:pl-1 h-full min-h-0">
                       <div 
-                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1"
+                        className="grid grid-cols-3 gap-1 sm:gap-1.5 print:grid-cols-3 print:gap-1 flex-1 min-h-0"
                         style={{ gridTemplateRows: `repeat(${gridRowCount}, minmax(0, 1fr))` }}
                       >
                         {rightSpreadPlayers.map((player) => renderPlayerCard(player))}
+                      </div>
+
+                      {/* Reclaimed Bottom Space: Quick Scout Notes Lines (Right Panel) */}
+                      <div className="mt-1.5 pt-1 border-t border-slate-300 shrink-0 space-y-2.5 print:mt-1 print:pt-0.5 print:space-y-2">
+                        <div className="flex items-end gap-1.5">
+                          <span className="font-condensed font-black text-[9px] uppercase tracking-wider text-slate-700 leading-none shrink-0">
+                            Notes:
+                          </span>
+                          <div className="flex-1 border-b border-slate-300 h-2.5"></div>
+                        </div>
+                        <div className="border-b border-slate-300 w-full h-2.5"></div>
+                        <div className="border-b border-slate-300 w-full h-2.5"></div>
                       </div>
                     </div>
 
@@ -361,31 +385,31 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               {/* PAGE 2: OUTSIDE BIFOLD SPREAD (BACK COVER & FRONT COVER)  */}
               {/* ========================================================= */}
               <div 
-                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-1.5 print-page-break min-h-[660px]"
+                className="bg-white text-slate-900 w-full rounded-xl shadow-lg border border-slate-300/80 p-2 sm:p-3 flex flex-col justify-between print:rounded-none print:shadow-none print:border-none print:p-0 print:m-0 min-h-[700px] print:h-[8in] print:min-h-[8in] print:max-h-[8in]"
               >
                   {/* Bifold 2-Panel Spread matching Page 1 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 print:grid-cols-2 print:gap-6 flex-1 relative">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 print:grid-cols-2 print:gap-5 flex-1 min-h-0 relative">
                     
                     {/* Visual Center Fold Crease Guideline (print-friendly) */}
                     <div className="hidden print:block absolute inset-y-0 left-1/2 -translate-x-1/2 w-0 border-r border-dashed border-slate-300 pointer-events-none" />
 
                     {/* OUTSIDE LEFT PANEL: Full-Page Lined Scout Notes */}
-                    <div className="flex flex-col justify-between md:pr-1.5 print:pr-1">
+                    <div className="flex flex-col justify-between md:pr-1 print:pr-1 h-full min-h-0">
                       
                       {/* Dedicated Lined Scout Notes Section (Full Panel Height) */}
                       <div className="flex-1 flex flex-col min-h-0">
                         {/* Cyan Top Line */}
                         <div className="h-0.5 bg-[#00ADEF] w-full mb-1 shrink-0"></div>
                         
-                        <div className="flex items-center justify-between mb-1.5 shrink-0">
-                          <span className="font-condensed font-black text-sm tracking-wider uppercase text-slate-950">
+                        <div className="flex items-center justify-between mb-1 shrink-0">
+                          <span className="font-condensed font-black text-sm tracking-wider uppercase text-slate-950 leading-none">
                             NOTES
                           </span>
                         </div>
 
                         {/* Ruled Notebook Lines that stretch to use all available height */}
-                        <div className="flex-1 flex flex-col justify-between py-1 min-h-[540px] print:min-h-[580px]">
-                          {Array.from({ length: 30 }).map((_, i) => (
+                        <div className="flex-1 flex flex-col justify-between py-0.5 min-h-[560px] print:min-h-0">
+                          {Array.from({ length: 32 }).map((_, i) => (
                             <div key={i} className="border-b border-slate-300/90 w-full h-0"></div>
                           ))}
                         </div>
@@ -394,10 +418,10 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                     </div>
 
                     {/* OUTSIDE RIGHT PANEL: Cover with SCOUTING ROSTER, Coach Info Beneath 2026 & Digital Team Website QR */}
-                    <div className="flex flex-col justify-between md:pl-1.5 print:pl-1">
+                    <div className="flex flex-col justify-between md:pl-1 print:pl-1 h-full min-h-0">
                       
                       {/* Upper Center: Big Crest with Speed Racing Stripes + Title + Coach Information */}
-                      <div className="flex-1 flex flex-col items-center justify-center py-2 sm:py-3">
+                      <div className="flex-1 flex flex-col items-center justify-center py-1 sm:py-2 print:py-0">
                         
                         {/* Crest with Left & Right 3 Horizontal Stripes */}
                         <div className="w-full flex items-center justify-center gap-3 sm:gap-4 max-w-lg mb-2.5">
