@@ -261,8 +261,10 @@ export function parseRosterCSV(
       }
     });
 
-    // Extract Jersey
-    let jersey = parseInt(rowObj.jerseyNumber || '', 10);
+    // Extract Jersey (preserve 0 as a valid jersey number, e.g. #0 Ava Golshan)
+    const rawJerseyStr = (rowObj.jerseyNumber ?? '').trim();
+    const hasJersey = rawJerseyStr !== '';
+    let jersey = parseInt(rawJerseyStr, 10);
     if (isNaN(jersey)) {
       jersey = 0;
     }
@@ -273,7 +275,7 @@ export function parseRosterCSV(
       name = `${rowObj.firstName || ''} ${rowObj.lastName || ''}`.trim();
     }
     if (!name) {
-      if (jersey > 0) {
+      if (hasJersey && jersey >= 0) {
         name = `Player #${jersey}`;
       } else {
         continue; // Skip row without name and jersey
@@ -289,13 +291,14 @@ export function parseRosterCSV(
       }
     }
 
-    // Clean Height (normalize 5""6"" or 5"6" or 5’2” -> 5'6")
+    // Clean Height (normalize 5""6"" or 5"6" or 5’2” or 5'5 -> 5'6")
     let height = rowObj.height || '';
     height = height
       .replace(/""/g, '"')
       .replace(/[’‘]/g, "'")
       .replace(/[“”]/g, '"')
-      .replace(/^([456])"(\d{1,2})"?$/, "$1'$2\"");
+      .replace(/^([456])"(\d{1,2})"?$/, "$1'$2\"")
+      .replace(/^([456])'(\d{1,2})$/, "$1'$2\"");
 
     // Clean Weight
     let weight = rowObj.weight || '';
@@ -309,7 +312,7 @@ export function parseRosterCSV(
       const cleanName = name.toLowerCase().trim();
       if (cleanName && existingMapByName.has(cleanName)) {
         existing = existingMapByName.get(cleanName);
-      } else if (jersey > 0 && existingMapByJersey.has(jersey) && !processedPlayerIds.has(existingMapByJersey.get(jersey)!.id)) {
+      } else if (hasJersey && jersey >= 0 && existingMapByJersey.has(jersey) && !processedPlayerIds.has(existingMapByJersey.get(jersey)!.id)) {
         existing = existingMapByJersey.get(jersey);
       }
     }
@@ -324,6 +327,10 @@ export function parseRosterCSV(
       incomingDocVal.startsWith('data:') ||
       incomingDocVal.startsWith('/');
 
+    const rawIgCandidate =
+      rowObj.instagram ||
+      (rowObj.highlightsUrl && rowObj.highlightsUrl.toLowerCase().includes('instagram.com') ? rowObj.highlightsUrl : '');
+
     if (existing) {
       result.matchedCount++;
       processedPlayerIds.add(existing.id);
@@ -334,13 +341,13 @@ export function parseRosterCSV(
 
       const validIncomingVideo = getValidVideoUrl(rowObj.highlightsUrl);
       const validExistingVideo = getValidVideoUrl(existing.highlightsUrl);
-      const validIncomingIg = getValidInstagramUrl(rowObj.instagram);
+      const validIncomingIg = getValidInstagramUrl(rawIgCandidate);
       const validExistingIg = getValidInstagramUrl(existing.instagram);
 
       const mergedPlayer: Player = {
         ...existing,
         name: name || existing.name,
-        jerseyNumber: jersey > 0 ? jersey : existing.jerseyNumber,
+        jerseyNumber: hasJersey && jersey >= 0 ? jersey : existing.jerseyNumber,
         primaryPosition: rowObj.primaryPosition ? primaryPos : existing.primaryPosition,
         specificPosition: rowObj.specificPosition || (rowObj.primaryPosition ? pos : existing.specificPosition),
         gradYear: parseInt(rowObj.gradYear, 10) || existing.gradYear || 2028,
@@ -361,7 +368,7 @@ export function parseRosterCSV(
         instagram: validIncomingIg || validExistingIg || '',
         isCaptain: rowObj.isCaptain !== undefined ? (rowObj.isCaptain.toLowerCase() === 'true' || rowObj.isCaptain === '1') : existing.isCaptain,
         bio: rowObj.bio || existing.bio,
-        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl, existing.photoUrl),
+        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl, existing.photoUrl, hasJersey && jersey >= 0 ? jersey : existing.jerseyNumber),
       };
 
       const changes = computePlayerChanges(existing, mergedPlayer);
@@ -379,10 +386,11 @@ export function parseRosterCSV(
       parsedPlayers.push(mergedPlayer);
     } else {
       result.newCount++;
+      const resolvedNewJersey = hasJersey && jersey >= 0 ? jersey : parsedPlayers.length + 1;
       const newPlayer: Player = {
         id: `p_${Date.now()}_${i}`,
         name,
-        jerseyNumber: jersey || parsedPlayers.length + 1,
+        jerseyNumber: resolvedNewJersey,
         primaryPosition: primaryPos,
         specificPosition: rowObj.specificPosition || pos,
         secondaryPositions: [],
@@ -401,8 +409,8 @@ export function parseRosterCSV(
         highlightsUrl: getValidVideoUrl(rowObj.highlightsUrl) || '',
         commitment: rowObj.commitment || 'Uncommitted',
         ncaaId: rowObj.ncaaId || '',
-        instagram: getValidInstagramUrl(rowObj.instagram) || '',
-        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl),
+        instagram: getValidInstagramUrl(rawIgCandidate) || '',
+        photoUrl: resolvePlayerPhoto(name, rowObj.photoUrl, undefined, resolvedNewJersey),
         bio: rowObj.bio || `${name} is an elite youth soccer athlete competing for De Anza Force U16G ECNL.`,
         awards: ['ECNL NorCal Candidate'],
         includeInScoutingPack: true,
@@ -443,7 +451,7 @@ export function parseRosterCSV(
   }
 
   // Final sort by jersey number
-  parsedPlayers.sort((a, b) => (a.jerseyNumber || 0) - (b.jerseyNumber || 0));
+  parsedPlayers.sort((a, b) => (a.jerseyNumber ?? 999) - (b.jerseyNumber ?? 999));
   result.players = parsedPlayers;
   return result;
 }

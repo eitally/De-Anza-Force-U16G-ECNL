@@ -13,7 +13,16 @@ export function normalizeDocumentUrl(url?: string): string | undefined {
   const trimmed = url.trim();
   if (!trimmed) return undefined;
   const lower = trimmed.toLowerCase();
-  if (lower === 'na' || lower === 'n/a' || lower === 'none' || lower === 'tbd' || lower === '#') {
+  if (
+    lower === 'na' ||
+    lower === 'n/a' ||
+    lower === 'none' ||
+    lower === 'tbd' ||
+    lower === '#' ||
+    lower.includes('instagram.com') ||
+    lower.includes('youtube.com') ||
+    lower.includes('youtu.be')
+  ) {
     return undefined;
   }
   if (
@@ -25,13 +34,14 @@ export function normalizeDocumentUrl(url?: string): string | undefined {
   ) {
     return trimmed;
   }
-  // Support bare domain links from spreadsheets (e.g., drive.google.com/..., docs.google.com/..., canva.com/...)
+  // Support bare domain links from spreadsheets (e.g., drive.google.com/..., docs.google.com/..., canva.com/..., canva.link/...)
   if (
     !/\s/.test(trimmed) &&
     (lower.startsWith('drive.google.com/') ||
       lower.startsWith('docs.google.com/') ||
       lower.startsWith('www.canva.com/') ||
       lower.startsWith('canva.com/') ||
+      lower.startsWith('canva.link/') ||
       lower.startsWith('www.dropbox.com/') ||
       lower.startsWith('dropbox.com/'))
   ) {
@@ -61,6 +71,7 @@ export function getValidVideoUrl(url?: string): string | undefined {
     lower === 'n/a' ||
     lower === 'none' ||
     lower === 'tbd' ||
+    lower.includes('instagram.com') ||
     lower === 'https://www.youtube.com' ||
     lower === 'http://www.youtube.com' ||
     lower === 'https://youtube.com' ||
@@ -70,7 +81,10 @@ export function getValidVideoUrl(url?: string): string | undefined {
   ) {
     return undefined;
   }
-  if (lower.startsWith('http://') || lower.startsWith('https://')) {
+  if (lower.startsWith('http://')) {
+    return `https://${trimmed.slice(7)}`;
+  }
+  if (lower.startsWith('https://')) {
     return trimmed;
   }
   if (
@@ -78,6 +92,7 @@ export function getValidVideoUrl(url?: string): string | undefined {
     lower.startsWith('youtube.com/') ||
     lower.startsWith('youtu.be/') ||
     lower.startsWith('drive.google.com/') ||
+    lower.startsWith('my.sportsrecruits.com/') ||
     lower.startsWith('hudl.com/') ||
     lower.startsWith('app.veo.co/')
   ) {

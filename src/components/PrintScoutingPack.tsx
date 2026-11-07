@@ -72,8 +72,8 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
     const bGK = isGoalkeeper(b);
     if (aGK && !bGK) return -1;
     if (!aGK && bGK) return 1;
-    const aNum = Number(a.jerseyNumber) || 999;
-    const bNum = Number(b.jerseyNumber) || 999;
+    const aNum = a.jerseyNumber !== undefined && a.jerseyNumber !== null && !isNaN(Number(a.jerseyNumber)) ? Number(a.jerseyNumber) : 999;
+    const bNum = b.jerseyNumber !== undefined && b.jerseyNumber !== null && !isNaN(Number(b.jerseyNumber)) ? Number(b.jerseyNumber) : 999;
     if (aNum !== bNum) return aNum - bNum;
     return a.name.localeCompare(b.name);
   });
@@ -104,7 +104,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   // Single Player Card matching bifold specifications
   const renderPlayerCard = (player: Player) => {
     const validDocUrl = getValidDocumentUrl(player);
-    const fallbackModalUrl = `https://www.deanzaforce2011g.com/?player=${encodeURIComponent(String(player.jerseyNumber || player.id))}#roster`;
+    const fallbackModalUrl = `https://www.deanzaforce2011g.com/?player=${encodeURIComponent(String(player.jerseyNumber ?? player.id))}#roster`;
     const qrTarget = validDocUrl || fallbackModalUrl;
     const profileUrl = validDocUrl || fallbackModalUrl;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;

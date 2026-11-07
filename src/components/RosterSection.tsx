@@ -83,7 +83,7 @@ export const RosterSection: React.FC<RosterSectionProps> = ({
       }
 
       return true;
-    }).sort((a, b) => (a.jerseyNumber || 999) - (b.jerseyNumber || 999));
+    }).sort((a, b) => (a.jerseyNumber ?? 999) - (b.jerseyNumber ?? 999));
   }, [players, selectedPosition, commitmentFilter, gradYearFilter, searchQuery]);
 
   // Position counts

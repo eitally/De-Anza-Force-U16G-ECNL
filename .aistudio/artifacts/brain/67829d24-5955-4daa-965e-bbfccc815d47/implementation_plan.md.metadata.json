@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for Scouting Packet layout/print orientation updates, larger player card typography without emails, updating Player Modal and Recruitment Hub to feature Head Coach Paul Bravo, and removing Paul Holocher from Coaching & Staff.",
-  "updatedAt":  "2026-10-25T14:32:44.658310802Z",
+  "summary":  "Updated implementation plan removing the 'Request Match Film' placeholder card from the Game Film section so Game Film is only rendered when a player has a highlight video or external reel URL.",
+  "updatedAt":  "2026-11-07T14:26:44.786413737Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

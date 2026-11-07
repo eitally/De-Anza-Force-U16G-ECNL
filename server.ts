@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
@@ -705,6 +706,50 @@ If any updated scores or standings are present in the snippet below, extract the
       res.status(500).json({
         error: err?.message || 'Failed to fetch live ECNL data from Google Apps Script API',
       });
+    }
+  });
+
+  // Persistent server-side fallback store for team data (used alongside Firestore to avoid free-tier write quota locks)
+  const teamStorePath = path.join(__dirname, 'data', 'team_store.json');
+
+  function readServerTeamStore(): Record<string, any> {
+    try {
+      if (fs.existsSync(teamStorePath)) {
+        const raw = fs.readFileSync(teamStorePath, 'utf-8');
+        return JSON.parse(raw);
+      }
+    } catch {}
+    return {};
+  }
+
+  function writeServerTeamStore(partial: Record<string, any>): Record<string, any> {
+    const current = readServerTeamStore();
+    const merged = {
+      ...current,
+      ...partial,
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      fs.mkdirSync(path.dirname(teamStorePath), { recursive: true });
+      fs.writeFileSync(teamStorePath, JSON.stringify(merged, null, 2), 'utf-8');
+    } catch (err) {
+      console.warn('Warning: could not persist team_store.json:', err);
+    }
+    return merged;
+  }
+
+  app.get('/api/team-data', (_req, res) => {
+    const store = readServerTeamStore();
+    res.json({ ok: true, data: store });
+  });
+
+  app.post('/api/team-data', (req, res) => {
+    try {
+      const payload = req.body && typeof req.body === 'object' ? req.body : {};
+      const updated = writeServerTeamStore(payload);
+      res.json({ ok: true, updatedAt: updated.updatedAt });
+    } catch (err: any) {
+      res.status(500).json({ ok: false, error: err?.message || 'Failed to save team data' });
     }
   });
 

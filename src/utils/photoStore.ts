@@ -1,12 +1,12 @@
-import { db } from '../lib/firebase';
-import { doc, setDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
+import { db, markWriteQuotaExhaustedToday, saveTeamDataToServerAndCloud } from '../lib/firebase';
+import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
 
 const lastSavedPhotoHashMap: Record<string, string> = {};
 const PHOTOS_STORE_DOC = doc(db, 'deanza_team_data', 'custom_player_photos');
 
 /**
- * Persists a player photo in Firestore using a single consolidated document
- * with strict in-memory deduplication and local cache fallback.
+ * Persists a player photo in localStorage, server store, and Firestore (when write quota is available)
+ * with strict in-memory deduplication.
  */
 export async function savePlayerPhotoToFirestore(playerId: string, photoUrl: string): Promise<void> {
   if (!playerId) return;
@@ -22,25 +22,40 @@ export async function savePlayerPhotoToFirestore(playerId: string, photoUrl: str
     console.warn("LocalStorage photo cache notice:", e);
   }
 
-  // Deduplication check: do not write to Firestore if the photo has not changed
+  // Deduplication check: do not write if the photo has not changed
   if (lastSavedPhotoHashMap[playerId] === photoUrl) {
     return;
   }
   lastSavedPhotoHashMap[playerId] = photoUrl;
 
+  // Save to server store first
+  await saveTeamDataToServerAndCloud({
+    customPlayerPhotos: {
+      ...lastSavedPhotoHashMap,
+      [playerId]: photoUrl || '',
+    },
+  });
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   try {
-    if (!photoUrl || photoUrl.trim() === '') {
-      await updateDoc(PHOTOS_STORE_DOC, {
-        [playerId]: deleteField(),
-      });
-    } else {
-      await setDoc(PHOTOS_STORE_DOC, {
-        [playerId]: photoUrl,
-        updatedAt: Date.now()
-      }, { merge: true });
-    }
-  } catch (err: any) {
-    console.warn("Notice saving player photo to Firestore:", err?.message || err);
+    const writePromise =
+      !photoUrl || photoUrl.trim() === ''
+        ? updateDoc(PHOTOS_STORE_DOC, { [playerId]: deleteField() })
+        : setDoc(
+            PHOTOS_STORE_DOC,
+            { [playerId]: photoUrl, updatedAt: Date.now() },
+            { merge: true }
+          );
+    await Promise.race([
+      writePromise,
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('resource-exhausted-timeout')), 3000);
+      }),
+    ]);
+  } catch {
+    markWriteQuotaExhaustedToday();
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
@@ -56,34 +71,52 @@ export function getLocalCachedPlayerPhoto(playerId: string): string | null {
 }
 
 /**
- * Subscribes to real-time updates for high-res player photos from a single Firestore document
- * (consumes 1 read instead of N collection reads)
+ * Loads high-res player photos once from server store and Firestore
  */
 export function subscribeToPlayerPhotos(onUpdate: (photosMap: Record<string, string>) => void): () => void {
-  try {
-    return onSnapshot(PHOTOS_STORE_DOC, (docSnap) => {
-      if (!docSnap.exists()) return;
-      const data = docSnap.data();
-      const photosMap: Record<string, string> = {};
-      Object.keys(data).forEach((key) => {
-        if (key !== 'updatedAt' && typeof data[key] === 'string' && data[key]) {
-          photosMap[key] = data[key];
-          lastSavedPhotoHashMap[key] = data[key];
-          try {
-            localStorage.setItem(`daf_photo_${key}`, data[key]);
-          } catch {
-            // ignore localstorage quota
-          }
+  let active = true;
+  (async () => {
+    const photosMap: Record<string, string> = {};
+    try {
+      const resp = await fetch('/api/team-data');
+      if (resp.ok) {
+        const json = await resp.json();
+        const serverPhotos = json?.data?.customPlayerPhotos;
+        if (serverPhotos && typeof serverPhotos === 'object') {
+          Object.keys(serverPhotos).forEach((key) => {
+            if (typeof serverPhotos[key] === 'string' && serverPhotos[key]) {
+              photosMap[key] = serverPhotos[key];
+              lastSavedPhotoHashMap[key] = serverPhotos[key];
+            }
+          });
         }
-      });
+      }
+    } catch {}
+
+    try {
+      const docSnap = await getDoc(PHOTOS_STORE_DOC);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        Object.keys(data).forEach((key) => {
+          if (key !== 'updatedAt' && typeof data[key] === 'string' && data[key] && !photosMap[key]) {
+            photosMap[key] = data[key];
+            lastSavedPhotoHashMap[key] = data[key];
+            try {
+              localStorage.setItem(`daf_photo_${key}`, data[key]);
+            } catch {}
+          }
+        });
+      }
+    } catch {}
+
+    if (active && Object.keys(photosMap).length > 0) {
       onUpdate(photosMap);
-    }, (err) => {
-      console.warn("Realtime player photos listener notice:", err?.message || err);
-    });
-  } catch (err) {
-    console.warn("Failed to attach player photos listener:", err);
-    return () => {};
-  }
+    }
+  })();
+
+  return () => {
+    active = false;
+  };
 }
 
 /**

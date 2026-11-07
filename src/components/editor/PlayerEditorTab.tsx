@@ -112,13 +112,6 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
   const [draftJersey, setDraftJersey] = useState<string>('');
   const [draftGradYear, setDraftGradYear] = useState<string>('');
   const [draftBirthYear, setDraftBirthYear] = useState<string>('');
-  const [draftAppearances, setDraftAppearances] = useState<string>('');
-  const [draftStarts, setDraftStarts] = useState<string>('');
-  const [draftGoals, setDraftGoals] = useState<string>('');
-  const [draftAssists, setDraftAssists] = useState<string>('');
-  const [draftCleanSheets, setDraftCleanSheets] = useState<string>('');
-  const [draftSaves, setDraftSaves] = useState<string>('');
-  const [draftMinutes, setDraftMinutes] = useState<string>('');
   const [newAwardInput, setNewAwardInput] = useState('');
 
   // Cloud upload states
@@ -133,13 +126,6 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
     setDraftJersey(player.jerseyNumber !== undefined ? String(player.jerseyNumber) : '');
     setDraftGradYear(player.gradYear ? String(player.gradYear) : '2028');
     setDraftBirthYear(player.birthYear ? String(player.birthYear) : '2010');
-    setDraftAppearances(String(player.stats?.appearances ?? 0));
-    setDraftStarts(String(player.stats?.starts ?? 0));
-    setDraftGoals(String(player.stats?.goals ?? 0));
-    setDraftAssists(String(player.stats?.assists ?? 0));
-    setDraftCleanSheets(String(player.stats?.cleanSheets ?? 0));
-    setDraftSaves(String(player.stats?.saves ?? 0));
-    setDraftMinutes(String(player.stats?.minutesPlayed ?? 0));
     setNewAwardInput('');
   };
 
@@ -180,13 +166,6 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
     setDraftJersey(String(nextJersey));
     setDraftGradYear('2029');
     setDraftBirthYear('2010');
-    setDraftAppearances('0');
-    setDraftStarts('0');
-    setDraftGoals('0');
-    setDraftAssists('0');
-    setDraftCleanSheets('0');
-    setDraftSaves('0');
-    setDraftMinutes('0');
     setNewAwardInput('');
   };
 
@@ -260,15 +239,14 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
       jerseyNumber: isNaN(parsedJersey) ? 0 : parsedJersey,
       gradYear: isNaN(parsedGradYear) ? 2028 : parsedGradYear,
       birthYear: isNaN(parsedBirthYear) ? undefined : parsedBirthYear,
-      stats: {
-        ...editingPlayer.stats,
-        appearances: parseInt(draftAppearances, 10) || 0,
-        starts: parseInt(draftStarts, 10) || 0,
-        goals: parseInt(draftGoals, 10) || 0,
-        assists: parseInt(draftAssists, 10) || 0,
-        cleanSheets: parseInt(draftCleanSheets, 10) || 0,
-        saves: parseInt(draftSaves, 10) || 0,
-        minutesPlayed: parseInt(draftMinutes, 10) || 0,
+      stats: editingPlayer.stats || {
+        appearances: 0,
+        starts: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        saves: 0,
+        minutesPlayed: 0,
       }
     };
 
@@ -706,79 +684,6 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
               />
             </div>
 
-            {/* Season Stats Inputs */}
-            <div className="sm:col-span-2 md:col-span-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
-              <h4 className="font-condensed font-black text-sm uppercase text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <span>Verified Matchday Season Statistics</span>
-                <span className="text-[10px] font-normal text-slate-500">(Displayed in player modal and printable college packet)</span>
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Appearances</label>
-                  <input
-                    type="text"
-                    value={draftAppearances}
-                    onChange={e => setDraftAppearances(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Starts</label>
-                  <input
-                    type="text"
-                    value={draftStarts}
-                    onChange={e => setDraftStarts(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Goals</label>
-                  <input
-                    type="text"
-                    value={draftGoals}
-                    onChange={e => setDraftGoals(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Assists</label>
-                  <input
-                    type="text"
-                    value={draftAssists}
-                    onChange={e => setDraftAssists(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Clean Sheets</label>
-                  <input
-                    type="text"
-                    value={draftCleanSheets}
-                    onChange={e => setDraftCleanSheets(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Saves</label>
-                  <input
-                    type="text"
-                    value={draftSaves}
-                    onChange={e => setDraftSaves(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Minutes</label>
-                  <input
-                    type="text"
-                    value={draftMinutes}
-                    onChange={e => setDraftMinutes(e.target.value)}
-                    className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-center font-bold"
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Awards & Honors */}
             <div className="sm:col-span-2 md:col-span-3">
               <label className="block text-slate-600 dark:text-slate-300 font-bold mb-1">Awards & Honors</label>
@@ -883,7 +788,7 @@ export const PlayerEditorTab: React.FC<PlayerEditorTabProps> = ({
                 <span>Team Roster ({players.length} Players)</span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Click any player row to edit stats, high school info, GPAs, photos, or recruiting flyer links.
+                Click any player row to edit bio, high school info, GPAs, photos, or recruiting flyer links.
               </p>
             </div>
 

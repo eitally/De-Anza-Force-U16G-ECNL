@@ -96,11 +96,11 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [photoSavedNotice, setPhotoSavedNotice] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<PlayerModalTab>('overview');
   const [copiedNcaa, setCopiedNcaa] = useState(false);
   const recruitingCoach = coaches && coaches.length > 0 ? (coaches.find(c => (c.name || '').toLowerCase().includes('bravo')) || coaches[0]) : null;
   const safePhotoSrc = getSafeImageSrc(player.photoUrl, DEFAULT_PLAYER_PHOTO);
   const videoEmbed = getVideoEmbed(player.highlightsUrl);
+  const profileDocUrl = getValidDocumentUrl(player);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -199,6 +199,14 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   <span className="px-2.5 py-0.5 rounded-md text-xs font-black uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-800">
                     {player.specificPosition || player.primaryPosition}
                   </span>
+                  {player.secondaryPositions && player.secondaryPositions.length > 0 && player.secondaryPositions.map((sec, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700"
+                    >
+                      {sec}
+                    </span>
+                  ))}
                   <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                     Class of {player.gradYear} • {player.ageGroup || 'U16 ECNL'}
                   </span>
@@ -217,7 +225,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
                   {player.name}
                 </h2>
 
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-2">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1 flex items-center gap-2 flex-wrap">
                   <span>{player.highSchool}</span>
                   {player.hometown && (
                     <>
@@ -233,7 +241,7 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
 
               {/* Bio Description */}
               <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed bg-slate-50 dark:bg-[#0c1220] p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                {player.bio}
+                {player.bio || `${player.name} is a dedicated athlete competing in ECNL Northern California for De Anza Force.`}
               </p>
 
               {/* Key Specs Grid */}
@@ -268,331 +276,219 @@ export const PlayerModal: React.FC<PlayerModalProps> = ({
             </div>
           </div>
 
-          {/* Navigation Tabs Bar for Instant Mobile & Desktop Exploration */}
-          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-[#070b14] rounded-2xl border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto no-scrollbar">
-            <button
-              type="button"
-              onClick={() => setActiveTab('overview')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                activeTab === 'overview'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Star className="w-3.5 h-3.5" />
-              <span>Bio & Accolades</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('stats')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                activeTab === 'stats'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Match Stats</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('video')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                activeTab === 'video'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Video className="w-3.5 h-3.5" />
-              <span>Game Film & Video</span>
-              {player.highlightsUrl && (
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('academics')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer shrink-0 ${
-                activeTab === 'academics'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Academics & NCAA</span>
-            </button>
-          </div>
-
-          {/* TAB 1: OVERVIEW & BIO */}
-          {activeTab === 'overview' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-3">
+          {/* Unified Scouting & Recruiting Body: Academics/NCAA + Honors/Accolades */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+            {/* Left Column: Academic Credentials & NCAA Eligibility */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
                 <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-blue-400" />
-                  <span>Scouting Report & Player Evaluation</span>
+                  <GraduationCap className="w-4 h-4 text-emerald-400" />
+                  <span>Academic Credentials & Eligibility</span>
                 </h4>
-                <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                  {player.bio || `${player.name} is a dedicated athlete competing in ECNL Northern California for De Anza Force.`}
-                </p>
 
-                {player.secondaryPositions && player.secondaryPositions.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase">Secondary Positions:</span>
-                    {player.secondaryPositions.map((sec, idx) => (
-                      <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                        {sec}
-                      </span>
-                    ))}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800">
+                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-0.5">Cumulative GPA</div>
+                    <div className="font-condensed font-black text-2xl sm:text-3xl text-emerald-400">{player.gpa}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">Collegiate Honors Tier</div>
                   </div>
-                )}
+
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800">
+                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-0.5">High School</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white line-clamp-2">{player.highSchool}</div>
+                    <div className="text-[11px] text-slate-500 mt-1">Class of {player.gradYear}</div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-0.5">NCAA Eligibility ID</div>
+                    <div className="font-mono font-bold text-sm text-[#00ADEF]">{player.ncaaId || 'Registered / Pending'}</div>
+                  </div>
+                  {player.ncaaId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(player.ncaaId || '');
+                        setCopiedNcaa(true);
+                        setTimeout(() => setCopiedNcaa(false), 2500);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 cursor-pointer transition-colors shrink-0"
+                    >
+                      {copiedNcaa ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedNcaa ? 'Copied!' : 'Copy ID'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Awards & Accolades */}
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800">
-                <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-1.5">
+              {/* Official Profile Flyer PDF Download */}
+              {profileDocUrl && (
+                <div className="pt-1 flex items-center justify-between gap-3 p-3.5 rounded-xl bg-emerald-950/20 dark:bg-emerald-950/30 border border-emerald-600/30">
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white">Official Player Profile Flyer</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Printable scout sheet &amp; academic summary</div>
+                  </div>
+                  <a
+                    href={profileDocUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shrink-0 transition-colors"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span>Open Profile</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Honors, Accolades & Social Links */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-400" />
                   <span>Honors, Accolades & Selection Honors</span>
                 </h4>
                 
                 {player.awards && player.awards.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-1 gap-2 text-xs">
                     {player.awards.map((award, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                      <div key={i} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
                         <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
                         <span className="font-bold text-slate-800 dark:text-slate-200">{award}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 italic">No honors or accolades recorded yet.</p>
+                  <p className="text-xs text-slate-500 italic py-2">No honors or accolades recorded yet.</p>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* TAB 2: MATCH STATS */}
-          {activeTab === 'stats' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800">
-                <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-400" />
-                  <span>2026/2027 Season Performance Metrics</span>
-                </h4>
-
-                {(!player.stats.appearances && !player.stats.starts && !player.stats.goals && !player.stats.assists && !player.stats.cleanSheets && !player.stats.saves) ? (
-                  <div className="flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-center">
-                    <Shield className="w-8 h-8 text-slate-500 mb-2 opacity-50" />
-                    <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Stats Pending Confirmation</p>
-                    <p className="text-xs text-slate-500 mt-1">Matchday statistics are verified by the coaching staff after each league weekend.</p>
-                  </div>
-                ) : player.primaryPosition === 'Goalkeeper' ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-slate-900 dark:text-white">{player.stats.appearances}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Matches Played</div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-emerald-400">{player.stats.cleanSheets || 0}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Clean Sheets</div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-[#00ADEF]">{player.stats.saves || 0}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Saves Recorded</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-slate-900 dark:text-white">{player.stats.appearances}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Matches Played</div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-cyan-400">{player.stats.starts ?? player.stats.appearances}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Match Starts</div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-[#00ADEF]">{player.stats.goals}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Goals Scored</div>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="font-condensed font-black text-4xl text-red-400">{player.stats.assists}</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">Assists</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: VIDEO & HIGHLIGHTS */}
-          {activeTab === 'video' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Video className="w-4 h-4 text-red-500" />
-                    <span>Collegiate Scouting Tape & Match Highlights</span>
-                  </h4>
-
-                  {player.highlightsUrl && (
-                    <a
-                      href={player.highlightsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:text-blue-400 font-bold inline-flex items-center gap-1"
-                    >
-                      <span>Open External Link</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
+              {player.instagram && (
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
+                  <span className="text-slate-500 font-semibold">Athlete Social Profile</span>
+                  <a
+                    href={player.instagram.startsWith('http') ? player.instagram : `https://instagram.com/${player.instagram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 font-bold text-pink-500 hover:text-pink-400"
+                  >
+                    <Instagram className="w-3.5 h-3.5" />
+                    <span>{player.instagram.startsWith('@') ? player.instagram : `@${player.instagram}`}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
-
-                {/* Embedded Video Player */}
-                {videoEmbed?.embedUrl ? (
-                  <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-black aspect-video relative shadow-2xl">
-                    <iframe
-                      src={videoEmbed.embedUrl}
-                      title={`${player.name} Video Highlights`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full border-0"
-                    />
-                  </div>
-                ) : videoEmbed?.type === 'hudl' ? (
-                  <div className="p-6 rounded-2xl bg-gradient-to-r from-orange-950/40 via-slate-900 to-orange-950/40 border border-orange-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center font-black">
-                        <Play className="w-6 h-6 fill-orange-400" />
-                      </div>
-                      <div>
-                        <h5 className="font-condensed font-black text-lg uppercase text-white">
-                          Verified Hudl Video Profile
-                        </h5>
-                        <p className="text-xs text-slate-400">
-                          Collegiate match tape and isolated player clips on Hudl
-                        </p>
-                      </div>
-                    </div>
-
-                    <a
-                      href={videoEmbed.directUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-black font-condensed font-black text-xs uppercase tracking-wider shadow-lg shrink-0 inline-flex items-center gap-1.5"
-                    >
-                      <span>Watch Reel on Hudl</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-center space-y-2">
-                    <Video className="w-8 h-8 text-slate-500 opacity-50" />
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Highlight Film Available Upon Request</p>
-                    <p className="text-xs text-slate-500 max-w-md">
-                      College coaches may request full unedited match footage and showcase film via head coach Paul Bravo.
-                    </p>
-                    {recruitingCoach && (
-                      <a
-                        href={`mailto:${recruitingCoach.email}?subject=Game Film Request: ${player.name} (#${player.jerseyNumber})`}
-                        className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md"
-                      >
-                        <Mail className="w-3.5 h-3.5" />
-                        <span>Request Match Film</span>
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* TAB 4: ACADEMICS & NCAA */}
-          {activeTab === 'academics' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-4">
+          {/* Game Film & Match Highlights (Only rendered when a highlight video URL is present) */}
+          {videoEmbed && (
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex items-center justify-between">
                 <h4 className="font-condensed font-black text-base uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <GraduationCap className="w-4 h-4 text-emerald-400" />
-                  <span>Academic Credentials & Eligibility</span>
+                  <Video className="w-4 h-4 text-red-500" />
+                  <span>Collegiate Scouting Tape &amp; Match Highlights</span>
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800">
-                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-1">Cumulative GPA</div>
-                    <div className="font-condensed font-black text-3xl text-emerald-400">{player.gpa}</div>
-                    <div className="text-[11px] text-slate-500 mt-1">Collegiate Honors Tier</div>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800">
-                    <div className="text-[10px] font-bold uppercase text-slate-500 mb-1">High School</div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white truncate">{player.highSchool}</div>
-                    <div className="text-[11px] text-slate-500 mt-1">Class of {player.gradYear}</div>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                    <div>
-                      <div className="text-[10px] font-bold uppercase text-slate-500 mb-1">NCAA Eligibility ID</div>
-                      <div className="font-mono font-bold text-sm text-[#00ADEF]">{player.ncaaId || 'Registered / Pending'}</div>
-                    </div>
-                    {player.ncaaId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(player.ncaaId || '');
-                          setCopiedNcaa(true);
-                          setTimeout(() => setCopiedNcaa(false), 2500);
-                        }}
-                        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-blue-500 hover:text-blue-400 cursor-pointer"
-                      >
-                        {copiedNcaa ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                        <span>{copiedNcaa ? 'Copied to Clipboard!' : 'Copy NCAA ID'}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Profile Flyer PDF Button */}
-                {getValidDocumentUrl(player) && (
-                  <div className="pt-2 flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
-                    <div>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">Official Player Profile Flyer (PDF)</div>
-                      <div className="text-[11px] text-slate-500">Download printable scout flyer with full verified transcript summary</div>
-                    </div>
-                    <a
-                      href={getValidDocumentUrl(player)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shrink-0"
-                    >
-                      <FileDown className="w-3.5 h-3.5" />
-                      <span>Download PDF</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                )}
+                <a
+                  href={videoEmbed.directUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-500 hover:text-blue-400 font-bold inline-flex items-center gap-1"
+                >
+                  <span>Open External Link</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
+
+              {videoEmbed.embedUrl ? (
+                <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-black aspect-video relative shadow-2xl">
+                  <iframe
+                    src={videoEmbed.embedUrl}
+                    title={`${player.name} Video Highlights`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full border-0"
+                  />
+                </div>
+              ) : videoEmbed.type === 'hudl' ? (
+                <div className="p-6 rounded-2xl bg-gradient-to-r from-orange-950/40 via-slate-900 to-orange-950/40 border border-orange-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center font-black">
+                      <Play className="w-6 h-6 fill-orange-400" />
+                    </div>
+                    <div>
+                      <h5 className="font-condensed font-black text-lg uppercase text-white">
+                        Verified Hudl Video Profile
+                      </h5>
+                      <p className="text-xs text-slate-400">
+                        Collegiate match tape and isolated player clips on Hudl
+                      </p>
+                    </div>
+                  </div>
+
+                  <a
+                    href={videoEmbed.directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-black font-condensed font-black text-xs uppercase tracking-wider shadow-lg shrink-0 inline-flex items-center gap-1.5"
+                  >
+                    <span>Watch Reel on Hudl</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              ) : (
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                      <Play className="w-5 h-5 fill-blue-400" />
+                    </div>
+                    <div>
+                      <h5 className="font-condensed font-black text-base uppercase text-slate-900 dark:text-white">
+                        Player Match Highlight Reel
+                      </h5>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        View full scouting video and match clips in a new tab
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={videoEmbed.directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shrink-0"
+                  >
+                    <span>Watch Highlight Video</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
             </div>
           )}
 
           {/* Quick Coach Contact Footer */}
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#090d16] border border-blue-950 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-              <Shield className="w-4 h-4 text-blue-400" />
-              <span>For recruiting, contact head coach <strong className="text-slate-900 dark:text-white">Paul Bravo</strong></span>
-              <a
-                href={`mailto:${recruitingCoach?.email || 'paulbravo9@gmail.com'}?subject=College Scouting Inquiry: ${player.name} (#${player.jerseyNumber}) - De Anza Force U16 ECNL`}
-                className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] shadow-sm transition-colors"
-              >
-                <Mail className="w-3.5 h-3.5" />
-                <span>Email Coach Bravo</span>
-              </a>
+            <div className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-400">
+              <Shield className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>
+                For recruiting, contact head coach <strong className="text-slate-900 dark:text-white">Paul Bravo</strong> (
+                <a
+                  href={`mailto:${recruitingCoach?.email || 'paulgbravo9@gmail.com'}?subject=College Scouting Inquiry: ${player.name} (#${player.jerseyNumber}) - De Anza Force U16 ECNL`}
+                  className="text-blue-500 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  {recruitingCoach?.email || 'paulgbravo9@gmail.com'}
+                </a>
+                {' • '}
+                <a
+                  href={`tel:${(recruitingCoach?.phone || '(720) 475-6991').replace(/[^0-9+]/g, '')}`}
+                  className="text-blue-500 dark:text-blue-400 hover:underline font-semibold"
+                >
+                  {recruitingCoach?.phone || '(720) 475-6991'}
+                </a>
+                )
+              </span>
             </div>
 
             {isAdminMode && (

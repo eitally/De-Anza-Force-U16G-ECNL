@@ -47,6 +47,46 @@ export const INITIAL_TEAM_INFO: TeamInfo = {
 
 export const INITIAL_PLAYERS: Player[] = [
   {
+    "jerseyNumber": 0,
+    "dominantFoot": "Right",
+    "highSchool": "Westmont High School",
+    "secondaryPositions": [
+      "Defensive Midfielder",
+      "Fullback"
+    ],
+    "primaryPosition": "Goalkeeper",
+    "contactEmail": "avagolshana@gmail.com",
+    "phone": "408-599-9802",
+    "birthYear": 2010,
+    "id": "p13",
+    "hometown": "Campbell, CA",
+    "photoUrl": "https://i.imgur.com/udRJFZp.jpeg",
+    "gpa": "4.00",
+    "profileDocUrl": "https://drive.google.com/file/d/1uqgDvO005XYY1jcn4CZI6ArtklS4AveM/view?usp=sharing",
+    "weight": "110 lbs",
+    "name": "Ava Golshan",
+    "commitment": "Uncommitted",
+    "specificPosition": "Goalkeeper",
+    "height": "5'9\"",
+    "awards": [
+      "ECNL Rising Star"
+    ],
+    "stats": {
+      "appearances": 0,
+      "minutesPlayed": 0,
+      "goals": 0,
+      "assists": 0,
+      "cleanSheets": 0,
+      "starts": 0
+    },
+    "gradYear": 2029,
+    "profilePdfUrl": "https://drive.google.com/file/d/1uqgDvO005XYY1jcn4CZI6ArtklS4AveM/view?usp=sharing",
+    "birthday": "10/07/2010",
+    "ncaaId": "2507685371",
+    "highlightsUrl": "https://www.youtube.com/watch?v=RPgYdrTXlTY",
+    "instagram": "https://www.instagram.com/avagolshangk?igsi=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
+  },
+  {
     "photoUrl": "https://i.imgur.com/zGthYBx.jpeg",
     "gpa": "4.00",
     "hometown": "Cupertino, CA",
@@ -56,16 +96,17 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "primaryPosition": "Goalkeeper",
     "id": "p1",
-    "specificPosition": "Goalkeeper (GK)",
+    "specificPosition": "Goalkeeper",
     "gradYear": 2029,
-    "profileDocUrl": "Eliot Kline Player Profile",
+    "profileDocUrl": "https://drive.google.com/open?id=1JofTK8graA_6wLpzONykKTO4x-4gDdGs",
     "highSchool": "Burlingame High School",
     "dominantFoot": "Right",
     "jerseyNumber": 1,
-    "weight": "125",
-    "birthYear": 2010,
+    "weight": "125 lbs",
+    "birthYear": 2011,
     "height": "5'7\"",
     "contactEmail": "eliot.kline@gmail.com",
+    "phone": "650-703-1821",
     "stats": {
       "cleanSheets": 0,
       "saves": 0,
@@ -81,45 +122,10 @@ export const INITIAL_PLAYERS: Player[] = [
       "Clean Sheet Specialist"
     ],
     "birthday": "7/14/2011",
-    "profilePdfUrl": "Eliot Kline Player Profile",
-    "instagram": "Eliot Kline Instagram"
-  },
-  {
-    "jerseyNumber": 1,
-    "dominantFoot": "Right",
-    "highSchool": "Westmont High School",
-    "secondaryPositions": [
-      "Defensive Midfielder",
-      "Fullback"
-    ],
-    "primaryPosition": "Goalkeeper",
-    "contactEmail": "avagolshana@gmail.com",
-    "birthYear": 2011,
-    "id": "p13",
-    "hometown": "Campbell, CA",
-    "photoUrl": "https://i.imgur.com/udRJFZp.jpeg",
-    "gpa": "4.00",
-    "profileDocUrl": "",
-    "weight": "110 lbs",
-    "name": "Ava Golshan",
-    "commitment": "Uncommitted",
-    "specificPosition": "Goalkeeper (GK)",
-    "height": "5'9\"",
-    "awards": [
-      "ECNL Rising Star"
-    ],
-    "stats": {
-      "appearances": 0,
-      "minutesPlayed": 0,
-      "goals": 0,
-      "assists": 0,
-      "cleanSheets": 0,
-      "starts": 0
-    },
-    "gradYear": 2029,
-    "profilePdfUrl": "",
-    "birthday": "10/07/2010",
-    "instagram": "https://www.instagram.com/avagolshangk?igsi=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
+    "profilePdfUrl": "https://drive.google.com/open?id=1JofTK8graA_6wLpzONykKTO4x-4gDdGs",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "name": "Maya Onalfo",
@@ -155,15 +161,16 @@ export const INITIAL_PLAYERS: Player[] = [
     "birthYear": 2010,
     "photoUrl": "https://i.imgur.com/c0qeiY4.png",
     "hometown": "San Jose, CA",
-    "profilePdfUrl": "Maya Onalfo Profile"
+    "profilePdfUrl": ""
   },
   {
     "primaryPosition": "Defender",
     "commitment": "Uncommitted",
     "jerseyNumber": 3,
     "dominantFoot": "Right",
-    "contactEmail": "faith.vrionis@icloud.com",
-    "profileDocUrl": "Faith Vrionis Player Profile (1).pdf",
+    "contactEmail": "faith.vrionis.soccer@gmail.com",
+    "phone": "650-480-0276",
+    "profileDocUrl": "https://drive.google.com/file/d/1cIaw_KAQvv_g8uSsSACrZX5LmmMmxiYi/view?usp=sharing",
     "specificPosition": "Center Back (#4)",
     "name": "Faith Vrionis",
     "id": "p3",
@@ -173,7 +180,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "Fullback",
       "Forward"
     ],
-    "birthYear": 2010,
+    "birthYear": 2011,
     "gpa": "4.05",
     "awards": [
       "ECNL Best Defense Candidate",
@@ -192,7 +199,10 @@ export const INITIAL_PLAYERS: Player[] = [
     "hometown": "Sunnyvale, CA",
     "weight": "120 lbs",
     "birthday": "01/10/2011",
-    "profilePdfUrl": "Faith Vrionis Player Profile (1).pdf"
+    "profilePdfUrl": "https://drive.google.com/file/d/1cIaw_KAQvv_g8uSsSACrZX5LmmMmxiYi/view?usp=sharing",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "highSchool": "Pioneer High School",
@@ -200,7 +210,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "id": "p_1787410541257_5",
     "primaryPosition": "Defender",
     "secondaryPositions": [],
-    "specificPosition": "Center Back/ Wing Back",
+    "specificPosition": "Outside Back",
     "height": "5'10\"",
     "commitment": "Uncommitted",
     "jerseyNumber": 4,
@@ -216,6 +226,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "goals": 0
     },
     "contactEmail": "isabella.guillebeaux@icloud.com",
+    "phone": "408-706-0452",
     "birthday": "08/01/2010",
     "profileDocUrl": "https://docs.google.com/presentation/d/12uajOBYIE45DzcvFWuI_DeR5G-2mWbbAQDpsfEQ0sNk/edit?usp=drivesdk",
     "profilePdfUrl": "https://docs.google.com/presentation/d/12uajOBYIE45DzcvFWuI_DeR5G-2mWbbAQDpsfEQ0sNk/edit?usp=drivesdk",
@@ -234,17 +245,18 @@ export const INITIAL_PLAYERS: Player[] = [
       "assists": 0
     },
     "contactEmail": "breezelonghenry@gmail.com",
+    "phone": "415-828-5384",
     "highSchool": "Menlo School",
     "birthYear": 2011,
     "photoUrl": "https://i.imgur.com/PleqXfZ.jpeg",
     "hometown": "Los Gatos, CA",
-    "profileDocUrl": "Breeze Longhenry Profile",
+    "profileDocUrl": "https://drive.google.com/file/d/18UqSPu59TBTCvAY-n8x4UCjrjA3Z-uDE/view?usp=drive_link",
     "jerseyNumber": 5,
     "dominantFoot": "Right",
     "weight": "120 lbs",
     "id": "p4",
     "commitment": "Uncommitted",
-    "gpa": "3.9",
+    "gpa": "3.90",
     "name": "Breeze Longhenry",
     "specificPosition": "Wing Back (#2)",
     "secondaryPositions": [
@@ -256,25 +268,29 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "height": "5'6\"",
     "birthday": "09/17/2011",
-    "profilePdfUrl": "Breeze Longhenry Profile"
+    "profilePdfUrl": "https://drive.google.com/file/d/18UqSPu59TBTCvAY-n8x4UCjrjA3Z-uDE/view?usp=drive_link",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "commitment": "Uncommitted",
     "contactEmail": "eliselaxague11@gmail.com",
-    "birthYear": 2010,
+    "phone": "650-554-9404",
+    "birthYear": 2011,
     "dominantFoot": "Right",
     "jerseyNumber": 7,
-    "gpa": "4.0",
+    "gpa": "4.00",
     "height": "5'3\"",
     "highSchool": "Burlingame High School",
     "gradYear": 2029,
-    "profilePdfUrl": "Elise Laxague (1).pdf",
+    "profilePdfUrl": "https://drive.google.com/file/d/1X3k-g4DJNI8KkDukqGjrZ_PDTZCtuyxD/view?usp=sharing",
     "awards": [
       "ECNL NorCal Standout"
     ],
     "id": "p2",
-    "profileDocUrl": "Elise Laxague (1).pdf",
-    "specificPosition": "Central Midfielder (#8/#10)",
+    "profileDocUrl": "https://drive.google.com/file/d/1X3k-g4DJNI8KkDukqGjrZ_PDTZCtuyxD/view?usp=sharing",
+    "specificPosition": "Central Mid (#8/#10)",
     "stats": {
       "starts": 0,
       "goals": 0,
@@ -290,9 +306,12 @@ export const INITIAL_PLAYERS: Player[] = [
     "name": "Elise Laxague",
     "hometown": "San Jose, CA",
     "photoUrl": "https://i.imgur.com/2eU2GVy.jpeg",
-    "weight": "112",
+    "weight": "112 lbs",
     "primaryPosition": "Midfielder",
-    "birthday": "05/30/2011"
+    "birthday": "05/30/2011",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "stats": {
@@ -308,17 +327,17 @@ export const INITIAL_PLAYERS: Player[] = [
     "secondaryPositions": [
       "Winger"
     ],
-    "profileDocUrl": "Quinn Mozdean Player Profile",
+    "profileDocUrl": "https://drive.google.com/file/d/1PtSuxWrpHXqlj-RwAiGwiKiYEEIT8jxa/view?usp=drivesdk",
     "id": "p9",
     "hometown": "Saratoga, CA",
     "photoUrl": "https://i.imgur.com/nDxeOkf.jpeg",
-    "weight": "145",
+    "weight": "145 lbs",
     "specificPosition": "Winger/ Striker",
     "gpa": "4.00",
     "dominantFoot": "Right",
     "jerseyNumber": 9,
     "commitment": "Uncommitted",
-    "birthYear": 2010,
+    "birthYear": 2011,
     "awards": [
       "ECNL NorCal Top Goalscorer Candidate",
       "Surf Cup Best XI"
@@ -328,7 +347,11 @@ export const INITIAL_PLAYERS: Player[] = [
     "name": "Quinn Mozdean",
     "height": "5'8\"",
     "birthday": "6/26/2011",
-    "profilePdfUrl": "Quinn Mozdean Player Profile"
+    "profilePdfUrl": "https://drive.google.com/file/d/1PtSuxWrpHXqlj-RwAiGwiKiYEEIT8jxa/view?usp=drivesdk",
+    "phone": "",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "stats": {
@@ -341,14 +364,14 @@ export const INITIAL_PLAYERS: Player[] = [
     },
     "jerseyNumber": 10,
     "dominantFoot": "Right",
-    "profileDocUrl": "Ellie Tarabichi Player Profile.pdf",
+    "profileDocUrl": "https://drive.google.com/file/d/1ZVpM8eUMRiN0sKyZC5pIpdjJjjHgx28B/view?usp=sharing",
     "contactEmail": "ellietarabich@gmail.com",
     "secondaryPositions": [
       "Attacking Midfielder"
     ],
     "commitment": "Uncommitted",
     "name": "Ellie Tarabichi",
-    "weight": "130",
+    "weight": "130 lbs",
     "primaryPosition": "Forward",
     "gradYear": 2028,
     "specificPosition": "Striker (#9)",
@@ -362,7 +385,12 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "highSchool": "Leland High School",
     "height": "5'6\"",
-    "profilePdfUrl": "Ellie Tarabichi Player Profile.pdf"
+    "profilePdfUrl": "https://drive.google.com/file/d/1ZVpM8eUMRiN0sKyZC5pIpdjJjjHgx28B/view?usp=sharing",
+    "birthday": "",
+    "phone": "",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "id": "p11",
@@ -370,20 +398,22 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "gradYear": 2029,
     "jerseyNumber": 11,
-    "dominantFoot": "Left",
-    "profileDocUrl": "Sienna Ranaweera Player Profile",
+    "dominantFoot": "Both",
+    "profileDocUrl": "https://drive.google.com/file/d/1L5KCI0TcLNWGInmnOM_nqV7kb85t19q8/view?usp=drive_link",
     "hometown": "Palo Alto, CA",
     "photoUrl": "https://i.imgur.com/BslIpek.jpeg",
-    "specificPosition": "Attacking Midfielder (#10)",
+    "specificPosition": "Attacking Mid (#10)",
     "name": "Sienna Ranaweera",
     "contactEmail": "siennaranaweera@gmail.com",
+    "phone": "669-588-3877",
     "secondaryPositions": [
       "Winger",
       "Central Midfielder"
     ],
     "primaryPosition": "Midfielder",
-    "height": "5'2\"",
-    "highSchool": "Bay Area High School",
+    "height": "5'3\"",
+    "highSchool": "Kennedy High School",
+    "birthday": "5/5/2011",
     "awards": [
       "ECNL Best Midfielder Candidate",
       "Olympic Development Program (ODP)"
@@ -396,9 +426,10 @@ export const INITIAL_PLAYERS: Player[] = [
       "cleanSheets": 0,
       "appearances": 0
     },
-    "birthYear": 2010,
+    "birthYear": 2011,
     "weight": "120 lbs",
-    "profilePdfUrl": "Sienna Ranaweera Player Profile"
+    "highlightsUrl": "https://www.youtube.com/watch?v=QR-mGaR64rA",
+    "profilePdfUrl": "https://drive.google.com/file/d/1L5KCI0TcLNWGInmnOM_nqV7kb85t19q8/view?usp=drive_link"
   },
   {
     "jerseyNumber": 12,
@@ -409,15 +440,16 @@ export const INITIAL_PLAYERS: Player[] = [
     "secondaryPositions": [
       "Defensive Midfielder"
     ],
-    "birthYear": 2010,
+    "birthYear": 2011,
     "hometown": "Santa Clara, CA",
     "photoUrl": "https://i.imgur.com/46J8U7l.jpeg",
-    "contactEmail": "yoonrosesweet@gmail.com",
+    "contactEmail": "yoonwookim29@gmail.com",
+    "phone": "669-899-1590",
     "id": "p12",
-    "specificPosition": "Defensive/Central Mid (#6/8)",
-    "gpa": "4.0",
+    "specificPosition": "Midfielder (#6/8)",
+    "gpa": "4.00",
     "highSchool": "Leland High School",
-    "weight": "120",
+    "weight": "120 lbs",
     "stats": {
       "cleanSheets": 0,
       "minutesPlayed": 0,
@@ -433,15 +465,17 @@ export const INITIAL_PLAYERS: Player[] = [
       "ECNL Midfield General"
     ],
     "birthday": "5/29/2011",
-    "profilePdfUrl": "Yoonwoo Kim Player Profile (1).pdf"
+    "instagram": "https://www.instagram.com/yoonwookim.soccer?vrfl=MnVuMGJ5Mm5tZ3Vs&utm_source=qr",
+    "profilePdfUrl": ""
   },
   {
-    "profileDocUrl": "MarleyDorsey playerprofile.pdf",
+    "profileDocUrl": "https://drive.google.com/file/d/1U2oqyKpHU1iaWZrM64M9w1Adye35OEpr/view?usp=sharing",
     "id": "p14",
     "contactEmail": "marleydorsey@gmail.com",
+    "phone": "669-278-5713",
     "name": "Marley Dorsey",
     "primaryPosition": "Defender",
-    "birthYear": 2010,
+    "birthYear": 2011,
     "commitment": "Uncommitted",
     "secondaryPositions": [
       "Defensive Midfielder"
@@ -449,8 +483,8 @@ export const INITIAL_PLAYERS: Player[] = [
     "dominantFoot": "Right",
     "jerseyNumber": 14,
     "specificPosition": "Center Back (#5)",
-    "height": "5'7\"",
-    "gpa": "3.86",
+    "height": "5'8\"",
+    "gpa": "4.00",
     "awards": [
       "ECNL NorCal Defensive Honors"
     ],
@@ -468,7 +502,10 @@ export const INITIAL_PLAYERS: Player[] = [
     },
     "highSchool": "Leland High School",
     "birthday": "4/20/2011",
-    "profilePdfUrl": "MarleyDorsey playerprofile.pdf"
+    "ncaaId": "2605928116",
+    "highlightsUrl": "https://www.youtube.com/watch?v=sOC-daoCQdg",
+    "instagram": "https://www.instagram.com/marleydorsey.2029?mdxt=OXVydzMydDF0Zm5k",
+    "profilePdfUrl": "https://drive.google.com/file/d/1U2oqyKpHU1iaWZrM64M9w1Adye35OEpr/view?usp=sharing"
   },
   {
     "weight": "120 lbs",
@@ -481,6 +518,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "goals": 0
     },
     "contactEmail": "meera.ramaliao@gmail.com",
+    "phone": "650-380-2024",
     "awards": [],
     "photoUrl": "https://i.imgur.com/sRCBiQo.jpeg",
     "height": "5'4\"",
@@ -489,10 +527,15 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "name": "Meera Ramasubramanian",
     "id": "p_1787410541257_12",
-    "specificPosition": "Outside Back (#2)/ Center Back",
+    "specificPosition": "Outside/Center Back",
     "primaryPosition": "Defender",
     "gpa": "3.92",
-    "birthday": "1/20/2011"
+    "birthday": "1/20/2011",
+    "profileDocUrl": "https://drive.google.com/file/d/1_a620aKU6yG-rN0_fxP0jjTzM7JZuqMS/view?usp=sharing",
+    "ncaaId": "",
+    "highlightsUrl": "https://drive.google.com/file/d/1-oBFJ4epOtbCaSxZs8PfWHvUry99cIkd/view",
+    "instagram": "",
+    "profilePdfUrl": "https://drive.google.com/file/d/1_a620aKU6yG-rN0_fxP0jjTzM7JZuqMS/view?usp=sharing"
   },
   {
     "commitment": "Uncommitted",
@@ -518,7 +561,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "id": "p_1787410541257_13"
   },
   {
-    "specificPosition": "Winger (#7, #11) / Striker (#9)",
+    "specificPosition": "Winger / Striker",
     "weight": "120 lbs",
     "commitment": "Uncommitted",
     "birthYear": 2010,
@@ -531,7 +574,7 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "gpa": "3.90",
     "id": "p18",
-    "height": "5\"6\"",
+    "height": "5'6\"",
     "dominantFoot": "Right",
     "jerseyNumber": 18,
     "stats": {
@@ -548,6 +591,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "photoUrl": "https://i.imgur.com/1NYOhYH.jpeg",
     "hometown": "Cupertino, CA",
     "contactEmail": "ellaharrissoccer29@gmail.com",
+    "phone": "(408) 913-5296",
     "birthday": "10/17/2010",
     "profileDocUrl": "https://drive.google.com/file/d/1oC8xZg6k4kuytSAvlV6XxgxqOtKbRom-/view?usp=drivesdk",
     "profilePdfUrl": "https://drive.google.com/file/d/1oC8xZg6k4kuytSAvlV6XxgxqOtKbRom-/view?usp=drivesdk",
@@ -555,8 +599,9 @@ export const INITIAL_PLAYERS: Player[] = [
   },
   {
     "id": "p_1787410541257_15",
-    "height": "5'5",
+    "height": "5'5\"",
     "contactEmail": "sofiamarini2028@gmail.com",
+    "phone": "(650)8632100",
     "awards": [],
     "gradYear": 2028,
     "specificPosition": "Winger/ Striker",
@@ -578,21 +623,23 @@ export const INITIAL_PLAYERS: Player[] = [
     "birthday": "08/05/2010",
     "highlightsUrl": "https://www.youtube.com/@SofiaMarini2028",
     "ncaaId": "2607992951",
-    "instagram": "https://www.instagram.com/sofia.marini.soccer"
+    "instagram": "https://www.instagram.com/sofia.marini.soccer",
+    "profileDocUrl": "https://drive.google.com/file/d/16vyhZGxGHGxr_mzdo5vMqF0Tuw7H-A3o/view?usp=sharing",
+    "profilePdfUrl": "https://drive.google.com/file/d/16vyhZGxGHGxr_mzdo5vMqF0Tuw7H-A3o/view?usp=sharing"
   },
   {
-    "specificPosition": "CB (#4) / Defensive Mid (#6)",
+    "specificPosition": "DMD (#6) / CC (#4)",
     "awards": [
       "Team Captain",
       "ECNL NorCal Defensive MVP Candidate",
       "Surf Cup Best XI Defender"
     ],
-    "profileDocUrl": "Mia Tally #22 Player Profile.pdf",
+    "profileDocUrl": "https://drive.google.com/open?id=11iTC8dA9Q0I4gfWmrGIH5nricmZwWQ_O",
     "jerseyNumber": 22,
-    "profilePdfUrl": "Mia Tally #22 Player Profile.pdf",
-    "primaryPosition": "Defender",
+    "profilePdfUrl": "https://drive.google.com/open?id=11iTC8dA9Q0I4gfWmrGIH5nricmZwWQ_O",
+    "primaryPosition": "Midfielder",
     "isCaptain": false,
-    "highlightsUrl": "https://www.youtube.com",
+    "highlightsUrl": "",
     "ncaaId": "2609189079",
     "photoUrl": "https://i.imgur.com/byjHVgw.jpeg",
     "hometown": "Cupertino, CA",
@@ -604,6 +651,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "weight": "120 lbs",
     "contactEmail": "miatally.soccer@gmail.com",
+    "phone": "408-482-1387",
     "stats": {
       "appearances": 0,
       "starts": 0,
@@ -616,17 +664,18 @@ export const INITIAL_PLAYERS: Player[] = [
     "gradYear": 2029,
     "highSchool": "Willow Glen High School",
     "secondaryPositions": [
-      "Right Back",
+      "Center Back",
       "Defensive Midfielder"
     ],
-    "id": "p22"
+    "id": "p22",
+    "instagram": ""
   },
   {
     "weight": "120 lbs",
     "hometown": "Sunnyvale, CA",
     "photoUrl": "https://i.imgur.com/cAInQxB.jpeg",
-    "profileDocUrl": "Mack Chamberlain Player Card.pdf",
-    "birthYear": 2010,
+    "profileDocUrl": "https://drive.google.com/file/d/1w91TCu0KVuMohLtlWMNdV_n5mUoN418u/view?usp=drivesdk",
+    "birthYear": 2011,
     "secondaryPositions": [
       "Center Forward"
     ],
@@ -646,18 +695,22 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "commitment": "Uncommitted",
     "contactEmail": "mack.turf.15@gmail.com",
+    "phone": "916-260-6607",
     "id": "p24",
-    "gpa": "4.0",
+    "gpa": "4.00",
     "name": "Camille Chamberlain",
-    "specificPosition": "Striker (#9)/Winger (#7)",
+    "specificPosition": "Winger / Striker",
     "dominantFoot": "Both",
     "jerseyNumber": 24,
     "highSchool": "Vista Del Lago High School",
     "birthday": "03/03/2011",
-    "profilePdfUrl": "Mack Chamberlain Player Card.pdf"
+    "profilePdfUrl": "https://drive.google.com/file/d/1w91TCu0KVuMohLtlWMNdV_n5mUoN418u/view?usp=drivesdk",
+    "ncaaId": "",
+    "highlightsUrl": "https://youtu.be/ssU56jau_hQ?si=uuTlZeVGL6rpliPW",
+    "instagram": ""
   },
   {
-    "profileDocUrl": "Emma Holtz #25 (1).pdf",
+    "profileDocUrl": "https://drive.google.com/file/d/1aXU2aaqDSccFnLZYO1EqmPuOembNwVOu/view",
     "stats": {
       "starts": 0,
       "goals": 0,
@@ -672,8 +725,8 @@ export const INITIAL_PLAYERS: Player[] = [
     "dominantFoot": "Both",
     "jerseyNumber": 25,
     "gpa": "3.83",
-    "birthYear": 2010,
-    "specificPosition": "Outside Back (#25)",
+    "birthYear": 2011,
+    "specificPosition": "OB (#2) / Mid (#6, #8)",
     "secondaryPositions": [
       "Wingback"
     ],
@@ -681,6 +734,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "ECNL NorCal Honors"
     ],
     "contactEmail": "emmaholtz25@gmail.com",
+    "phone": "650-304-6799",
     "height": "5'5\"",
     "highSchool": "Menlo Atherton High School",
     "photoUrl": "https://i.imgur.com/oQmrQ8c.jpeg",
@@ -689,9 +743,10 @@ export const INITIAL_PLAYERS: Player[] = [
     "gradYear": 2029,
     "name": "Emma Holtz",
     "birthday": "03/25/2011",
-    "profilePdfUrl": "Emma Holtz #25 (1).pdf",
+    "profilePdfUrl": "https://drive.google.com/file/d/1aXU2aaqDSccFnLZYO1EqmPuOembNwVOu/view",
     "ncaaId": "2602825525",
-    "instagram": "Instagram.com/emma.l.holtz/"
+    "highlightsUrl": "https://www.youtube.com/@FamilyHoltz",
+    "instagram": "https://instagram.com/emma.l.holtz/"
   },
   {
     "name": "Sakura Kapla",
@@ -705,30 +760,34 @@ export const INITIAL_PLAYERS: Player[] = [
       "cleanSheets": 0
     },
     "highSchool": "Sacred Heart Cathedral Prep",
-    "specificPosition": "Attacking Mid/FWD (10/9,11)",
+    "specificPosition": "Attacking Mid (#10)",
     "gpa": "4.17",
     "primaryPosition": "Midfielder",
     "jerseyNumber": 26,
     "dominantFoot": "Both",
-    "weight": "125",
+    "weight": "125 lbs",
     "photoUrl": "https://i.imgur.com/Y0FJvHk.jpeg",
     "hometown": "San Jose, CA",
     "secondaryPositions": [
       "Forward",
       "Central Midfielder"
     ],
-    "birthYear": 2010,
+    "birthYear": 2011,
     "awards": [
       "ECNL Top Playmaker",
       "Surf Cup Standout"
     ],
     "contactEmail": "sakurakapla@gmail.com",
+    "phone": "415.650.9478",
     "gradYear": 2029,
     "commitment": "Uncommitted",
     "height": "5'6\"",
-    "profileDocUrl": "Sakura Kapla #26",
+    "profileDocUrl": "https://drive.google.com/file/d/1MTp-TEhC3sNMo4OcbggIkUJ8GRYsymzB/view?usp=sharing",
     "birthday": "4/26/2011",
-    "profilePdfUrl": "Sakura Kapla #26"
+    "highlightsUrl": "https://www.youtube.com/@SakuraKaplasoccervids",
+    "instagram": "https://www.instagram.com/sakura_kapla/",
+    "profilePdfUrl": "https://drive.google.com/file/d/1MTp-TEhC3sNMo4OcbggIkUJ8GRYsymzB/view?usp=sharing",
+    "ncaaId": ""
   },
   {
     "height": "5'5\"",
@@ -741,8 +800,9 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "weight": "120 lbs",
     "contactEmail": "jess.teixeira10@gmail.com",
+    "phone": "408-220-3462",
     "primaryPosition": "Goalkeeper",
-    "specificPosition": "Goalkeeper (GK)",
+    "specificPosition": "Goalkeeper",
     "id": "p28",
     "hometown": "Fremont, CA",
     "photoUrl": "https://i.imgur.com/5MKv5Bg.jpeg",
@@ -764,10 +824,11 @@ export const INITIAL_PLAYERS: Player[] = [
     "gradYear": 2029,
     "name": "Jessica Teixeira",
     "birthday": "11/14/2010",
-    "profileDocUrl": "Jessica Teixeira profile July 2026.pdf",
-    "profilePdfUrl": "Jessica Teixeira profile July 2026.pdf",
-    "highlightsUrl": "Jessica Teixeira Highlights",
-    "instagram": "Jessica Teixiera Instagram"
+    "ncaaId": "2611220089",
+    "profileDocUrl": "https://drive.google.com/file/d/1ZdrWhRBBh__uGihC0aOpo4r8JKvtiis1/view?usp=sharing",
+    "profilePdfUrl": "https://drive.google.com/file/d/1ZdrWhRBBh__uGihC0aOpo4r8JKvtiis1/view?usp=sharing",
+    "highlightsUrl": "https://www.youtube.com/@JessicaTeixeira-GK",
+    "instagram": ""
   },
   {
     "secondaryPositions": [
@@ -775,7 +836,7 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "primaryPosition": "Forward",
     "gpa": "3.60",
-    "birthYear": 2010,
+    "birthYear": 2011,
     "jerseyNumber": 30,
     "dominantFoot": "Right",
     "highSchool": "Saint Francis High School",
@@ -792,7 +853,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "ECNL All-Conference Candidate"
     ],
     "gradYear": 2029,
-    "specificPosition": "Winger (#7, #11) Striker (#9)",
+    "specificPosition": "Winger (#11)",
     "height": "5'11\"",
     "weight": "120 lbs",
     "hometown": "Milpitas, CA",
@@ -800,6 +861,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "name": "Amaya Espinoza",
     "contactEmail": "amayaespinoza2029@gmail.com",
+    "phone": "408-992-1204",
     "birthday": "06/28/2011",
     "highlightsUrl": "https://drive.google.com/file/d/1_bGv1gW7etarJ5BQCKScr-U1MLMDV_pb/view?usp=drivesdk",
     "instagram": "https://www.instagram.com/amaya.espinoza29"
@@ -816,12 +878,13 @@ export const INITIAL_PLAYERS: Player[] = [
     "weight": "120 lbs",
     "gpa": "3.90",
     "contactEmail": "Kaylahaladasoccer@gmail.com",
+    "phone": "650-622-2328",
     "specificPosition": "Winger (#7)",
     "profileDocUrl": "Kayla Halada Profile",
     "name": "Kayla Halada",
     "id": "p32",
     "gradYear": 2029,
-    "birthYear": 2010,
+    "birthYear": 2011,
     "jerseyNumber": 32,
     "dominantFoot": "Both",
     "photoUrl": "https://i.imgur.com/MqdRdQg.jpeg",
@@ -837,20 +900,21 @@ export const INITIAL_PLAYERS: Player[] = [
       "cleanSheets": 0
     },
     "birthday": "06/20/2011",
-    "profilePdfUrl": "Kayla Halada Profile",
+    "profilePdfUrl": "",
     "highlightsUrl": "https://youtu.be/sP29FrjrxVk"
   },
   {
     "awards": [],
     "contactEmail": "avery.richter2029@gmail.com",
+    "phone": "669-251-1475",
     "name": "Avery Richter",
     "height": "5'8\"",
     "weight": "120 lbs",
     "jerseyNumber": 37,
     "dominantFoot": "Left",
     "highSchool": "Archbishop Mitty High School",
-    "gpa": "4.30",
-    "specificPosition": "Outside Back/Center Back",
+    "gpa": "4.70",
+    "specificPosition": "Outside/Center Back",
     "photoUrl": "https://i.imgur.com/bhrA34h.jpeg",
     "id": "p_1787410541257_23",
     "stats": {
@@ -863,12 +927,14 @@ export const INITIAL_PLAYERS: Player[] = [
     "gradYear": 2029,
     "commitment": "Uncommitted",
     "birthday": "09/12/2010",
-    "profileDocUrl": "AveryRichterProfile",
-    "profilePdfUrl": "AveryRichterProfile",
-    "highlightsUrl": "HighlightsAveryRichter"
+    "ncaaId": "2603844837",
+    "instagram": "https://www.instagram.com/averyrichterfutbol?cplk=MWZyMzQ1MHpmNHJ3MA%3D%3D&utm_source=qr",
+    "profileDocUrl": "https://canva.link/s73h2xvinuyohry",
+    "profilePdfUrl": "https://canva.link/s73h2xvinuyohry",
+    "highlightsUrl": "https://my.sportsrecruits.com/athlete/avery_richter?playlist=105197"
   },
   {
-    "height": "5’2”",
+    "height": "5'2\"",
     "specificPosition": "Winger (#11)",
     "secondaryPositions": [
       "Forward"
@@ -887,43 +953,49 @@ export const INITIAL_PLAYERS: Player[] = [
       "assists": 0
     },
     "highSchool": "Live Oak High School",
-    "birthYear": 2010,
+    "birthYear": 2011,
     "weight": "120 lbs",
     "contactEmail": "Rgagni95037@yahoo.com",
-    "profileDocUrl": "Isabella Gagni Profile",
+    "phone": "408-722-6687",
+    "profileDocUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
     "photoUrl": "https://i.imgur.com/nfyofPG.jpeg",
     "hometown": "Morgan Hill, CA",
-    "gpa": "3.7",
+    "gpa": "4.10",
     "dominantFoot": "Right",
     "jerseyNumber": 46,
     "id": "p46",
     "commitment": "Uncommitted",
     "gradYear": 2029,
     "birthday": "04/09/2011",
-    "profilePdfUrl": "Isabella Gagni Profile"
+    "profilePdfUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
+    "ncaaId": "",
+    "highlightsUrl": "",
+    "instagram": ""
   },
   {
     "id": "p_1787410541257_25",
     "awards": [],
     "jerseyNumber": 49,
     "dominantFoot": "Right",
-    "height": "5'5",
+    "height": "5'5\"",
     "gradYear": 2029,
-    "specificPosition": "Winger (#11)",
+    "specificPosition": "Outside Back (#2)",
     "contactEmail": "sadiewgoldberg@icloud.com",
+    "phone": "650-526-8100",
+    "birthday": "07/16/2011",
     "commitment": "Uncommitted",
-    "weight": "120",
+    "weight": "120 lbs",
     "photoUrl": "https://i.imgur.com/njCAIUP.jpeg",
     "gpa": "4.00",
     "secondaryPositions": [],
     "name": "Sadie Goldberg",
-    "primaryPosition": "Forward",
+    "primaryPosition": "Defender",
     "stats": {
       "appearances": 0,
       "goals": 0,
       "assists": 0
     },
-    "highSchool": "TBD"
+    "highSchool": "Burlingame High School"
   }
 ];
 
@@ -1505,9 +1577,9 @@ export const INITIAL_STANDINGS: StandingTeam[] = [
 
 export const INITIAL_COACHES: Coach[] = [
   {
-    "phone": "",
+    "phone": "(720) 475-6991",
     "experience": "12+ Years Elite Youth Development & ECNL National Championships",
-    "email": "paulbravo9@gmail.com",
+    "email": "paulgbravo9@gmail.com",
     "almaMater": "De Anza Force Academy Director",
     "name": "Paul Bravo",
     "license": "USSF A-Senior National License / UEFA Licensed",
@@ -1521,7 +1593,7 @@ export const INITIAL_COACHES: Coach[] = [
     "name": "Yuta Tanaka",
     "license": "NSCA-CPT, NSCA-CSCS",
     "id": "c-yuta",
-    "phone": "",
+    "phone": "(650) 619-3670",
     "email": "yuta.tanaka@gmail.com",
     "almaMater": "San Jose Earthquakes, Oakland Roots",
     "bio": "Assistant Coach for De Anza Force U16G ECNL. Specializes in tactical film review, individualized player technique, and match-day preparation.",
