@@ -103,10 +103,10 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
   // Single Player Card matching bifold specifications
   const renderPlayerCard = (player: Player) => {
-    const validDocUrl = getValidDocumentUrl(player);
-    const fallbackModalUrl = `https://www.deanzaforce2011g.com/?player=${encodeURIComponent(String(player.jerseyNumber ?? player.id))}#roster`;
-    const qrTarget = validDocUrl || fallbackModalUrl;
-    const profileUrl = validDocUrl || fallbackModalUrl;
+    const playerKey = encodeURIComponent(String(player.jerseyNumber ?? player.id));
+    const permanentRedirectUrl = `https://www.deanzaforce2011g.com/?profile=${playerKey}`;
+    const qrTarget = permanentRedirectUrl;
+    const profileUrl = permanentRedirectUrl;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;
     const position = getPlayerPosition(player);
     const gpaDisplay = player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' && player.gpa.toLowerCase() !== 'n/a' ? player.gpa : 'NA';

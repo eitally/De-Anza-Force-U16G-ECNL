@@ -1,6 +1,6 @@
 {
-  "summary":  "Updated implementation plan removing the 'Request Match Film' placeholder card from the Game Film section so Game Film is only rendered when a player has a highlight video or external reel URL.",
-  "updatedAt":  "2026-11-07T14:26:44.786413737Z",
+  "summary":  "Implementation plan for permanent website redirect QR codes on the printable scouting packet that automatically redirect college scouts straight to each player's latest Google Drive profile document.",
+  "updatedAt":  "2026-11-09T19:19:58.800180154Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

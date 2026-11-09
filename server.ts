@@ -753,6 +753,26 @@ If any updated scores or standings are present in the snippet below, extract the
     }
   });
 
+  // Server-side dynamic QR redirect route (/profile/:key)
+  app.get('/profile/:key', (req, res) => {
+    const rawKey = (req.params.key || '').trim().replace(/^#/, '').toLowerCase();
+    const store = readServerTeamStore();
+    const players: any[] = Array.isArray(store.players) ? store.players : [];
+    const matched = players.find(
+      (p) =>
+        String(p.jerseyNumber).toLowerCase() === rawKey ||
+        String(p.id || '').toLowerCase() === rawKey ||
+        String(p.name || '').trim().toLowerCase() === rawKey
+    );
+    const rawDoc = (matched?.profilePdfUrl || matched?.profileDocUrl || '').trim();
+    if (rawDoc && (rawDoc.startsWith('http://') || rawDoc.startsWith('https://'))) {
+      res.redirect(302, rawDoc);
+      return;
+    }
+    res.redirect(302, `/?profile=${encodeURIComponent(req.params.key || '')}`);
+  });
+
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

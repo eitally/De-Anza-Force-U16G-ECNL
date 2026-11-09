@@ -181,7 +181,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "Forward"
     ],
     "birthYear": 2011,
-    "gpa": "4.05",
+    "gpa": "4.20",
     "awards": [
       "ECNL Best Defense Candidate",
       "Surf Cup Standout"
@@ -256,7 +256,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "weight": "120 lbs",
     "id": "p4",
     "commitment": "Uncommitted",
-    "gpa": "3.90",
+    "gpa": "4.00",
     "name": "Breeze Longhenry",
     "specificPosition": "Wing Back (#2)",
     "secondaryPositions": [
@@ -386,7 +386,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "highSchool": "Leland High School",
     "height": "5'6\"",
     "profilePdfUrl": "https://drive.google.com/file/d/1ZVpM8eUMRiN0sKyZC5pIpdjJjjHgx28B/view?usp=sharing",
-    "birthday": "",
+    "birthday": "01/05/2011",
     "phone": "",
     "ncaaId": "",
     "highlightsUrl": "",
@@ -447,7 +447,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "phone": "669-899-1590",
     "id": "p12",
     "specificPosition": "Midfielder (#6/8)",
-    "gpa": "4.00",
+    "gpa": "4.37",
     "highSchool": "Leland High School",
     "weight": "120 lbs",
     "stats": {
@@ -458,7 +458,7 @@ export const INITIAL_PLAYERS: Player[] = [
       "appearances": 0,
       "starts": 0
     },
-    "profileDocUrl": "Yoonwoo Kim Player Profile (1).pdf",
+    "profileDocUrl": "https://drive.google.com/file/d/1-q0KjD0LAmsxOBP6GxmZ3WYvC4Rt_nGK/view?usp=sharing",
     "height": "5'6\"",
     "name": "Yoonwoo Kim",
     "awards": [
@@ -466,7 +466,9 @@ export const INITIAL_PLAYERS: Player[] = [
     ],
     "birthday": "5/29/2011",
     "instagram": "https://www.instagram.com/yoonwookim.soccer?vrfl=MnVuMGJ5Mm5tZ3Vs&utm_source=qr",
-    "profilePdfUrl": ""
+    "profilePdfUrl": "https://drive.google.com/file/d/1-q0KjD0LAmsxOBP6GxmZ3WYvC4Rt_nGK/view?usp=sharing",
+    "ncaaId": "",
+    "highlightsUrl": ""
   },
   {
     "profileDocUrl": "https://drive.google.com/file/d/1U2oqyKpHU1iaWZrM64M9w1Adye35OEpr/view?usp=sharing",
@@ -628,7 +630,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "profilePdfUrl": "https://drive.google.com/file/d/16vyhZGxGHGxr_mzdo5vMqF0Tuw7H-A3o/view?usp=sharing"
   },
   {
-    "specificPosition": "DMD (#6) / CC (#4)",
+    "specificPosition": "DMD (#6) / CB (#4)",
     "awards": [
       "Team Captain",
       "ECNL NorCal Defensive MVP Candidate",
@@ -639,7 +641,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "profilePdfUrl": "https://drive.google.com/open?id=11iTC8dA9Q0I4gfWmrGIH5nricmZwWQ_O",
     "primaryPosition": "Midfielder",
     "isCaptain": false,
-    "highlightsUrl": "",
+    "highlightsUrl": "https://www.youtube.com/watch?v=yMIAx7MiVyc",
     "ncaaId": "2609189079",
     "photoUrl": "https://i.imgur.com/byjHVgw.jpeg",
     "hometown": "Cupertino, CA",
@@ -913,7 +915,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "jerseyNumber": 37,
     "dominantFoot": "Left",
     "highSchool": "Archbishop Mitty High School",
-    "gpa": "4.70",
+    "gpa": "4.60",
     "specificPosition": "Outside/Center Back",
     "photoUrl": "https://i.imgur.com/bhrA34h.jpeg",
     "id": "p_1787410541257_23",
@@ -960,7 +962,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "profileDocUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
     "photoUrl": "https://i.imgur.com/nfyofPG.jpeg",
     "hometown": "Morgan Hill, CA",
-    "gpa": "4.10",
+    "gpa": "4.00",
     "dominantFoot": "Right",
     "jerseyNumber": 46,
     "id": "p46",
@@ -969,7 +971,7 @@ export const INITIAL_PLAYERS: Player[] = [
     "birthday": "04/09/2011",
     "profilePdfUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
     "ncaaId": "",
-    "highlightsUrl": "",
+    "highlightsUrl": "https://youtu.be/rDXD0_Obymg?si=iHdFFdqX04CUYBkf",
     "instagram": ""
   },
   {

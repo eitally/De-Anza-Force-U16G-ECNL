@@ -25,7 +25,7 @@ import {
   DEFAULT_MASTER_ALBUM_INFO
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
-import { enrichPlayersWithVerifiedSheet } from './utils/standingsCron';
+import { enrichPlayersWithVerifiedSheet, fetchLiveRosterSheetAndEnrich } from './utils/standingsCron';
 import { getValidDocumentUrl } from './utils/urlUtils';
 import {
   getOfficialImgurHeadshotForPlayer,
@@ -286,6 +286,34 @@ export default function App() {
     };
   }, []);
 
+  // Periodic Roster Google Sheet polling (checks on load and every 15 minutes when rosterGoogleSheetUrl is configured)
+  useEffect(() => {
+    const sheetUrl = (teamInfo?.rosterGoogleSheetUrl || '').trim();
+    if (!sheetUrl) return;
+    let active = true;
+
+    const pollRosterSheet = async () => {
+      try {
+        const { players: synced, changed } = await fetchLiveRosterSheetAndEnrich(sheetUrl, players);
+        if (!active || !changed) return;
+        synced.sort((a, b) => (a.jerseyNumber ?? 999) - (b.jerseyNumber ?? 999));
+        setPlayers(synced);
+        try {
+          localStorage.setItem('daf_team_players', JSON.stringify(synced));
+        } catch {}
+        const cleanPayload = sanitizeGlobalDocPayload({ players: synced });
+        saveTeamDataToServerAndCloud(cleanPayload);
+      } catch {}
+    };
+
+    pollRosterSheet();
+    const intervalId = setInterval(pollRosterSheet, 15 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [teamInfo?.rosterGoogleSheetUrl]);
+
   // Fetch live ECNL Northern California U16 standings & schedule from Google Apps Script Web App API once on page load
   useEffect(() => {
     let isMounted = true;
@@ -373,8 +401,101 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Detect permanent QR code redirect parameter (?profile=22 or /profile/22)
+  const getProfileRedirectParam = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    const searchParams = new URLSearchParams(window.location.search);
+    const fromQuery = searchParams.get('profile');
+    if (fromQuery && fromQuery.trim() !== '') return fromQuery.trim();
+
+    const pathMatch = window.location.pathname.match(/^\/profile\/([^/?#]+)/i);
+    if (pathMatch && pathMatch[1]) {
+      try {
+        return decodeURIComponent(pathMatch[1]).trim();
+      } catch {
+        return pathMatch[1].trim();
+      }
+    }
+
+    if (window.location.hash.includes('?')) {
+      const hashQuery = window.location.hash.slice(window.location.hash.indexOf('?'));
+      const hashParams = new URLSearchParams(hashQuery);
+      const fromHash = hashParams.get('profile');
+      if (fromHash && fromHash.trim() !== '') return fromHash.trim();
+    }
+    return null;
+  };
+
+  const findPlayerByRedirectKey = (list: Player[], rawKey: string): Player | undefined => {
+    const key = rawKey.trim().replace(/^#/, '').toLowerCase();
+    return list.find(
+      p =>
+        String(p.jerseyNumber).toLowerCase() === key ||
+        (p.id || '').toLowerCase() === key ||
+        (p.name || '').trim().toLowerCase() === key
+    );
+  };
+
+  const [profileRedirectKey, setProfileRedirectKey] = useState<string | null>(getProfileRedirectParam);
+  const [redirectTargetDocUrl, setRedirectTargetDocUrl] = useState<string | null>(() => {
+    const key = getProfileRedirectParam();
+    if (!key) return null;
+    const initialMatch = findPlayerByRedirectKey(players, key);
+    return initialMatch ? getValidDocumentUrl(initialMatch) || null : null;
+  });
+  const [redirectMatchedPlayer, setRedirectMatchedPlayer] = useState<Player | null>(() => {
+    const key = getProfileRedirectParam();
+    if (!key) return null;
+    return findPlayerByRedirectKey(players, key) || null;
+  });
+
+  useEffect(() => {
+    if (!profileRedirectKey) return;
+    let cancelled = false;
+
+    (async () => {
+      let latestList = players;
+
+      // Attempt fast live lookup (max 900ms) so newly updated Google Drive links take effect immediately
+      try {
+        const liveData = await Promise.race([
+          fetchTeamDataFromServerAndCloud(),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), 900)),
+        ]);
+        if (liveData && Array.isArray(liveData.players) && liveData.players.length > 0) {
+          const { players: enrichedLive } = enrichPlayersWithVerifiedSheet(liveData.players as Player[]);
+          latestList = enrichedLive;
+        }
+      } catch {}
+
+      if (cancelled) return;
+
+      const matched = findPlayerByRedirectKey(latestList, profileRedirectKey) || findPlayerByRedirectKey(INITIAL_PLAYERS, profileRedirectKey);
+      if (!matched) {
+        setProfileRedirectKey(null);
+        return;
+      }
+
+      setRedirectMatchedPlayer(matched);
+      const docUrl = getValidDocumentUrl(matched);
+      if (docUrl) {
+        setRedirectTargetDocUrl(docUrl);
+        window.location.replace(docUrl);
+      } else {
+        // Fallback: if player has not uploaded a PDF yet, open their interactive Player Modal on the site
+        setSelectedPlayer(matched);
+        setProfileRedirectKey(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profileRedirectKey]);
+
   // Deep-link to player profile modal from QR codes or shared URLs (?player=p1 or /#roster?player=p1)
   useEffect(() => {
+    if (profileRedirectKey) return;
     const searchParams = new URLSearchParams(window.location.search);
     let playerId = searchParams.get('player');
     if (!playerId && window.location.hash.includes('?')) {
@@ -383,12 +504,12 @@ export default function App() {
       playerId = hashParams.get('player');
     }
     if (playerId && players.length > 0) {
-      const match = players.find(p => p.id === playerId || String(p.jerseyNumber) === playerId);
+      const match = findPlayerByRedirectKey(players, playerId);
       if (match) {
         setSelectedPlayer(match);
       }
     }
-  }, [players]);
+  }, [players, profileRedirectKey]);
 
   const handleOpenTeamEditor = (tab: EditorTab = 'players', targetPlayer?: Player | null, targetCoach?: Coach | null) => {
     setEditorInitialTab(tab);
@@ -670,6 +791,55 @@ export default function App() {
           window.history.pushState({}, '', '/');
         }}
       />
+    );
+  }
+
+  if (profileRedirectKey) {
+    return (
+      <div className="min-h-screen bg-[#080c14] text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-full max-w-md rounded-2xl bg-[#0e1526] border border-slate-800 p-8 shadow-2xl space-y-5">
+          <div className="flex justify-center">
+            <ClubCrest className="w-16 h-16" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
+              De Anza Force U16G ECNL
+            </p>
+            <h1 className="font-condensed font-black text-2xl sm:text-3xl uppercase tracking-tight text-white">
+              {redirectMatchedPlayer
+                ? `#${redirectMatchedPlayer.jerseyNumber} ${redirectMatchedPlayer.name}`
+                : 'Player Profile Redirect'}
+            </h1>
+            <p className="text-xs text-slate-400">
+              Forwarding to the latest player profile document...
+            </p>
+          </div>
+
+          {redirectTargetDocUrl && (
+            <div className="pt-2 space-y-3">
+              <a
+                href={redirectTargetDocUrl}
+                className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-lg transition-colors whitespace-nowrap"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Open Player Profile Document</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  if (redirectMatchedPlayer) {
+                    setSelectedPlayer(redirectMatchedPlayer);
+                  }
+                  setProfileRedirectKey(null);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-colors whitespace-nowrap"
+              >
+                View Interactive Roster Profile Instead
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 
