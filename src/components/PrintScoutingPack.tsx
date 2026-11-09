@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Player, TeamInfo, Coach } from '../types';
 import { ClubCrest } from './ClubCrest';
-import { getValidDocumentUrl } from '../utils/urlUtils';
-import { Printer, X, ArrowRight, Edit3, Check } from 'lucide-react';
+import { isRemovedPlayer } from '../utils/standingsCron';
+import { Printer, X, Edit3, Check } from 'lucide-react';
 
 interface PrintScoutingPackProps {
   isOpen: boolean;
@@ -26,11 +26,8 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
 
   if (!isOpen) return null;
 
-  // Filter out any retired players just in case
-  const activePlayers = players.filter(p => {
-    const n = (p.name || '').toLowerCase();
-    return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
-  });
+  // Filter out any retired/departed players
+  const activePlayers = players.filter(p => !isRemovedPlayer(p));
 
   // Find Paul Bravo and Yuta Tanaka
   const paulBravo = coaches?.find(c => c.name.toLowerCase().includes('bravo')) || {
@@ -124,13 +121,43 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
     return (
       <div 
         key={player.id}
-        className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative px-1.5 pb-1.5 pt-0 print:px-1 print:pb-1 print:pt-0 transition-all hover:border-slate-300 print:shadow-none print:border-slate-300 h-full min-h-0"
+        className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative px-1.5 pb-1 pt-0 print:px-1 print:pb-1 print:pt-0 transition-all hover:border-slate-300 print:shadow-none print:border-slate-300 h-full min-h-0"
       >
-        {/* Upper Region: Top-Aligned Enlarged Headshot + Overlaid #Jersey & QR Code */}
-        <div className="relative flex-1 w-full min-h-[96px] sm:min-h-[104px] print:min-h-[94px]">
-          {/* Top Header Row: #Jersey Number on left + QR code on right */}
-          <div className="relative z-10 flex items-start justify-between pt-1.5 print:pt-1 pointer-events-none">
-            <span className="font-sans font-black text-lg sm:text-xl print:text-base text-slate-950 leading-none select-none tracking-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+        {/* Upper Region: Full-Height 4:5 Portrait Headshot Reaching Down to Name + Overlaid #Jersey & QR Code */}
+        <div className="relative flex-1 w-full min-h-[114px] sm:min-h-[122px] print:min-h-[108px]">
+          {/* Top-Aligned Full-Height Centered Headshot (Flush with Top, reaches all the way down to player name) */}
+          <div className="absolute inset-0 flex items-start justify-center pointer-events-none z-0 overflow-hidden">
+            {hasHeadshot ? (
+              <div className="relative h-full w-full flex items-start justify-center overflow-hidden">
+                <img
+                  src={playerPhoto}
+                  alt={player.name}
+                  className="h-full w-auto max-w-full aspect-[4/5] object-cover object-top select-none pointer-events-none"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    if (target.parentElement) {
+                      target.parentElement.className = 'w-20 h-20 flex items-center justify-center p-1 mt-1';
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              /* Clean De Anza Force Logo (NO frame, centered) */
+              <div className="w-20 h-20 sm:w-22 sm:h-22 print:w-18 print:h-18 flex items-center justify-center p-1 mt-1">
+                <img 
+                  src="/logo.png" 
+                  alt="De Anza Force" 
+                  className="w-full h-full object-contain pointer-events-none select-none border-0 shadow-none" 
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Top Header Row: Overlaid #Jersey Number + QR code */}
+          <div className="relative z-10 flex items-start justify-between pt-1 print:pt-0.5 pointer-events-none">
+            <span className="font-sans font-black text-lg sm:text-xl print:text-base text-slate-950 leading-none select-none tracking-tight">
               #{player.jerseyNumber}
             </span>
             
@@ -144,47 +171,15 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
               <img
                 src={qrCodeUrl}
                 alt={`QR code for ${player.name}`}
-                className="w-8 h-8 sm:w-8.5 sm:h-8.5 print:w-7.5 print:h-7.5 border border-slate-300 rounded bg-white p-0.5 shadow-xs group-hover/qr:scale-105 transition-transform"
+                className="w-8 h-8 sm:w-8.5 sm:h-8.5 print:w-7.5 print:h-7.5 border border-slate-300 rounded bg-white p-0.5 group-hover/qr:scale-105 transition-transform"
                 loading="lazy"
               />
             </a>
           </div>
-
-          {/* Top-Aligned Enlarged Centered Headshot (Flush with Top of Box, NO frame, fade to white at bottom) */}
-          <div className="absolute inset-x-0 top-0 flex items-start justify-center pointer-events-none">
-            {hasHeadshot ? (
-              <div className="relative w-24 h-24 sm:w-[104px] sm:h-[104px] print:w-[94px] print:h-[94px] flex items-start justify-center overflow-hidden">
-                <img
-                  src={playerPhoto}
-                  alt={player.name}
-                  className="w-full h-full object-cover object-top select-none pointer-events-none"
-                  loading="lazy"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                    if (target.parentElement) {
-                      target.parentElement.className = 'w-20 h-20 flex items-center justify-center p-1 mt-1';
-                    }
-                  }}
-                />
-                {/* Soft fade to white at bottom */}
-                <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
-              </div>
-            ) : (
-              /* Clean De Anza Force Logo (NO frame, centered) */
-              <div className="w-20 h-20 sm:w-22 sm:h-22 print:w-18 print:h-18 flex items-center justify-center p-1 mt-1">
-                <img 
-                  src="/logo.png" 
-                  alt="De Anza Force" 
-                  className="w-full h-full object-contain pointer-events-none select-none border-0 shadow-none" 
-                />
-              </div>
-            )}
-          </div>
         </div>
 
-        {/* Bottom Section: Text Moved Down (No Email, Multi-line Name Support, Larger Font Sizes) */}
-        <div className="relative z-10 text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0">
+        {/* Bottom Section: Player Name & Details */}
+        <div className="relative z-10 text-center flex flex-col justify-end mt-auto pt-0.5 min-w-0 bg-white">
           <h4
             className={`font-sans font-black uppercase text-slate-950 leading-[1.08] whitespace-normal break-words px-0.5 ${
               player.name.length > 16 || player.name.split(/\s+/).some(w => w.length > 11)

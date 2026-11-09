@@ -128,42 +128,6 @@ export const INITIAL_PLAYERS: Player[] = [
     "instagram": ""
   },
   {
-    "name": "Maya Onalfo",
-    "dominantFoot": "Right",
-    "jerseyNumber": 2,
-    "contactEmail": "mayaonalfo@gmail.com",
-    "gpa": "4.00",
-    "highSchool": "Bay Area High School",
-    "profileDocUrl": "Maya Onalfo Profile",
-    "awards": [
-      "NorCal State Pool Candidate"
-    ],
-    "gradYear": 2028,
-    "height": "5'8\"",
-    "id": "p7",
-    "stats": {
-      "saves": 0,
-      "appearances": 0,
-      "minutesPlayed": 0,
-      "goals": 0,
-      "cleanSheets": 0,
-      "assists": 0,
-      "starts": 0
-    },
-    "primaryPosition": "Goalkeeper",
-    "secondaryPositions": [
-      "Goalkeeper"
-    ],
-    "weight": "120 lbs",
-    "bio": "Athletic keeper with great positioning, aggressive command in the 18-yard box, and composure under high attacking pressure.",
-    "specificPosition": "Goalkeeper (GK)",
-    "commitment": "Uncommitted",
-    "birthYear": 2010,
-    "photoUrl": "https://i.imgur.com/c0qeiY4.png",
-    "hometown": "San Jose, CA",
-    "profilePdfUrl": ""
-  },
-  {
     "primaryPosition": "Defender",
     "commitment": "Uncommitted",
     "jerseyNumber": 3,
@@ -538,29 +502,6 @@ export const INITIAL_PLAYERS: Player[] = [
     "highlightsUrl": "https://drive.google.com/file/d/1-oBFJ4epOtbCaSxZs8PfWHvUry99cIkd/view",
     "instagram": "",
     "profilePdfUrl": "https://drive.google.com/file/d/1_a620aKU6yG-rN0_fxP0jjTzM7JZuqMS/view?usp=sharing"
-  },
-  {
-    "commitment": "Uncommitted",
-    "height": "5'6\"",
-    "contactEmail": "laila.alqadah@yahoo.com",
-    "awards": [],
-    "gradYear": 2029,
-    "primaryPosition": "Midfielder",
-    "photoUrl": "/assets/daf-crest.png",
-    "gpa": "4.00",
-    "stats": {
-      "assists": 0,
-      "goals": 0,
-      "appearances": 0
-    },
-    "dominantFoot": "Right",
-    "jerseyNumber": 17,
-    "weight": "120 lbs",
-    "highSchool": "TBD",
-    "secondaryPositions": [],
-    "name": "Laila Alqudah",
-    "specificPosition": "Attacking Midfielder (#10)",
-    "id": "p_1787410541257_13"
   },
   {
     "specificPosition": "Winger / Striker",

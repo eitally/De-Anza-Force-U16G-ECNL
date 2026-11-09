@@ -171,7 +171,6 @@ export const LATEST_VERIFIED_ROSTER_CSV = `IsUpdated,Full Player Name,Jersey Num
 FALSE,Eliot Kline,1,650-703-1821,eliot.kline@gmail.com,Goalkeeper,Goalkeeper,2029,7/14/2011,"5'7""",Right,Burlingame High School,,4,Uncommitted,,,Eliot Kline Instagram,https://drive.google.com/open?id=1JofTK8graA_6wLpzONykKTO4x-4gDdGs,,,
 FALSE,Ava Golshan,0,408-599-9802,avagolshana@gmail.com,Goalkeeper,Goalkeeper,2029,10/07/2010,"5'9""",Right,Westmont High School ,,4,Uncommitted,2507685371,https://www.youtube.com/watch?v=RPgYdrTXlTY,https://www.instagram.com/avagolshangk?igsi=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr,https://drive.google.com/file/d/1uqgDvO005XYY1jcn4CZI6ArtklS4AveM/view?usp=sharing,"If you do not have a headshot in the app already, but do have a headshot you'd like to use there, add it to this Google Photos Album: https://photos.app.goo.gl/8dg4573WBM8fhNpG6",,
 FALSE,Elise Laxague,7,650-554-9404,eliselaxague11@gmail.com,Midfielder,Central Mid (#8/#10),2029,05/30/2011,"5'3""",Right,Burlingame High School,,,Uncommitted,,,,https://drive.google.com/file/d/1X3k-g4DJNI8KkDukqGjrZ_PDTZCtuyxD/view?usp=sharing,,,
-FALSE,Maya Onalfo,2,,mayaonalfo@gmail.com,Goalkeeper,Goalkeeper (GK),2028,,,Right,,,,Uncommitted,,,,Maya Onalfo Profile,,,
 FALSE,Faith Vrionis,3,650-480-0276,faith.vrionis.soccer@gmail.com,Defender,Center Back (#4),2029,01/10/2011,"5'11""",Right,Sacred Heart Prep,,4.2,Uncommitted,,,,https://drive.google.com/file/d/1cIaw_KAQvv_g8uSsSACrZX5LmmMmxiYi/view?usp=sharing,,,
 FALSE,Isabella Guillebeaux,4,408-706-0452,isabella.guillebeaux@icloud.com,Defender,Outside Back,2028,08/01/2010,"5'10""",Right,Pioneer High School,,3.9,Uncommitted,,https://youtu.be/7lOLovMemJA?si=IJIdq-SnCQZxarlw,https://www.instagram.com/isabella.soccer_4?stkn=MXRub2p5bGpuam53OA%3D%3D&utm_source=qr,https://docs.google.com/presentation/d/12uajOBYIE45DzcvFWuI_DeR5G-2mWbbAQDpsfEQ0sNk/edit?usp=drivesdk,,,
 FALSE,Breeze Longhenry,5,415-828-5384,breezelonghenry@gmail.com,Defender,Wing Back (#2),2030,09/17/2011,"5'6""",Right,Menlo School,,4,Uncommitted,,,,https://drive.google.com/file/d/18UqSPu59TBTCvAY-n8x4UCjrjA3Z-uDE/view?usp=drive_link,,,
@@ -195,7 +194,25 @@ TRUE,Isabella Gagni,46,408-722-6687,Rgagni95037@yahoo.com,Forward,Winger (#11),2
 FALSE,Sadie Goldberg,49,650-526-8100,sadiewgoldberg@icloud.com,Defender,Outside Back (#2),2029,07/16/2011,5'5,Right,Burlingame High School ,,4,Uncommitted,,,,,,,`;
 
 /**
- * Enriches a Player[] list with a Google Sheet CSV (defaulting to LATEST_VERIFIED_ROSTER_CSV).
+ * Returns true if a player is known to have departed the team and must never be shown.
+ */
+export function isRemovedPlayer(player?: Partial<Player> | null): boolean {
+  if (!player) return true;
+  const n = (player.name || '').trim().toLowerCase();
+  return (
+    n.includes('parker') ||
+    n.includes('sasha') ||
+    n.includes('anava') ||
+    n.includes('onalfo') ||
+    n.includes('alqudah') ||
+    n.includes('alqadah')
+  );
+}
+
+/**
+ * Enriches a Player[] list with a Google Sheet CSV (defaulting to LATEST_VERIFIED_ROSTER_CSV)
+ * and treats the Roster Sheet as the authoritative list of active players (removing anyone
+ * no longer in the sheet or marked as departed).
  */
 export function enrichPlayersWithVerifiedSheet(
   existingPlayers: Player[],
@@ -208,9 +225,36 @@ export function enrichPlayersWithVerifiedSheet(
   let changed = false;
 
   const byName = new Map<string, Player>();
-  parsed.players.forEach(p => byName.set(p.name.trim().toLowerCase(), p));
+  parsed.players.forEach(p => {
+    if (!isRemovedPlayer(p)) {
+      byName.set(p.name.trim().toLowerCase(), p);
+    }
+  });
 
-  const updated = existingPlayers.map(p => {
+  // Only keep players who are on the authoritative Roster Sheet (when the sheet parsed valid rows)
+  const activeExisting = existingPlayers.filter(p => {
+    if (isRemovedPlayer(p)) {
+      changed = true;
+      return false;
+    }
+    if (byName.size > 0 && !byName.has((p.name || '').trim().toLowerCase())) {
+      changed = true;
+      return false;
+    }
+    return true;
+  });
+
+  // Also include any brand-new players added to the Roster Sheet who were not in existingPlayers yet
+  const existingNames = new Set(activeExisting.map(p => (p.name || '').trim().toLowerCase()));
+  for (const [normName, sheetP] of byName.entries()) {
+    if (!existingNames.has(normName)) {
+      activeExisting.push(sheetP);
+      existingNames.add(normName);
+      changed = true;
+    }
+  }
+
+  const updated = activeExisting.map(p => {
     const sheetPlayer = byName.get((p.name || '').trim().toLowerCase());
     const rawHeight = (sheetPlayer?.height || p.height || '').trim();
     const cleanHeight = rawHeight

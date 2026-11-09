@@ -25,7 +25,7 @@ import {
   DEFAULT_MASTER_ALBUM_INFO
 } from './data/defaultData';
 import { syncStandingsAndTeamInfoWithMatches, computeRecordAndFormFromMatches } from './utils/recordUtils';
-import { enrichPlayersWithVerifiedSheet, fetchLiveRosterSheetAndEnrich } from './utils/standingsCron';
+import { enrichPlayersWithVerifiedSheet, fetchLiveRosterSheetAndEnrich, isRemovedPlayer } from './utils/standingsCron';
 import { getValidDocumentUrl } from './utils/urlUtils';
 import {
   getOfficialImgurHeadshotForPlayer,
@@ -81,10 +81,7 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const cleaned = parsed.filter((p: Player) => {
-            const n = (p.name || '').toLowerCase();
-            return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
-          });
+          const cleaned = parsed.filter((p: Player) => !isRemovedPlayer(p));
           const hydrated = cleaned.map((p: Player) => {
             const defaultP = INITIAL_PLAYERS.find(
               dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
@@ -169,10 +166,7 @@ export default function App() {
         if (!isMounted || !data) return;
 
         if (data.players) {
-          const rawFirestore = (data.players as Player[]).filter(p => {
-            const n = (p.name || '').toLowerCase();
-            return !n.includes('parker') && !n.includes('sasha') && !n.includes('anava');
-          });
+          const rawFirestore = (data.players as Player[]).filter(p => !isRemovedPlayer(p));
           const hydrated = rawFirestore.map(p => {
             const defaultP = INITIAL_PLAYERS.find(
               dp => dp.id === p.id || (dp.name && p.name && dp.name.trim().toLowerCase() === p.name.trim().toLowerCase())
