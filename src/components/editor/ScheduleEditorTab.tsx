@@ -321,8 +321,9 @@ export const ScheduleEditorTab: React.FC<ScheduleEditorTabProps> = ({
                   className="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:border-blue-500"
                 >
                   <option value="ECNL Northern California">ECNL Northern California</option>
-                  <option value="Surf Cup">Surf Cup</option>
+                  <option value="ECNL Phoenix Showcase">ECNL Phoenix Showcase</option>
                   <option value="ECNL National Showcase">ECNL National Showcase</option>
+                  <option value="Surf Cup">Surf Cup</option>
                   <option value="SilverLakes Showcase">SilverLakes Showcase</option>
                   <option value="NorCal State Cup">NorCal State Cup</option>
                   <option value="Friendly">Friendly</option>

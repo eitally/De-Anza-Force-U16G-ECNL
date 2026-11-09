@@ -404,7 +404,52 @@ export function mapEcnlApiSchedule(
     return sortMatchesByDate(fallbackMatches);
   }
 
-  return sortMatchesByDate(mapped);
+  // Preserve non-league showcase / tournament matches from fallbackMatches
+  // so ECNL Phoenix Showcase fixtures remain on the schedule alongside live NorCal league matches.
+  const mappedIds = new Set(mapped.map((m) => m.id));
+  const nonLeagueFallbacks = (fallbackMatches || []).filter((m) => {
+    if (!m || mappedIds.has(m.id)) return false;
+    const comp = (m.competition || '').trim();
+    return comp !== '' && comp !== 'ECNL Northern California';
+  });
+
+  return sortMatchesByDate([...mapped, ...nonLeagueFallbacks]);
+}
+
+/**
+ * Ensures any showcase / tournament fixtures from defaultMatches (such as ECNL Phoenix Showcase)
+ * are merged into an existing schedule list without duplicating matches.
+ */
+export function mergeShowcaseMatchesIntoSchedule(
+  currentMatches: Match[],
+  defaultMatches: Match[]
+): Match[] {
+  const base = Array.isArray(currentMatches) ? [...currentMatches] : [];
+  const existingIds = new Set(base.map((m) => m?.id));
+
+  for (const defMatch of defaultMatches || []) {
+    if (!defMatch) continue;
+    const isShowcase =
+      defMatch.competition && defMatch.competition !== 'ECNL Northern California';
+    if (!isShowcase) continue;
+
+    if (existingIds.has(defMatch.id)) {
+      continue;
+    }
+
+    const duplicateIdx = base.findIndex(
+      (m) =>
+        m &&
+        normalizeMatchDateString(m.date) === normalizeMatchDateString(defMatch.date) &&
+        (m.opponent || '').toLowerCase() === (defMatch.opponent || '').toLowerCase()
+    );
+    if (duplicateIdx === -1) {
+      base.push(defMatch);
+      existingIds.add(defMatch.id);
+    }
+  }
+
+  return sortMatchesByDate(base);
 }
 
 /**
@@ -450,6 +495,7 @@ export function selectNextFixtureMatch(matches: Match[]): Match | undefined {
 
 /**
  * Synchronizes TeamInfo season metrics & recent form with the live standings and schedule.
+ * Only ECNL Northern California league matches are counted toward league clean sheets / record.
  */
 export function buildTeamInfoFromLiveEcnl(
   currentInfo: TeamInfo,
@@ -461,8 +507,13 @@ export function buildTeamInfoFromLiveEcnl(
     (t) => t.isCurrentTeam || t.isForce || /de\s*anza|force/i.test(t.teamName)
   );
 
-  const completedMatches = matches.filter((m) => m && m.status === 'completed');
-  const cleanSheets = completedMatches.filter((m) => (m.opponentScore ?? 0) === 0).length;
+  const completedLeagueMatches = matches.filter(
+    (m) =>
+      m &&
+      m.status === 'completed' &&
+      (!m.competition || m.competition === 'ECNL Northern California')
+  );
+  const cleanSheets = completedLeagueMatches.filter((m) => (m.opponentScore ?? 0) === 0).length;
 
   if (!deAnzaRow) {
     return {

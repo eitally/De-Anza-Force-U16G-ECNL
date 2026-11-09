@@ -47,7 +47,7 @@ export interface Player {
 }
 
 export type MatchStatus = 'upcoming' | 'live' | 'completed';
-export type MatchCompetition = 'ECNL Northern California' | 'Surf Cup' | 'ECNL National Showcase' | 'SilverLakes Showcase' | 'NorCal State Cup' | 'Friendly';
+export type MatchCompetition = 'ECNL Northern California' | 'ECNL Phoenix Showcase' | 'Surf Cup' | 'ECNL National Showcase' | 'SilverLakes Showcase' | 'NorCal State Cup' | 'Friendly';
 
 export interface Match {
   id: string;

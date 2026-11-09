@@ -16,8 +16,22 @@ export interface ComputedRecord {
 }
 
 /**
- * Computes official De Anza Force season record and last 5 match form
- * automatically from the completed fixtures in the match schedule.
+ * Returns true if the match is an ECNL Northern California conference league fixture.
+ * Showcase, tournament, state cup, and friendly matches are excluded from league standings.
+ */
+export function isLeagueMatch(match?: Match | null): boolean {
+  if (!match) return false;
+  const comp = (match.competition || 'ECNL Northern California').trim();
+  if (/showcase|surf\s*cup|silverlakes|state\s*cup|friendly|phoenix/i.test(comp)) {
+    return false;
+  }
+  return comp === 'ECNL Northern California';
+}
+
+/**
+ * Computes official De Anza Force league season record and last 5 match form
+ * automatically from completed league fixtures in the match schedule.
+ * Showcase matches (such as ECNL Phoenix Showcase) are excluded from the league table.
  */
 export function computeRecordAndFormFromMatches(matches?: Match[] | null): ComputedRecord {
   if (!Array.isArray(matches)) {
@@ -37,9 +51,9 @@ export function computeRecordAndFormFromMatches(matches?: Match[] | null): Compu
     };
   }
 
-  // Filter matches that have been completed or have recorded scores
+  // Filter league matches that have been completed or have recorded scores
   const completedMatches = matches.filter((m) => {
-    if (!m) return false;
+    if (!m || !isLeagueMatch(m)) return false;
     if (m.status === 'completed') return true;
     if (m.teamScore !== undefined && m.opponentScore !== undefined && m.status !== 'upcoming') return true;
     if ((m as any).homeScore !== undefined && (m as any).awayScore !== undefined && m.status !== 'upcoming') return true;

@@ -38,6 +38,7 @@ import {
   fetchLiveEcnlDataFromApi,
   mapEcnlApiStandings,
   mapEcnlApiSchedule,
+  mergeShowcaseMatchesIntoSchedule,
   selectNextFixtureMatch,
   buildTeamInfoFromLiveEcnl,
   sortMatchesByDate,
@@ -343,7 +344,7 @@ export default function App() {
         }
 
         if (hasLiveSchedule) {
-          const sortedLiveMatches = sortMatchesByDate(liveMatches);
+          const sortedLiveMatches = mergeShowcaseMatchesIntoSchedule(liveMatches, INITIAL_MATCHES);
           setMatches(sortedLiveMatches);
           try {
             localStorage.setItem('daf_team_matches', JSON.stringify(sortedLiveMatches));
