@@ -116,11 +116,11 @@ function normalizeHeaderName(header: string): string {
   // Check email / contact info BEFORE flyer/pdf so "Contact Info for the Flyer" maps to contactEmail
   if (cleaned.includes('email') || cleaned.includes('contactinfo') || cleaned === 'contact') return 'contactEmail';
   if (cleaned.includes('phone') || cleaned === 'cell' || cleaned === 'mobile') return 'phone';
+  if (cleaned.includes('instagram') || cleaned === 'ig' || cleaned.includes('handle')) return 'instagram';
   if (cleaned.includes('pdf') || cleaned.includes('flyer') || cleaned.includes('playerprofile') || (cleaned.includes('profile') && (cleaned.includes('link') || cleaned.includes('doc') || cleaned.includes('url')))) return 'profileDocUrl';
   if (cleaned.includes('video') || cleaned.includes('highlight') || cleaned.includes('hudl') || cleaned.includes('veo')) return 'highlightsUrl';
   if (cleaned.includes('commit') || cleaned.includes('college')) return 'commitment';
   if (cleaned.includes('ncaa') || cleaned.includes('eligibility')) return 'ncaaId';
-  if (cleaned.includes('instagram') || cleaned === 'ig' || cleaned.includes('handle')) return 'instagram';
   if (cleaned.includes('foot')) return 'dominantFoot';
   if (cleaned.includes('bio')) return 'bio';
   if (cleaned.includes('photo') || cleaned.includes('headshot') || cleaned.includes('image')) return 'photoUrl';

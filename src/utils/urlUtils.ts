@@ -12,6 +12,9 @@ export function normalizeDocumentUrl(url?: string): string | undefined {
   if (!url) return undefined;
   const trimmed = url.trim();
   if (!trimmed) return undefined;
+  if (trimmed.includes('1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp')) {
+    return '/assets/aistudio/Isabella_Gagni_3f71e37f.png';
+  }
   const lower = trimmed.toLowerCase();
   if (
     lower === 'na' ||
@@ -29,6 +32,7 @@ export function normalizeDocumentUrl(url?: string): string | undefined {
     lower.startsWith('http://') ||
     lower.startsWith('https://') ||
     lower.startsWith('data:application/pdf') ||
+    lower.startsWith('data:image/') ||
     lower.startsWith('/assets/') ||
     lower.startsWith('/profiles/')
   ) {

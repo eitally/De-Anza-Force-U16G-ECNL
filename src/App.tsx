@@ -508,11 +508,11 @@ export default function App() {
     (async () => {
       let latestList = players;
 
-      // Attempt fast live lookup (max 900ms) so newly updated Google Drive links take effect immediately
+      // Attempt live lookup (up to 3500ms) so newly updated profile links in Firestore take effect immediately
       try {
         const liveData = await Promise.race([
           fetchTeamDataFromServerAndCloud(),
-          new Promise<null>(resolve => setTimeout(() => resolve(null), 900)),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), 3500)),
         ]);
         if (liveData && Array.isArray(liveData.players) && liveData.players.length > 0) {
           const { players: enrichedLive } = enrichPlayersWithVerifiedSheet(liveData.players as Player[]);

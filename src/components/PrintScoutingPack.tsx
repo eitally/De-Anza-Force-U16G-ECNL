@@ -116,7 +116,21 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
     const playerKey = encodeURIComponent(String(player.jerseyNumber ?? player.id));
     const permanentRedirectUrl = `https://www.deanzaforce2011g.com/?profile=${playerKey}`;
     const qrTarget = permanentRedirectUrl;
-    const profileUrl = permanentRedirectUrl;
+    const directDocUrl =
+      player.profilePdfUrl && player.profilePdfUrl.trim() !== ''
+        ? player.profilePdfUrl.trim()
+        : player.profileDocUrl && player.profileDocUrl.trim() !== ''
+        ? player.profileDocUrl.trim()
+        : '';
+    const profileUrl =
+      directDocUrl &&
+      (directDocUrl.startsWith('http://') ||
+        directDocUrl.startsWith('https://') ||
+        directDocUrl.startsWith('/assets/') ||
+        directDocUrl.startsWith('/profiles/') ||
+        directDocUrl.startsWith('data:'))
+        ? directDocUrl
+        : permanentRedirectUrl;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrTarget)}`;
     const position = getPlayerPosition(player);
     const gpaDisplay = player.gpa && player.gpa.trim() !== '' && player.gpa.toLowerCase() !== 'na' && player.gpa.toLowerCase() !== 'n/a' ? player.gpa : 'NA';

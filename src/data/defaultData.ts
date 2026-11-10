@@ -897,10 +897,10 @@ export const INITIAL_PLAYERS: Player[] = [
     },
     "highSchool": "Live Oak High School",
     "birthYear": 2011,
-    "weight": "120 lbs",
+    "weight": "115 lbs",
     "contactEmail": "Rgagni95037@yahoo.com",
     "phone": "408-722-6687",
-    "profileDocUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
+    "profileDocUrl": "/assets/aistudio/Isabella_Gagni_3f71e37f.png",
     "photoUrl": "https://i.imgur.com/nfyofPG.jpeg",
     "hometown": "Morgan Hill, CA",
     "gpa": "4.00",
@@ -910,10 +910,10 @@ export const INITIAL_PLAYERS: Player[] = [
     "commitment": "Uncommitted",
     "gradYear": 2029,
     "birthday": "04/09/2011",
-    "profilePdfUrl": "https://drive.google.com/file/d/1U83x2Fuensf0Vx0dQsWO66zfcbM_gHVp/view?usp=share_link",
+    "profilePdfUrl": "/assets/aistudio/Isabella_Gagni_3f71e37f.png",
     "ncaaId": "",
     "highlightsUrl": "https://youtu.be/rDXD0_Obymg?si=iHdFFdqX04CUYBkf",
-    "instagram": ""
+    "instagram": "https://www.instagram.com/isabella.gagni29/"
   },
   {
     "id": "p_1787410541257_25",

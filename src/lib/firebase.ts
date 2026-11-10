@@ -41,19 +41,14 @@ function isWriteQuotaExhaustedToday(): boolean {
 }
 
 export function markWriteQuotaExhaustedToday(): void {
-  try {
-    const today = new Date().toISOString().slice(0, 10);
-    sessionStorage.setItem(QUOTA_EXHAUSTED_KEY, today);
-  } catch {}
-  disableNetwork(db).catch(() => {});
+  // No-op: do not disable Firestore network for the session on transient timeouts
 }
 
 /**
- * Persists partial team data to the Express server store (/api/team-data) first,
- * and best-effort syncs to Firestore only if the daily write quota has not been exhausted.
+ * Persists partial team data to the Express server store (/api/team-data) and Firestore TEAM_DATA_DOC.
  */
 export async function saveTeamDataToServerAndCloud(partialData: Record<string, any>): Promise<void> {
-  // 1. Always persist to server-side JSON store (zero quota limits, shared across all sessions)
+  // 1. Persist to server-side JSON store when running with Express backend
   try {
     await fetch('/api/team-data', {
       method: 'POST',
@@ -62,58 +57,61 @@ export async function saveTeamDataToServerAndCloud(partialData: Record<string, a
     });
   } catch {}
 
-  // 2. Skip Firestore write if daily free-tier write quota was already reached today
-  if (isWriteQuotaExhaustedToday()) {
-    return;
-  }
-
-  // 3. Best-effort Firestore write with a short timeout so the SDK write queue never loops on resource-exhausted
+  // 2. Always write to Firestore so production Vercel and QR redirects immediately see the update
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   try {
     await Promise.race([
       setDoc(TEAM_DATA_DOC, partialData, { merge: true }),
       new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('resource-exhausted-timeout')), 3000);
+        timeoutId = setTimeout(() => reject(new Error('firestore-write-timeout')), 8000);
       }),
     ]);
-  } catch {
-    markWriteQuotaExhaustedToday();
+  } catch (err) {
+    console.warn('Firestore save notice:', err);
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
   }
 }
 
 /**
- * Loads consolidated team data from the Express server store (/api/team-data) and Firestore (one-time getDoc).
+ * Loads consolidated team data from Firestore (authoritative cross-environment store) and Express server store.
  */
 export async function fetchTeamDataFromServerAndCloud(): Promise<Record<string, any> | null> {
   let serverData: Record<string, any> | null = null;
   let firestoreData: Record<string, any> | null = null;
 
-  try {
-    const resp = await fetch('/api/team-data');
-    if (resp.ok) {
-      const json = await resp.json();
-      if (json?.ok && json.data && Object.keys(json.data).length > 0) {
-        serverData = json.data;
+  const [serverResult, firestoreResult] = await Promise.allSettled([
+    (async () => {
+      const resp = await fetch('/api/team-data');
+      if (resp.ok) {
+        const json = await resp.json();
+        if (json?.ok && json.data && Object.keys(json.data).length > 0) {
+          return json.data as Record<string, any>;
+        }
       }
-    }
-  } catch {}
-
-  if (!isWriteQuotaExhaustedToday()) {
-    try {
+      return null;
+    })(),
+    (async () => {
       const snap = await getDoc(TEAM_DATA_DOC);
       if (snap.exists()) {
-        firestoreData = snap.data();
+        return snap.data() as Record<string, any>;
       }
-    } catch {}
+      return null;
+    })(),
+  ]);
+
+  if (serverResult.status === 'fulfilled') {
+    serverData = serverResult.value;
+  }
+  if (firestoreResult.status === 'fulfilled') {
+    firestoreData = firestoreResult.value;
   }
 
   if (!firestoreData && !serverData) return null;
-  // Server store has the most recent writes when Firestore write quota is exhausted
+  // Firestore is authoritative across live Vercel and preview; serverData fills any local-only keys
   return {
-    ...(firestoreData || {}),
     ...(serverData || {}),
+    ...(firestoreData || {}),
   };
 }
 
