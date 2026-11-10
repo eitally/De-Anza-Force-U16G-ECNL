@@ -27,7 +27,7 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
         </div>
 
         {/* Coaches Grid */}
-        <div className="mt-5 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div className={`mt-5 grid grid-cols-2 ${coaches.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-3 sm:gap-6`}>
           {coaches.map((coach) => (
             <div
               key={coach.id}
@@ -57,14 +57,18 @@ export const CoachingStaff: React.FC<CoachingStaffProps> = ({
                     {coach.name}
                   </h3>
 
-                  <div className="text-xs font-semibold text-blue-400 mt-1 flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
-                    <span className="line-clamp-1">{coach.license}</span>
-                  </div>
+                  {coach.license && (
+                    <div className="text-xs font-semibold text-blue-400 mt-1 flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+                      <span className="line-clamp-1">{coach.license}</span>
+                    </div>
+                  )}
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-3 leading-relaxed line-clamp-3">
-                    {coach.bio}
-                  </p>
+                  {coach.bio && (
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-3 leading-relaxed line-clamp-3">
+                      {coach.bio}
+                    </p>
+                  )}
                 </div>
               </div>
 

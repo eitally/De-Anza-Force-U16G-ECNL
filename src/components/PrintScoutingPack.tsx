@@ -21,7 +21,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   coaches,
   onTogglePlayerScouting,
 }) => {
-  const [tournamentTitle, setTournamentTitle] = useState('SCOUTING ROSTER');
+  const [tournamentTitle, setTournamentTitle] = useState('SCOUTING BROCHURE');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   if (!isOpen) return null;
@@ -29,7 +29,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   // Filter out any retired/departed players
   const activePlayers = players.filter(p => !isRemovedPlayer(p));
 
-  // Find Paul Bravo and Yuta Tanaka
+  // Find Paul Bravo, Yuta Tanaka, and Larry Jackson
   const paulBravo = coaches?.find(c => c.name.toLowerCase().includes('bravo')) || {
     name: 'Paul Bravo',
     role: 'Head Coach',
@@ -44,6 +44,14 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
     email: 'yuta.tanaka@gmail.com',
     phone: '(650) 619-3670',
     photoUrl: 'https://i.imgur.com/iNiPnJD.jpeg'
+  };
+
+  const larryJackson = coaches?.find(c => c.name.toLowerCase().includes('larry') || c.name.toLowerCase().includes('jackson')) || {
+    name: 'Larry Jackson',
+    role: 'Goalkeeper Coach',
+    email: 'Larry.Jackson@deanzaforce.org',
+    phone: '',
+    photoUrl: 'https://i.imgur.com/c0qeiY4.png'
   };
 
   // Helper to format position using the specific player position listed in the roster (e.g. "Attacking Midfielder (#10)")
@@ -95,7 +103,12 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
   const currentYear = new Date().getFullYear();
 
   const handlePrint = () => {
+    const previousTitle = document.title;
+    document.title = 'De Anza Force U16G ECNL - Scouting Brochure';
     window.print();
+    setTimeout(() => {
+      document.title = previousTitle;
+    }, 500);
   };
 
   // Single Player Card matching bifold specifications
@@ -225,7 +238,7 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
             </div>
             <div>
               <span className="font-condensed font-black text-base sm:text-lg uppercase tracking-wider block leading-tight">
-                Official College Coach Scouting Pack
+                De Anza Force U16G ECNL - Scouting Brochure
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 2-Page Landscape Format • ECNL Showcase & College Recruitment Standard
@@ -450,28 +463,28 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                         </div>
 
                         <h2 className="font-condensed font-black text-2xl sm:text-3xl lg:text-4xl uppercase tracking-wider text-slate-950 text-center leading-tight mt-0.5">
-                          SCOUTING ROSTER
+                          {tournamentTitle || 'SCOUTING BROCHURE'}
                         </h2>
 
                         <div className="font-condensed font-black text-xl sm:text-2xl text-slate-950 tracking-wider text-center mt-0.5">
                           {currentYear}
                         </div>
 
-                        {/* Coach Information Beneath "2026" */}
-                        <div className="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-3 mt-3">
-                          {/* Coach Box: Paul Bravo */}
-                          <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-left">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-[8.5px] print:text-[8px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                        {/* Coach Information Beneath "2026": Paul Bravo on top row (slightly larger), Yuta Tanaka & Larry Jackson side-by-side below */}
+                        <div className="w-full max-w-md flex flex-col items-center gap-2 sm:gap-2.5 mt-2.5">
+                          {/* Top Row: Head Coach Paul Bravo (Slightly Larger Featured Card) */}
+                          <div className="w-full max-w-[270px] sm:max-w-[290px] flex flex-col justify-between bg-white border border-slate-300 rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden relative px-3 py-2 print:px-2.5 print:py-1.5 print:shadow-none print:border-slate-300 text-center">
+                            <div className="flex items-center justify-center">
+                              <span className="font-bold text-[9.5px] print:text-[8.5px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
                                 HEAD COACH • ECNL DIR
                               </span>
                             </div>
 
                             <div className="my-1 min-w-0">
-                              <h4 className="font-sans font-black text-xs print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                              <h4 className="font-sans font-black text-sm sm:text-base print:text-xs uppercase tracking-tight text-slate-950 leading-tight truncate">
                                 {paulBravo.name}
                               </h4>
-                              <div className="text-[9.5px] print:text-[8.5px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                              <div className="text-[10px] print:text-[9px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
                                 {paulBravo.phone || '(720) 475-6991'}
                               </div>
                             </div>
@@ -479,41 +492,75 @@ export const PrintScoutingPack: React.FC<PrintScoutingPackProps> = ({
                             <div className="pt-0.5 border-t border-slate-100 min-w-0">
                               <a
                                 href={`mailto:${paulBravo.email || 'paulgbravo9@gmail.com'}`}
-                                className="text-[8.5px] print:text-[8px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                                className="text-[9.5px] print:text-[8.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
                                 title={paulBravo.email}
                               >
                                 {paulBravo.email || 'paulgbravo9@gmail.com'}
                               </a>
-                              <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                              <div className="h-1 bg-[#00ADEF] w-full mt-1 rounded-full"></div>
                             </div>
                           </div>
 
-                          {/* Coach Box: Yuta Tanaka */}
-                          <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-left">
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-[8.5px] print:text-[8px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
-                                STRENGTH &amp; AGILITY COACH
-                              </span>
-                            </div>
+                          {/* Second Row: Yuta Tanaka & Larry Jackson Side-by-Side */}
+                          <div className="w-full grid grid-cols-2 gap-2 sm:gap-2.5">
+                            {/* Coach Box: Yuta Tanaka */}
+                            <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-center">
+                              <div className="flex items-center justify-center">
+                                <span className="font-bold text-[8.5px] print:text-[7.5px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                                  STRENGTH &amp; AGILITY COACH
+                                </span>
+                              </div>
 
-                            <div className="my-1 min-w-0">
-                              <h4 className="font-sans font-black text-xs print:text-[11px] uppercase tracking-tight text-slate-950 leading-tight truncate">
-                                {yutaTanaka.name}
-                              </h4>
-                              <div className="text-[9.5px] print:text-[8.5px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
-                                {yutaTanaka.phone || '(650) 619-3670'}
+                              <div className="my-1 min-w-0">
+                                <h4 className="font-sans font-black text-xs print:text-[10.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                                  {yutaTanaka.name}
+                                </h4>
+                                <div className="text-[9px] print:text-[8px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                                  {yutaTanaka.phone || '(650) 619-3670'}
+                                </div>
+                              </div>
+
+                              <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                                <a
+                                  href={`mailto:${yutaTanaka.email || 'yuta.tanaka@gmail.com'}`}
+                                  className="text-[8.5px] print:text-[7.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                                  title={yutaTanaka.email}
+                                >
+                                  {yutaTanaka.email || 'yuta.tanaka@gmail.com'}
+                                </a>
+                                <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
                               </div>
                             </div>
 
-                            <div className="pt-0.5 border-t border-slate-100 min-w-0">
-                              <a
-                                href={`mailto:${yutaTanaka.email || 'yuta.tanaka@gmail.com'}`}
-                                className="text-[8.5px] print:text-[8px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
-                                title={yutaTanaka.email}
-                              >
-                                {yutaTanaka.email || 'yuta.tanaka@gmail.com'}
-                              </a>
-                              <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                            {/* Coach Box: Larry Jackson */}
+                            <div className="flex flex-col justify-between bg-white border border-slate-200/90 rounded-md shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden relative p-2 print:p-1.5 print:shadow-none print:border-slate-300 text-center">
+                              <div className="flex items-center justify-center">
+                                <span className="font-bold text-[8.5px] print:text-[7.5px] uppercase tracking-wider text-[#00ADEF] leading-tight truncate">
+                                  GOALKEEPER COACH
+                                </span>
+                              </div>
+
+                              <div className="my-1 min-w-0">
+                                <h4 className="font-sans font-black text-xs print:text-[10.5px] uppercase tracking-tight text-slate-950 leading-tight truncate">
+                                  {larryJackson.name}
+                                </h4>
+                                {larryJackson.phone ? (
+                                  <div className="text-[9px] print:text-[8px] text-slate-950 font-bold leading-tight mt-0.5 truncate">
+                                    {larryJackson.phone}
+                                  </div>
+                                ) : null}
+                              </div>
+
+                              <div className="pt-0.5 border-t border-slate-100 min-w-0">
+                                <a
+                                  href={`mailto:${larryJackson.email || 'Larry.Jackson@deanzaforce.org'}`}
+                                  className="text-[8.5px] print:text-[7.5px] text-sky-800 hover:text-sky-600 font-medium truncate block leading-tight hover:underline"
+                                  title={larryJackson.email || 'Larry.Jackson@deanzaforce.org'}
+                                >
+                                  {larryJackson.email || 'Larry.Jackson@deanzaforce.org'}
+                                </a>
+                                <div className="h-0.5 bg-[#00ADEF] w-full mt-0.5 rounded-full"></div>
+                              </div>
                             </div>
                           </div>
                         </div>

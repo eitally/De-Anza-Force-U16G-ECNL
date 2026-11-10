@@ -117,16 +117,45 @@ export default function App() {
   const [matches, setMatches] = useState<Match[]>(() => sortMatchesByDate(INITIAL_MATCHES));
   const [standings, setStandings] = useState<StandingTeam[]>(INITIAL_STANDINGS);
 
+  const hydrateCoachesWithDefaults = (rawCoaches: Coach[]): Coach[] => {
+    const filtered = rawCoaches.filter(
+      (c: Coach) => c.id !== 'c3' && !(c.name || '').toLowerCase().includes('holocher')
+    );
+    const enriched = filtered.map((c: Coach) => {
+      const defaultC = INITIAL_COACHES.find(
+        dc => dc.id === c.id || (dc.name && c.name && dc.name.trim().toLowerCase() === c.name.trim().toLowerCase())
+      );
+      if (!defaultC) return c;
+      return {
+        ...defaultC,
+        ...c,
+        role: c.role || defaultC.role,
+        email: c.email || defaultC.email,
+        phone: c.phone || defaultC.phone,
+        license: c.license || defaultC.license,
+        bio: c.bio || defaultC.bio,
+        photoUrl: c.photoUrl || defaultC.photoUrl,
+      };
+    });
+    for (const defaultC of INITIAL_COACHES) {
+      const exists = enriched.some(
+        c => c.id === defaultC.id || (c.name && defaultC.name && c.name.trim().toLowerCase() === defaultC.name.trim().toLowerCase())
+      );
+      if (!exists) {
+        enriched.push(defaultC);
+      }
+    }
+    return enriched;
+  };
+
   const [coaches, setCoaches] = useState<Coach[]>(() => {
     try {
       const saved = localStorage.getItem('daf_team_coaches');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const filtered = parsed.filter(
-            (c: Coach) => c.id !== 'c3' && !(c.name || '').toLowerCase().includes('holocher')
-          );
-          if (filtered.length > 0) return filtered;
+          const hydrated = hydrateCoachesWithDefaults(parsed);
+          if (hydrated.length > 0) return hydrated;
         }
       }
     } catch {}
@@ -202,9 +231,7 @@ export default function App() {
 
         if (data.coaches) {
           const rawCoaches = data.coaches as Coach[];
-          const cleanedCoaches = rawCoaches.filter(
-            c => c.id !== 'c3' && !(c.name || '').toLowerCase().includes('holocher')
-          );
+          const cleanedCoaches = hydrateCoachesWithDefaults(rawCoaches);
           setCoaches(cleanedCoaches);
           try {
             localStorage.setItem('daf_team_coaches', JSON.stringify(cleanedCoaches));

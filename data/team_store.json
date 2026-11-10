@@ -1333,5 +1333,54 @@
       "videoLiveStreamUrl": "https://youtube.com/@TheECNL/streams",
       "gameNotes": "ECNL NorCal Regular Season Finale."
     }
+  ],
+  "coaches": [
+    {
+      "phone": "(720) 475-6991",
+      "experience": "12+ Years Elite Youth Development & ECNL National Championships",
+      "email": "paulgbravo9@gmail.com",
+      "almaMater": "De Anza Force Academy Director",
+      "name": "Paul Bravo",
+      "license": "USSF A-Senior National License / UEFA Licensed",
+      "role": "Head Coach",
+      "id": "c1",
+      "photoUrl": "https://i.imgur.com/c0qeiY4.png",
+      "bio": "Head Coach of De Anza Force U16G ECNL. Committed to developing high-IQ technical players prepared for the highest levels of collegiate and national team soccer."
+    },
+    {
+      "role": "Strength & Conditioning Coach",
+      "name": "Yuta Tanaka",
+      "license": "NSCA-CPT, NSCA-CSCS",
+      "id": "c-yuta",
+      "phone": "(650) 619-3670",
+      "email": "yuta.tanaka@gmail.com",
+      "almaMater": "San Jose Earthquakes, Oakland Roots",
+      "bio": "Assistant Coach for De Anza Force U16G ECNL. Specializes in tactical film review, individualized player technique, and match-day preparation.",
+      "experience": "Elite Youth Development & Tactical Analysis",
+      "photoUrl": "https://i.imgur.com/iNiPnJD.jpeg"
+    },
+    {
+      "role": "Manager",
+      "name": "Rhoda Longhenry",
+      "phone": "",
+      "id": "c2",
+      "license": "Team Operations",
+      "email": "rhodalonghenry@gmail.com",
+      "bio": "Coordinates all team travel logistics, ECNL match rosters, tournament registration, and parent liaison communications.",
+      "photoUrl": "https://i.imgur.com/c0qeiY4.png",
+      "experience": "ECNL Club Operations & Tournament Logistics"
+    },
+    {
+      "id": "c_1794283308015",
+      "name": "Larry Jackson",
+      "role": "Goalkeeper Coach",
+      "email": "Larry.Jackson@deanzaforce.org",
+      "phone": "",
+      "license": "Former MLS & NCAA D1 Goalkeeper",
+      "experience": "Professional & Collegiate Goalkeeper Development",
+      "almaMater": "Santa Clara University / MLS (New England Revolution)",
+      "bio": "Goalkeeper Coach for De Anza Force U16G ECNL and De Anza Force alumnus. Former Santa Clara University standout (WCC Goalkeeper of the Year) and MLS/USL professional goalkeeper.",
+      "photoUrl": "https://i.imgur.com/c0qeiY4.png"
+    }
   ]
 }

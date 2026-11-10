@@ -1612,6 +1612,18 @@ export const INITIAL_COACHES: Coach[] = [
     "bio": "Coordinates all team travel logistics, ECNL match rosters, tournament registration, and parent liaison communications.",
     "photoUrl": "https://i.imgur.com/c0qeiY4.png",
     "experience": "ECNL Club Operations & Tournament Logistics"
+  },
+  {
+    "id": "c_1794283308015",
+    "name": "Larry Jackson",
+    "role": "Goalkeeper Coach",
+    "email": "Larry.Jackson@deanzaforce.org",
+    "phone": "",
+    "license": "Former MLS & NCAA D1 Goalkeeper",
+    "experience": "Professional & Collegiate Goalkeeper Development",
+    "almaMater": "Santa Clara University / MLS (New England Revolution)",
+    "bio": "Goalkeeper Coach for De Anza Force U16G ECNL and De Anza Force alumnus. Former Santa Clara University standout (WCC Goalkeeper of the Year) and MLS/USL professional goalkeeper.",
+    "photoUrl": "https://i.imgur.com/c0qeiY4.png"
   }
 ];
 
