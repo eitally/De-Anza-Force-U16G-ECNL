@@ -317,13 +317,43 @@ export default function App() {
     const pollRosterSheet = async () => {
       try {
         const { players: synced, changed } = await fetchLiveRosterSheetAndEnrich(sheetUrl, players);
-        if (!active || !changed) return;
+        if (!active) return;
+        const checkedAt = new Date().toLocaleString([], {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+        const statusMsg = changed
+          ? `Auto-synced updates from live sheet (${synced.length} players)`
+          : `Verified in sync with live sheet (${synced.length} players)`;
+
+        setTeamInfo(prev => {
+          const nextInfo: TeamInfo = {
+            ...prev,
+            lastRosterSheetSyncAt: checkedAt,
+            lastRosterSheetSyncStatus: statusMsg,
+          };
+          try {
+            localStorage.setItem('daf_team_info', JSON.stringify(nextInfo));
+          } catch {}
+          return nextInfo;
+        });
+
+        if (!changed) return;
         synced.sort((a, b) => (a.jerseyNumber ?? 999) - (b.jerseyNumber ?? 999));
         setPlayers(synced);
         try {
           localStorage.setItem('daf_team_players', JSON.stringify(synced));
         } catch {}
-        const cleanPayload = sanitizeGlobalDocPayload({ players: synced });
+        const cleanPayload = sanitizeGlobalDocPayload({
+          players: synced,
+          teamInfo: {
+            ...teamInfo,
+            lastRosterSheetSyncAt: checkedAt,
+            lastRosterSheetSyncStatus: statusMsg,
+          },
+        });
         saveTeamDataToServerAndCloud(cleanPayload);
       } catch {}
     };

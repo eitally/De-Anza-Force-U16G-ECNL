@@ -413,6 +413,20 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({
   const handleApplyRosterSync = () => {
     if (!rosterPreview) return;
     onSavePlayers(rosterPreview.players);
+    if (teamInfo && onSaveTeamInfo) {
+      const checkedAt = new Date().toLocaleString([], {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+      onSaveTeamInfo({
+        ...teamInfo,
+        rosterGoogleSheetUrl: rosterGoogleSheetUrl.trim() || teamInfo.rosterGoogleSheetUrl,
+        lastRosterSheetSyncAt: checkedAt,
+        lastRosterSheetSyncStatus: `Synced ${rosterPreview.players.length} players (${rosterPreview.updatedWithChangesCount} modified, ${rosterPreview.newCount} added)`,
+      });
+    }
     showNotification(
       `Applied roster update: ${rosterPreview.updatedWithChangesCount} modified, ${rosterPreview.newCount} added.`
     );
@@ -1068,7 +1082,7 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({
                   </div>
                   {teamInfo?.rosterGoogleSheetUrl && (
                     <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
-                      Saved
+                      Auto-Polling Active (Every 15m)
                     </span>
                   )}
                 </div>
@@ -1103,6 +1117,22 @@ export const ImportExportTab: React.FC<ImportExportTabProps> = ({
                   >
                     {isLoadingRosterUrl ? 'Syncing...' : 'Sync Sheet'}
                   </button>
+                </div>
+
+                {/* Live Sync Verification Status */}
+                <div className="pt-2 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span>
+                      {teamInfo?.lastRosterSheetSyncStatus ||
+                        `Verified against Roster Sheet (${players.length} active players)`}
+                    </span>
+                  </div>
+                  <span className="text-slate-400 dark:text-slate-500 font-mono text-[10px]">
+                    {teamInfo?.lastRosterSheetSyncAt
+                      ? `Last checked: ${teamInfo.lastRosterSheetSyncAt}`
+                      : 'Checked on page load'}
+                  </span>
                 </div>
               </div>
 

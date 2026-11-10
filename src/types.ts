@@ -163,6 +163,8 @@ export interface TeamInfo {
   recentForm?: ('W' | 'D' | 'L' | '-')[];
   recentFormStat?: string;
   rosterGoogleSheetUrl?: string;
+  lastRosterSheetSyncAt?: string;
+  lastRosterSheetSyncStatus?: string;
   scheduleGoogleSheetUrl?: string;
   standingsGoogleSheetUrl?: string;
   standingsCronEnabled?: boolean;
